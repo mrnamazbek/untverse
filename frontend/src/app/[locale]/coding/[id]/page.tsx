@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -9,6 +9,8 @@ import { fetchApi } from "@/lib/api";
 import { CodingTask, CodeRunResult } from "@/types/learning";
 import { CodeEditor } from "@/components/coding/CodeEditor";
 import { TestCaseRunner } from "@/components/coding/TestCaseRunner";
+import { ContentRenderer } from "@/components/content/ContentRenderer";
+import { Locale, SUPPORTED_LOCALES } from "@/lib/i18n";
 import { LevelUpCelebration } from "@/components/gamification/LevelUpCelebration";
 import {
   ArrowLeft,
@@ -23,6 +25,8 @@ import {
 export default function CodingIdePage() {
   const params = useParams();
   const taskId = params?.id as string;
+  const rawLocale = params?.locale as string;
+  const locale: Locale = SUPPORTED_LOCALES.includes(rawLocale as Locale) ? rawLocale as Locale : "kk";
 
   const [task, setTask] = useState<CodingTask | null>(null);
   const [code, setCode] = useState("");
@@ -145,9 +149,7 @@ export default function CodingIdePage() {
               </div>
 
               {/* Description Body */}
-              <div className="space-y-4 text-xs sm:text-sm text-[#31302e] leading-relaxed">
-                <div className="whitespace-pre-wrap">{task.description}</div>
-              </div>
+              <ContentRenderer content={task.description} locale={locale} />
 
               {/* Sample Test Cases Table */}
               {sampleTestCases.length > 0 && (

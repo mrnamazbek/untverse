@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { i18nDict, Locale, localizePath, SUPPORTED_LOCALES } from "@/lib/i18n";
+import { fetchApi } from "@/lib/api";
 import { CurrentUntRule, ExamSpecification } from "@/types/data_platform";
 import {
   BookMarked,
@@ -30,16 +31,12 @@ export default function UntKnowledgePage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [rulesRes, specsRes] = await Promise.all([
-        fetch(`/api/v1/unt/current`),
-        fetch(`/api/v1/unt/specifications?locale=${locale}`),
+      const [rules, specifications] = await Promise.all([
+        fetchApi<CurrentUntRule>("/unt/current", { requiresAuth: false }),
+        fetchApi<ExamSpecification[]>("/unt/specifications", { requiresAuth: false }),
       ]);
-      if (rulesRes.ok) {
-        setRules(await rulesRes.json());
-      }
-      if (specsRes.ok) {
-        setSpecifications(await specsRes.json());
-      }
+      setRules(rules);
+      setSpecifications(specifications);
     } catch (err) {
       console.error("Failed to load UNT specs", err);
     } finally {

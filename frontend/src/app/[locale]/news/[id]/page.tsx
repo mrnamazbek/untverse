@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { ContentRenderer } from "@/components/content/ContentRenderer";
 import { i18nDict, Locale, localizePath, SUPPORTED_LOCALES } from "@/lib/i18n";
+import { fetchApi } from "@/lib/api";
 import { NewsArticle } from "@/types/data_platform";
 import {
   ArrowLeft,
@@ -28,11 +30,8 @@ export default function NewsDetailPage() {
     if (!articleId) return;
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/v1/news/${articleId}?locale=${locale}`);
-      if (res.ok) {
-        const data = await res.json();
-        setArticle(data);
-      }
+      const data = await fetchApi<NewsArticle>(`/news/${articleId}`, { requiresAuth: false });
+      setArticle(data);
     } catch (err) {
       console.error("Failed to load article detail", err);
     } finally {
@@ -109,15 +108,7 @@ export default function NewsDetailPage() {
             </div>
 
             {/* Body Content */}
-            <div className="prose prose-neutral max-w-none text-sm sm:text-base leading-relaxed text-[#1a1a19] space-y-4">
-              {article.content ? (
-                article.content.split("\n\n").map((para, i) => (
-                  <p key={i}>{para}</p>
-                ))
-              ) : (
-                <p>{article.summary}</p>
-              )}
-            </div>
+            <ContentRenderer content={article.content || article.summary} locale={locale} />
 
             {/* Provenance and Verification Footer */}
             <div className="mt-10 pt-6 border-t border-[#f0efee] bg-slate-50/70 -mx-6 sm:-mx-10 -mb-6 sm:-mb-10 p-6 sm:p-8 rounded-b-2xl">

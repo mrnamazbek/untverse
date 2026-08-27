@@ -22,6 +22,8 @@ class LessonResponse(LessonBase):
     topic_id: int
     is_completed_by_user: Optional[bool] = False
     created_at: datetime
+    locale: str = "ru"
+    fallback_locale: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -49,6 +51,8 @@ class TopicResponse(TopicBase):
     coding_tasks_count: Optional[int] = 0
     user_mastery_percentage: Optional[float] = 0.0
     lessons: Optional[List[LessonResponse]] = []
+    locale: str = "ru"
+    fallback_locale: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -70,6 +74,8 @@ class CourseResponse(CourseBase):
     id: int
     topics: List[TopicResponse] = []
     created_at: datetime
+    locale: str = "ru"
+    fallback_locale: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

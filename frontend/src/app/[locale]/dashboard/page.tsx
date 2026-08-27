@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Footer } from "@/components/layout/Footer";
 import { fetchApi } from "@/lib/api";
 import { getAuth } from "@/lib/auth";
+import { getClientLocale, localizePath } from "@/lib/i18n";
 import { StudentDashboardAnalytics } from "@/types/analytics";
 import { GamificationProfile } from "@/types/gamification";
 import { DailyQuestsCard } from "@/components/gamification/DailyQuestsCard";
@@ -39,7 +40,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const auth = getAuth();
     if (!auth) {
-      router.push("/login");
+      router.push(localizePath("/login", getClientLocale()));
       return;
     }
 

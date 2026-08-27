@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -77,14 +77,12 @@ export default function PracticePage() {
 
   const fetchBankQuestions = useCallback(async () => {
     try {
-      const diffParam = difficultyFilter !== "all" ? `&difficulty=${difficultyFilter}` : "";
-      const topicParam = selectedTopicId !== "all" ? `&topic_id=${selectedTopicId}` : "";
-      const res = await fetch(`/api/v1/questions?locale=${locale}&limit=20${diffParam}${topicParam}`);
-      if (res.ok) {
-        const data = await res.json();
-        setBankQuestions(data.items || []);
-        setTotalQuestions(data.total || 0);
-      }
+      const params = new URLSearchParams({ limit: "20" });
+      if (difficultyFilter !== "all") params.set("difficulty", difficultyFilter);
+      if (selectedTopicId !== "all") params.set("topic_id", selectedTopicId);
+      const data = await fetchApi<{ items: BankQuestion[]; total: number }>(`/questions?${params}`, { requiresAuth: false });
+      setBankQuestions(data.items || []);
+      setTotalQuestions(data.total || 0);
     } catch (err) {
       console.error("Failed to load bank questions", err);
     }
@@ -103,13 +101,10 @@ export default function PracticePage() {
     if (!isExpanded) {
       // Fetch full detail if solutions not loaded
       try {
-        const res = await fetch(`/api/v1/questions/${qId}?locale=${locale}`);
-        if (res.ok) {
-          const detail: BankQuestion = await res.json();
-          setBankQuestions((prev) =>
-            prev.map((q) => (q.id === qId ? { ...q, solutions: detail.solutions } : q))
-          );
-        }
+        const detail = await fetchApi<BankQuestion>(`/questions/${qId}`, { requiresAuth: false });
+        setBankQuestions((prev) =>
+          prev.map((q) => (q.id === qId ? { ...q, solutions: detail.solutions } : q))
+        );
       } catch (e) {
         console.error(e);
       }

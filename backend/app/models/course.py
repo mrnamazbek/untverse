@@ -17,6 +17,7 @@ class Course(Base, TimestampMixin):
     order_index: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     topics: Mapped[List["Topic"]] = relationship("Topic", back_populates="course", cascade="all, delete-orphan", order_by="Topic.order_index")
+    translations: Mapped[List["CourseTranslation"]] = relationship("CourseTranslation", back_populates="course", cascade="all, delete-orphan")
 
 
 class Topic(Base, TimestampMixin):
@@ -38,6 +39,7 @@ class Topic(Base, TimestampMixin):
     quizzes: Mapped[List["Quiz"]] = relationship("Quiz", back_populates="topic", cascade="all, delete-orphan")
     coding_tasks: Mapped[List["CodingTask"]] = relationship("CodingTask", back_populates="topic", cascade="all, delete-orphan")
     masteries: Mapped[List["TopicMastery"]] = relationship("TopicMastery", back_populates="topic", cascade="all, delete-orphan")
+    translations: Mapped[List["TopicTranslation"]] = relationship("TopicTranslation", back_populates="topic", cascade="all, delete-orphan")
 
 
 class Lesson(Base, TimestampMixin):
@@ -55,6 +57,50 @@ class Lesson(Base, TimestampMixin):
 
     topic: Mapped["Topic"] = relationship("Topic", back_populates="lessons")
     progress_records: Mapped[List["LessonProgress"]] = relationship("LessonProgress", back_populates="lesson", cascade="all, delete-orphan")
+    translations: Mapped[List["LessonTranslation"]] = relationship("LessonTranslation", back_populates="lesson", cascade="all, delete-orphan")
+
+
+class CourseTranslation(Base, TimestampMixin):
+    __tablename__ = "course_translations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    course_id: Mapped[int] = mapped_column(Integer, ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
+    locale: Mapped[str] = mapped_column(String(5), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+    course: Mapped["Course"] = relationship("Course", back_populates="translations")
+
+    __table_args__ = (UniqueConstraint("course_id", "locale", name="uq_course_translation_locale"),)
+
+
+class TopicTranslation(Base, TimestampMixin):
+    __tablename__ = "topic_translations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    topic_id: Mapped[int] = mapped_column(Integer, ForeignKey("topics.id", ondelete="CASCADE"), nullable=False, index=True)
+    locale: Mapped[str] = mapped_column(String(5), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+    topic: Mapped["Topic"] = relationship("Topic", back_populates="translations")
+
+    __table_args__ = (UniqueConstraint("topic_id", "locale", name="uq_topic_translation_locale"),)
+
+
+class LessonTranslation(Base, TimestampMixin):
+    __tablename__ = "lesson_translations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    lesson_id: Mapped[int] = mapped_column(Integer, ForeignKey("lessons.id", ondelete="CASCADE"), nullable=False, index=True)
+    locale: Mapped[str] = mapped_column(String(5), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    lesson: Mapped["Lesson"] = relationship("Lesson", back_populates="translations")
+
+    __table_args__ = (UniqueConstraint("lesson_id", "locale", name="uq_lesson_translation_locale"),)
 
 
 class LessonProgress(Base, TimestampMixin):

@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Footer } from "@/components/layout/Footer";
 import { fetchApi } from "@/lib/api";
 import { getAuth } from "@/lib/auth";
+import { getClientLocale, localizePath } from "@/lib/i18n";
 import {
   ShieldAlert,
   Users,
@@ -34,7 +35,7 @@ export default function AdminPage() {
   useEffect(() => {
     const auth = getAuth();
     if (!auth || auth.role !== "admin") {
-      router.push("/dashboard");
+      router.push(localizePath("/dashboard", getClientLocale()));
       return;
     }
 

@@ -332,23 +332,33 @@ export const getClientLocale = (): Locale => {
   return DEFAULT_LOCALE;
 };
 
+export const getLocaleFromPathname = (pathname: string): Locale => {
+  const firstSegment = pathname.split("/").filter(Boolean)[0] as Locale | undefined;
+  return firstSegment && SUPPORTED_LOCALES.includes(firstSegment)
+    ? firstSegment
+    : DEFAULT_LOCALE;
+};
+
+export const localeToLanguageTag = (locale: Locale): string => {
+  switch (locale) {
+    case "kk":
+      return "kk-KZ";
+    case "ru":
+      return "ru-KZ";
+    default:
+      return "en";
+  }
+};
+
 /**
  * Switches the locale while preserving the exact path, dynamic params, and query string.
  * Example: /kk/learn/python?id=10 -> switch to 'ru' -> /ru/learn/python?id=10
  */
-export const switchLocaleUrl = (targetLocale: Locale): string => {
-  if (typeof window === "undefined") return `/${targetLocale}`;
-  const { pathname, search, hash } = window.location;
-  const segments = pathname.split("/").filter(Boolean);
-  
-  if (segments.length > 0 && SUPPORTED_LOCALES.includes(segments[0] as Locale)) {
-    segments[0] = targetLocale;
-  } else {
-    segments.unshift(targetLocale);
-  }
-
-  const newPathname = "/" + segments.join("/");
-  return `${newPathname}${search || ""}${hash || ""}`;
+export const switchLocaleUrl = (targetLocale: Locale, currentUrl?: string): string => {
+  const current = currentUrl ?? (typeof window !== "undefined"
+    ? `${window.location.pathname}${window.location.search}${window.location.hash}`
+    : "/");
+  return localizePath(current, targetLocale);
 };
 
 /**
@@ -356,12 +366,17 @@ export const switchLocaleUrl = (targetLocale: Locale): string => {
  * Example: localizePath('/learn', 'kk') -> '/kk/learn'
  */
 export const localizePath = (path: string, locale: Locale = DEFAULT_LOCALE): string => {
-  const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  const firstSegment = cleanPath.split("/")[1] as Locale;
-  if (SUPPORTED_LOCALES.includes(firstSegment)) {
-    return cleanPath;
+  // External URLs are not application routes and must remain unchanged.
+  if (/^[a-z][a-z\d+.-]*:/i.test(path)) return path;
+
+  const url = new URL(path.startsWith("/") ? path : `/${path}`, "https://untverse.local");
+  const segments = url.pathname.split("/").filter(Boolean);
+  if (segments.length && SUPPORTED_LOCALES.includes(segments[0] as Locale)) {
+    segments.shift();
   }
-  return `/${locale}${cleanPath === "/" ? "" : cleanPath}`;
+
+  const localizedPathname = segments.length ? `/${locale}/${segments.join("/")}` : `/${locale}`;
+  return `${localizedPathname}${url.search}${url.hash}`;
 };
 
 export const setClientLocaleCookie = (locale: Locale): void => {

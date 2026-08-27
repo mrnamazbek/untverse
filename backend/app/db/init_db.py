@@ -1,11 +1,131 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.user import User, UserProfile, UserRole
-from app.models.course import Course, Topic, Lesson
+from app.models.course import Course, Topic, Lesson, CourseTranslation, TopicTranslation, LessonTranslation
 from app.models.quiz import Quiz, Question, QuestionOption, QuizType, QuestionType
 from app.models.coding import CodingTask, TestCase
 from app.models.gamification import Achievement, DailyMission
 from app.core.security import get_password_hash
+
+
+LEARNING_TRANSLATIONS = {
+    "courses": {
+        "unt-informatics-full": {
+            "kk": ("ҰБТ информатикасы: толық дайындық курсы", "Қазақстандағы Ұлттық бірыңғай тестілеудің «Информатика» бейіндік пәніне арналған кешенді курс."),
+            "en": ("UNT Informatics: Complete preparation course", "A comprehensive course for Kazakhstan's Unified National Testing Informatics profile subject."),
+        },
+    },
+    "topics": {
+        "number-systems-and-coding": {
+            "kk": ("Санау жүйелері және ақпаратты ұсыну", "Екілік, сегіздік және он алтылық санау жүйелері, ақпаратты кодтау және дерек көлемі."),
+            "en": ("Number systems and information representation", "Binary, octal, and hexadecimal number systems, information encoding, and data volume."),
+        },
+        "relational-databases-and-sql": {
+            "kk": ("Реляциялық дерекқорлар және SQL тілі", "Деректер моделі, кілттер, қалыптандыру және SQL сұраулары."),
+            "en": ("Relational databases and SQL", "Data models, keys, normalization, and SQL queries."),
+        },
+        "python-and-algorithms": {
+            "kk": ("Python бағдарламалау негіздері", "Python тіліндегі алгоритмдер, жолдар, тізімдер және функциялар."),
+            "en": ("Python programming fundamentals", "Algorithms, strings, lists, and functions in Python."),
+        },
+        "networks-and-cybersecurity": {
+            "kk": ("Компьютерлік желілер", "OSI үлгісі, желілік хаттамалар және деректерді беру негіздері."),
+            "en": ("Computer networks", "The OSI model, network protocols, and data transmission fundamentals."),
+        },
+    },
+    "lessons": {
+        "positional-number-systems": {
+            "kk": {
+                "title": "Позициялық санау жүйелері: екілік, сегіздік және он алтылық",
+                "summary": "Екілік, ондық және он алтылық санау жүйелері арасында түрлендіру ережелері.",
+                "content": """# ҰБТ-дағы санау жүйелері
+
+Позициялық санау жүйесінде цифрдың мәні оның сан ішіндегі орнына, яғни разрядына тәуелді.
+
+### Негізгі жүйелер
+
+* **Екілік (BIN, 2-лік негіз)**: `0, 1`
+* **Сегіздік (OCT, 8-дік негіз)**: `0`–`7`
+* **Ондық (DEC, 10-дық негіз)**: `0`–`9`
+* **Он алтылық (HEX, 16-лық негіз)**: `0`–`9`, `A`–`F`
+
+### Жылдам түрлендіру
+
+* Бір сегіздік цифр **3 битке** тең.
+* Бір он алтылық цифр **4 битке** тең.
+
+```python
+# Python мысалы
+x = 0b101101  # ондық жүйеде 45
+hex_val = hex(x)  # '0x2d'
+oct_val = oct(x)  # '0o55'
+```
+""",
+            },
+            "en": {
+                "title": "Positional number systems: binary, octal, and hexadecimal",
+                "summary": "Rules for converting between binary, decimal, octal, and hexadecimal systems.",
+                "content": """# Number systems in UNT
+
+In a positional number system, the value of a digit depends on its position (place value) in the number.
+
+### Common bases
+
+* **Binary (BIN, base 2)**: `0, 1`
+* **Octal (OCT, base 8)**: `0`–`7`
+* **Decimal (DEC, base 10)**: `0`–`9`
+* **Hexadecimal (HEX, base 16)**: `0`–`9`, `A`–`F`
+
+### Fast conversion
+
+* One octal digit represents **3 bits**.
+* One hexadecimal digit represents **4 bits**.
+
+```python
+# Python example
+x = 0b101101  # 45 in decimal
+hex_val = hex(x)  # '0x2d'
+oct_val = oct(x)  # '0o55'
+```
+""",
+            },
+        },
+    },
+}
+
+
+async def _ensure_learning_translations(session: AsyncSession):
+    """Backfill canonical Russian and approved localized curriculum content."""
+    courses = list((await session.execute(select(Course))).scalars().all())
+    topics = list((await session.execute(select(Topic))).scalars().all())
+    lessons = list((await session.execute(select(Lesson))).scalars().all())
+
+    course_translations = {(row.course_id, row.locale) for row in (await session.execute(select(CourseTranslation))).scalars().all()}
+    topic_translations = {(row.topic_id, row.locale) for row in (await session.execute(select(TopicTranslation))).scalars().all()}
+    lesson_translations = {(row.lesson_id, row.locale) for row in (await session.execute(select(LessonTranslation))).scalars().all()}
+
+    for course in courses:
+        if (course.id, "ru") not in course_translations:
+            session.add(CourseTranslation(course_id=course.id, locale="ru", title=course.title, description=course.description))
+        for locale, values in LEARNING_TRANSLATIONS["courses"].get(course.slug, {}).items():
+            if (course.id, locale) not in course_translations:
+                session.add(CourseTranslation(course_id=course.id, locale=locale, title=values[0], description=values[1]))
+
+    for topic in topics:
+        if (topic.id, "ru") not in topic_translations:
+            session.add(TopicTranslation(topic_id=topic.id, locale="ru", title=topic.title, description=topic.description))
+        for locale, values in LEARNING_TRANSLATIONS["topics"].get(topic.slug, {}).items():
+            if (topic.id, locale) not in topic_translations:
+                session.add(TopicTranslation(topic_id=topic.id, locale=locale, title=values[0], description=values[1]))
+
+    for lesson in lessons:
+        if (lesson.id, "ru") not in lesson_translations:
+            session.add(LessonTranslation(lesson_id=lesson.id, locale="ru", title=lesson.title, summary=lesson.summary, content=lesson.content))
+        for locale, values in LEARNING_TRANSLATIONS["lessons"].get(lesson.slug, {}).items():
+            if (lesson.id, locale) not in lesson_translations:
+                session.add(LessonTranslation(lesson_id=lesson.id, locale=locale, **values))
+
+    await session.commit()
 
 
 async def _seed_base_data(session: AsyncSession):
@@ -583,6 +703,8 @@ async def init_db_data(session: AsyncSession):
     existing_user = await session.execute(select(User).limit(1))
     if not existing_user.scalars().first():
         await _seed_base_data(session)
+
+    await _ensure_learning_translations(session)
 
     # Always seed / update Data Platform components (Sources, Glossary, Specifications, Bank Questions, UNT News)
     from app.db.seed_data_platform import seed_data_platform

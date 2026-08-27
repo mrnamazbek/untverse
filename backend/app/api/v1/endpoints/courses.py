@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.api.v1.deps import get_current_user, get_optional_current_user
@@ -12,34 +12,37 @@ router = APIRouter()
 
 @router.get("", response_model=List[CourseResponse])
 async def get_courses(
+    locale: str = Query("kk", pattern="^(kk|ru|en)$"),
     current_user: Optional[User] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     service = LearningService(db)
     user_id = current_user.id if current_user else None
-    return await service.get_courses_hierarchy(user_id=user_id)
+    return await service.get_courses_hierarchy(user_id=user_id, locale=locale)
 
 
 @router.get("/topics/{slug}", response_model=TopicResponse)
 async def get_topic(
     slug: str,
+    locale: str = Query("kk", pattern="^(kk|ru|en)$"),
     current_user: Optional[User] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     service = LearningService(db)
     user_id = current_user.id if current_user else None
-    return await service.get_topic_detail(slug=slug, user_id=user_id)
+    return await service.get_topic_detail(slug=slug, user_id=user_id, locale=locale)
 
 
 @router.get("/lessons/{lesson_id}", response_model=LessonResponse)
 async def get_lesson(
     lesson_id: int,
+    locale: str = Query("kk", pattern="^(kk|ru|en)$"),
     current_user: Optional[User] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     service = LearningService(db)
     user_id = current_user.id if current_user else None
-    return await service.get_lesson_detail(lesson_id=lesson_id, user_id=user_id)
+    return await service.get_lesson_detail(lesson_id=lesson_id, user_id=user_id, locale=locale)
 
 
 @router.post("/lessons/{lesson_id}/complete", response_model=LessonCompleteResponse)

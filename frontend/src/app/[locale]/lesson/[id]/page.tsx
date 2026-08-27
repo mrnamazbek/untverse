@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
+import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { fetchApi } from "@/lib/api";
 import { Lesson } from "@/types/learning";
 import { LevelUpCelebration } from "@/components/gamification/LevelUpCelebration";
+import { ContentRenderer } from "@/components/content/ContentRenderer";
+import { Locale, localizePath, SUPPORTED_LOCALES } from "@/lib/i18n";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -20,8 +22,9 @@ import {
 
 export default function LessonDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const lessonId = params?.id as string;
+  const rawLocale = params?.locale as string;
+  const locale: Locale = SUPPORTED_LOCALES.includes(rawLocale as Locale) ? rawLocale as Locale : "kk";
 
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
@@ -86,9 +89,9 @@ export default function LessonDetailPage() {
   if (!lesson) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#f6f5f4] p-6 text-center">
-        <h2 className="heading-2 mb-2">Урок не найден</h2>
-        <Link href="/learn" className="btn-primary text-xs">
-          Вернуться к темам
+        <h2 className="heading-2 mb-2">{locale === "kk" ? "Сабақ табылмады" : locale === "en" ? "Lesson not found" : "Урок не найден"}</h2>
+        <Link href={localizePath("/learn", locale)} className="btn-primary text-xs">
+          {locale === "kk" ? "Тақырыптарға оралу" : locale === "en" ? "Back to topics" : "Вернуться к темам"}
         </Link>
       </div>
     );
@@ -103,16 +106,16 @@ export default function LessonDetailPage() {
         {/* Navigation Breadcrumbs */}
         <div className="flex items-center justify-between gap-4">
           <Link
-            href="/learn"
+            href={localizePath("/learn", locale)}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#615d59] hover:text-[#000000] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Назад к программе</span>
+            <span>{locale === "kk" ? "Бағдарламаға оралу" : locale === "en" ? "Back to curriculum" : "Назад к программе"}</span>
           </Link>
 
           <div className="flex items-center gap-1.5 text-xs font-bold text-[#0075de] bg-blue-50 px-3 py-1 rounded-full border border-blue-200/50">
             <Zap className="w-3.5 h-3.5 fill-[#0075de]" />
-            <span>+{lesson.xp_reward} XP за завершение</span>
+            <span>+{lesson.xp_reward} XP {locale === "kk" ? "аяқтағаны үшін" : locale === "en" ? "for completion" : "за завершение"}</span>
           </div>
         </div>
 
@@ -120,7 +123,7 @@ export default function LessonDetailPage() {
         <article className="notion-card-elevated p-6 sm:p-10 bg-white">
           <div className="mb-6 pb-6 border-b border-[#e6e6e6]">
             <span className="eyebrow text-[#0075de] block mb-2 font-semibold">
-              Теория и Практика ЕНТ
+              {locale === "kk" ? "ҰБТ теориясы мен практикасы" : locale === "en" ? "UNT theory and practice" : "Теория и практика ЕНТ"}
             </span>
             <h1 className="heading-1 text-[#000000] mb-3">{lesson.title}</h1>
             {lesson.summary && (
@@ -130,21 +133,20 @@ export default function LessonDetailPage() {
             )}
           </div>
 
-          {/* Lesson Body Content formatted in structured blocks */}
-          <div className="prose prose-stone max-w-none text-sm leading-relaxed text-[#31302e] space-y-6">
-            <div className="whitespace-pre-wrap font-sans text-sm sm:text-base leading-7">
-              {lesson.content}
-            </div>
-          </div>
+          <ContentRenderer content={lesson.content} locale={locale} />
 
           {/* Key Takeaways & Exam Tips Box */}
           <div className="mt-10 p-5 bg-blue-50/70 border border-blue-200/60 rounded-xl">
             <div className="flex items-center gap-2 font-bold text-xs text-[#0075de] uppercase tracking-wider mb-2">
               <Sparkles className="w-4 h-4" />
-              <span>Совет для ЕНТ (Ловушка составителей тестов)</span>
+              <span>{locale === "kk" ? "ҰБТ кеңесі" : locale === "en" ? "UNT tip" : "Совет для ЕНТ"}</span>
             </div>
             <p className="text-xs text-[#31302e] leading-relaxed">
-              В вопросах по этой теме внимательно обращайте внимание на граничные условия и систему счисления. В тестах НЦТ часто дают похожие варианты ответов со сдвигом на единицу.
+              {locale === "kk"
+                ? "Бұл тақырыптағы тапсырмаларда шекаралық шарттар мен санау жүйесіне мұқият болыңыз."
+                : locale === "en"
+                  ? "Pay close attention to boundary conditions and the numeral system used in this topic."
+                  : "В заданиях по этой теме внимательно проверяйте граничные условия и систему счисления."}
             </p>
           </div>
 
@@ -161,15 +163,19 @@ export default function LessonDetailPage() {
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>
-                {completed ? "Урок пройден ✓" : completing ? "Сохранение..." : "Отметить урок как пройденный"}
+                {completed
+                  ? locale === "kk" ? "Сабақ аяқталды ✓" : locale === "en" ? "Lesson completed ✓" : "Урок пройден ✓"
+                  : completing
+                    ? locale === "kk" ? "Сақталуда..." : locale === "en" ? "Saving..." : "Сохранение..."
+                    : locale === "kk" ? "Сабақты аяқталды деп белгілеу" : locale === "en" ? "Mark lesson as complete" : "Отметить урок как пройденный"}
               </span>
             </button>
 
             <Link
-              href="/practice"
+              href={localizePath("/practice", locale)}
               className="btn-secondary w-full sm:w-auto px-5 py-2.5 text-xs font-medium"
             >
-              <span>Закрепить тему в тесте</span>
+              <span>{locale === "kk" ? "Тақырыпты тестте бекіту" : locale === "en" ? "Practise this topic" : "Закрепить тему в тесте"}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>

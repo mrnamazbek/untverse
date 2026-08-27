@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useRouter, usePathname } from "next/navigation";
 import { getAuth, clearAuth } from "@/lib/auth";
 import { AuthResponse } from "@/types/api";
@@ -55,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     if (targetLocale === activeLocale) return;
     setClientLocaleCookie(targetLocale);
     const targetUrl = switchLocaleUrl(targetLocale);
-    router.push(targetUrl);
+    router.replace(targetUrl);
   };
 
   const handleLogout = () => {
@@ -118,6 +118,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           <div className="flex items-center bg-[#f6f5f4] border border-[#e6e6e6] rounded-full p-0.5 text-[11px] font-semibold text-[#615d59]">
             <button
               onClick={() => handleLanguageChange("kk")}
+              aria-label="Қазақ тіліне ауысу"
+              aria-pressed={activeLocale === "kk"}
               className={`px-2 py-0.5 rounded-full transition-colors ${
                 activeLocale === "kk"
                   ? "bg-[#0075de] text-white shadow-xs"
@@ -129,6 +131,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             </button>
             <button
               onClick={() => handleLanguageChange("ru")}
+              aria-label="Переключить на русский язык"
+              aria-pressed={activeLocale === "ru"}
               className={`px-2 py-0.5 rounded-full transition-colors ${
                 activeLocale === "ru"
                   ? "bg-[#0075de] text-white shadow-xs"
@@ -140,6 +144,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             </button>
             <button
               onClick={() => handleLanguageChange("en")}
+              aria-label="Switch to English"
+              aria-pressed={activeLocale === "en"}
               className={`px-2 py-0.5 rounded-full transition-colors ${
                 activeLocale === "en"
                   ? "bg-[#0075de] text-white shadow-xs"
@@ -156,7 +162,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               {/* Streak Counter */}
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#fff5eb] border border-[#ffd8b2] rounded-full text-xs font-semibold text-[#dd5b00]">
                 <Flame className="w-3.5 h-3.5 fill-[#dd5b00]" />
-                <span>{auth.streak_count || 0} {activeLocale === "kk" ? "күн" : "дн"}</span>
+                <span>{auth.streak_count || 0} {activeLocale === "kk" ? "күн" : activeLocale === "en" ? "days" : "дн."}</span>
               </div>
 
               {/* XP & Level Indicator */}

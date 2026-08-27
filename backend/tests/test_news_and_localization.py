@@ -68,6 +68,22 @@ async def test_localization_glossary_and_qa(client: AsyncClient):
 
 
 @pytest.mark.asyncio
+async def test_lesson_content_respects_the_requested_locale(client: AsyncClient):
+    kk = await client.get("/api/v1/courses/lessons/1?locale=kk")
+    en = await client.get("/api/v1/courses/lessons/1?locale=en")
+    ru = await client.get("/api/v1/courses/lessons/1?locale=ru")
+
+    assert kk.status_code == en.status_code == ru.status_code == 200
+    assert kk.json()["locale"] == "kk"
+    assert en.json()["locale"] == "en"
+    assert ru.json()["locale"] == "ru"
+    assert kk.json()["title"].startswith("Позициялық")
+    assert en.json()["title"].startswith("Positional")
+    assert ru.json()["title"].startswith("Позиционные")
+    assert "```python" in kk.json()["content"]
+
+
+@pytest.mark.asyncio
 async def test_unified_search(client: AsyncClient):
     # Search for Python
     resp = await client.get("/api/v1/search?q=Python&locale=kk")

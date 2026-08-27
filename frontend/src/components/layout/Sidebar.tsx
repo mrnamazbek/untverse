@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -59,7 +59,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     { name: t.nav.learn, rawHref: "/learn", icon: BookOpen },
     { name: t.nav.practice, rawHref: "/practice", icon: CheckSquare },
     { name: t.nav.coding, rawHref: "/coding", icon: Code2 },
-    { name: t.nav.news, rawHref: "/news", icon: Newspaper, badge: "Live" },
+    { name: t.nav.news, rawHref: "/news", icon: Newspaper, badge: activeLocale === "kk" ? "Жаңа" : activeLocale === "en" ? "Live" : "Новое" },
     { name: t.nav.untInfo, rawHref: "/unt", icon: BookMarked },
     { name: t.nav.missions, rawHref: "/missions", icon: Target },
     { name: t.nav.leaderboard, rawHref: "/leaderboard", icon: Trophy },
@@ -105,7 +105,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </div>
               <div className="flex justify-between items-center mt-1.5 text-[10px] text-[#615d59]">
                 <span>{auth.total_xp} XP</span>
-                <span>{(auth.current_level || 1) * 200} XP мақсат</span>
+                <span>{(auth.current_level || 1) * 200} XP {activeLocale === "kk" ? "мақсат" : activeLocale === "en" ? "goal" : "цель"}</span>
               </div>
             </div>
           )}
@@ -113,7 +113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           {/* Navigation Links */}
           <nav className="space-y-1">
             <div className="text-[10px] font-bold text-[#a39e98] uppercase tracking-wider px-3 mb-2">
-              {activeLocale === "kk" ? "Негізгі бөлімдер" : "Основное меню"}
+              {activeLocale === "kk" ? "Негізгі бөлімдер" : activeLocale === "en" ? "Main menu" : "Основное меню"}
             </div>
             {rawNavigationItems.map((item) => {
               const localizedHref = localizePath(item.rawHref, activeLocale);
@@ -153,12 +153,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
           <div className="card-warm p-3 bg-gradient-to-br from-blue-50 to-indigo-50/40 border border-blue-100">
             <div className="flex items-center gap-2 text-xs font-bold text-[#213183] mb-1">
               <Zap className="w-3.5 h-3.5 text-[#0075de]" />
-              <span>{activeLocale === "kk" ? "ҰБТ 50/50 Мақсаты" : "Цель ЕНТ 50/50"}</span>
+              <span>{activeLocale === "kk" ? "ҰБТ 50/50 Мақсаты" : activeLocale === "en" ? "UNT 50/50 goal" : "Цель ЕНТ 50/50"}</span>
             </div>
             <p className="text-[11px] text-[#615d59] leading-relaxed">
               {activeLocale === "kk"
                 ? "Информатикадан толық 50 балл жинап, IT грантын жеңіп алыңыз!"
-                : "Наберите максимальные 50 баллов по Информатике и выиграйте грант!"}
+                : activeLocale === "en"
+                  ? "Earn all 50 Informatics points and compete for an IT grant."
+                  : "Наберите максимальные 50 баллов по информатике и выиграйте грант!"}
             </p>
           </div>
         </div>

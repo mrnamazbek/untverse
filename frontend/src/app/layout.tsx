@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,13 +16,17 @@ export const metadata: Metadata = {
   ],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const requestHeaders = await headers();
+  const locale = requestHeaders.get("x-untverse-locale");
+  const lang = locale === "kk" ? "kk-KZ" : locale === "en" ? "en" : "ru-KZ";
+
   return (
-    <html lang="ru" className="h-full antialiased">
+    <html lang={lang} className="h-full antialiased">
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

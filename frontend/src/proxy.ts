@@ -24,7 +24,9 @@ export function proxy(request: NextRequest) {
 
   if (pathnameHasLocale) {
     const currentLocale = pathname.split("/")[1] as SupportedLocale;
-    const response = NextResponse.next();
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-untverse-locale", currentLocale);
+    const response = NextResponse.next({ request: { headers: requestHeaders } });
     response.cookies.set("untverse_locale", currentLocale, {
       path: "/",
       maxAge: 60 * 60 * 24 * 365, // 1 year

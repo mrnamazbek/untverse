@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { fetchApi } from "@/lib/api";
 import { saveAuth } from "@/lib/auth";
 import { AuthResponse } from "@/types/api";
+import { getClientLocale, localizePath } from "@/lib/i18n";
 import { LogIn, AlertCircle, Sparkles, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
@@ -30,7 +31,7 @@ export default function LoginPage() {
       });
 
       saveAuth(data);
-      router.push("/dashboard");
+      router.push(localizePath("/dashboard", getClientLocale()));
     } catch (err: any) {
       setError(err.message || "Неверный логин или пароль");
     } finally {

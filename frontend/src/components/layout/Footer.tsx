@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { usePathname } from "next/navigation";
 import { getClientLocale, localizePath, Locale, SUPPORTED_LOCALES } from "@/lib/i18n";
 
@@ -26,25 +26,27 @@ export const Footer: React.FC = () => {
           <span>
             {locale === "kk"
               ? "© 2026 Ұлттық бірыңғай тестілеуге дайындалудың интеллектуалды платформасы"
-              : "© 2026 Интеллектуальная платформа подготовки к Единому Национальному Тестированию"}
+              : locale === "en"
+                ? "© 2026 An intelligent platform for UNT preparation"
+                : "© 2026 Интеллектуальная платформа подготовки к Единому национальному тестированию"}
           </span>
         </div>
 
         <div className="flex items-center gap-6">
           <Link href={localizePath("/learn", locale)} className="hover:text-[#000000] transition-colors">
-            {locale === "kk" ? "Оқу бағдарламасы" : "Программа ЕНТ"}
+            {locale === "kk" ? "Оқу бағдарламасы" : locale === "en" ? "Curriculum" : "Программа ЕНТ"}
           </Link>
           <Link href={localizePath("/practice", locale)} className="hover:text-[#000000] transition-colors">
-            {locale === "kk" ? "Тренажер" : "Тренажер"}
+            {locale === "kk" ? "Тренажер" : locale === "en" ? "Practice" : "Тренажер"}
           </Link>
           <Link href={localizePath("/news", locale)} className="hover:text-[#000000] transition-colors">
-            {locale === "kk" ? "Жаңалықтар" : "Новости"}
+            {locale === "kk" ? "Жаңалықтар" : locale === "en" ? "News" : "Новости"}
           </Link>
           <Link href={localizePath("/unt", locale)} className="hover:text-[#000000] transition-colors">
-            {locale === "kk" ? "Ережелер 2026" : "Правила 2026"}
+            {locale === "kk" ? "Ережелер 2026" : locale === "en" ? "2026 rules" : "Правила 2026"}
           </Link>
           <Link href={localizePath("/leaderboard", locale)} className="hover:text-[#000000] transition-colors">
-            {locale === "kk" ? "Көшбасшылар" : "Рейтинг"}
+            {locale === "kk" ? "Көшбасшылар" : locale === "en" ? "Leaderboard" : "Рейтинг"}
           </Link>
         </div>
       </div>

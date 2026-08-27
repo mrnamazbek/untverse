@@ -18,7 +18,11 @@ class CourseRepository(BaseRepository[Course]):
         result = await self.session.execute(
             select(Course)
             .options(
-                selectinload(Course.topics).selectinload(Topic.lessons)
+                selectinload(Course.translations),
+                selectinload(Course.topics).selectinload(Topic.translations),
+                selectinload(Course.topics).selectinload(Topic.lessons).selectinload(Lesson.translations),
+                selectinload(Course.topics).selectinload(Topic.quizzes),
+                selectinload(Course.topics).selectinload(Topic.coding_tasks),
             )
             .order_by(Course.order_index)
         )
@@ -28,7 +32,11 @@ class CourseRepository(BaseRepository[Course]):
         result = await self.session.execute(
             select(Course)
             .options(
-                selectinload(Course.topics).selectinload(Topic.lessons)
+                selectinload(Course.translations),
+                selectinload(Course.topics).selectinload(Topic.translations),
+                selectinload(Course.topics).selectinload(Topic.lessons).selectinload(Lesson.translations),
+                selectinload(Course.topics).selectinload(Topic.quizzes),
+                selectinload(Course.topics).selectinload(Topic.coding_tasks),
             )
             .where(Course.slug == slug)
         )
@@ -38,7 +46,8 @@ class CourseRepository(BaseRepository[Course]):
         result = await self.session.execute(
             select(Topic)
             .options(
-                selectinload(Topic.lessons),
+                selectinload(Topic.translations),
+                selectinload(Topic.lessons).selectinload(Lesson.translations),
                 selectinload(Topic.quizzes),
                 selectinload(Topic.coding_tasks),
             )
@@ -50,7 +59,8 @@ class CourseRepository(BaseRepository[Course]):
         result = await self.session.execute(
             select(Topic)
             .options(
-                selectinload(Topic.lessons),
+                selectinload(Topic.translations),
+                selectinload(Topic.lessons).selectinload(Lesson.translations),
                 selectinload(Topic.quizzes),
                 selectinload(Topic.coding_tasks),
             )
@@ -61,7 +71,7 @@ class CourseRepository(BaseRepository[Course]):
     async def get_lesson_by_id(self, lesson_id: int) -> Optional[Lesson]:
         result = await self.session.execute(
             select(Lesson)
-            .options(selectinload(Lesson.topic))
+            .options(selectinload(Lesson.topic), selectinload(Lesson.translations))
             .where(Lesson.id == lesson_id)
         )
         return result.scalars().first()

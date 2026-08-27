@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
+import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { i18nDict, Locale, localizePath, SUPPORTED_LOCALES } from "@/lib/i18n";
+import { fetchApi } from "@/lib/api";
 import { NewsArticle, NewsAlert } from "@/types/data_platform";
 import {
   Newspaper,
@@ -33,13 +34,11 @@ export default function NewsFeedPage() {
   const fetchNews = useCallback(async () => {
     setIsLoading(true);
     try {
-      const catParam = category !== "all" ? `&category=${category}` : "";
-      const searchParam = searchQuery.trim() ? `&search=${encodeURIComponent(searchQuery.trim())}` : "";
-      const res = await fetch(`/api/v1/news?locale=${locale}${catParam}${searchParam}&limit=30`);
-      if (res.ok) {
-        const data = await res.json();
-        setNewsList(data.items || []);
-      }
+      const params = new URLSearchParams({ limit: "30" });
+      if (category !== "all") params.set("category", category);
+      if (searchQuery.trim()) params.set("search", searchQuery.trim());
+      const data = await fetchApi<{ items: NewsArticle[] }>(`/news?${params}`, { requiresAuth: false });
+      setNewsList(data.items || []);
     } catch (err) {
       console.error("Failed to load news", err);
     } finally {
@@ -49,11 +48,8 @@ export default function NewsFeedPage() {
 
   const fetchAlerts = useCallback(async () => {
     try {
-      const res = await fetch(`/api/v1/news/alerts?locale=${locale}`);
-      if (res.ok) {
-        const data = await res.json();
-        setAlerts(data || []);
-      }
+      const data = await fetchApi<NewsAlert[]>("/news/alerts", { requiresAuth: false });
+      setAlerts(data || []);
     } catch (err) {
       console.error("Failed to load alerts", err);
     }
