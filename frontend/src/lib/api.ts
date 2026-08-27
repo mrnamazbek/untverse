@@ -7,7 +7,7 @@ interface RequestOptions extends RequestInit {
   requiresAuth?: boolean;
 }
 
-export async function fetchApi<T = any>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+export async function fetchApi<T = unknown>(endpoint: string, options: RequestOptions = {}): Promise<T> {
   const { requiresAuth = true, headers = {}, ...rest } = options;
   const auth = getAuth();
 

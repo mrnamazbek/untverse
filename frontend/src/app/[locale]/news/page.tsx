@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { getClientLocale, i18nDict, Locale } from "@/lib/i18n";
+import { i18nDict, Locale, localizePath, SUPPORTED_LOCALES } from "@/lib/i18n";
 import { NewsArticle, NewsAlert } from "@/types/data_platform";
 import {
   Newspaper,
@@ -13,36 +14,23 @@ import {
   ShieldCheck,
   Calendar,
   Search,
-  Filter,
   ArrowRight,
-  Sparkles,
-  Flame,
   Clock,
-  BookOpen,
 } from "lucide-react";
 
 export default function NewsFeedPage() {
+  const params = useParams();
+  const rawLocale = params?.locale as string;
+  const locale: Locale = (SUPPORTED_LOCALES.includes(rawLocale as Locale) ? rawLocale : "kk") as Locale;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [locale, setLocale] = useState<Locale>("kk");
   const [newsList, setNewsList] = useState<NewsArticle[]>([]);
   const [alerts, setAlerts] = useState<NewsAlert[]>([]);
   const [category, setCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setLocale(getClientLocale());
-    const handleLocale = () => setLocale(getClientLocale());
-    window.addEventListener("localeChange", handleLocale);
-    return () => window.removeEventListener("localeChange", handleLocale);
-  }, []);
-
-  useEffect(() => {
-    fetchNews();
-    fetchAlerts();
-  }, [locale, category]);
-
-  const fetchNews = async () => {
+  const fetchNews = useCallback(async () => {
     setIsLoading(true);
     try {
       const catParam = category !== "all" ? `&category=${category}` : "";
@@ -57,9 +45,9 @@ export default function NewsFeedPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [locale, category, searchQuery]);
 
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     try {
       const res = await fetch(`/api/v1/news/alerts?locale=${locale}`);
       if (res.ok) {
@@ -69,7 +57,12 @@ export default function NewsFeedPage() {
     } catch (err) {
       console.error("Failed to load alerts", err);
     }
-  };
+  }, [locale]);
+
+  useEffect(() => {
+    fetchNews();
+    fetchAlerts();
+  }, [fetchNews, fetchAlerts]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +131,7 @@ export default function NewsFeedPage() {
                     </p>
                     <div className="mt-3 flex items-center gap-3">
                       <Link
-                        href={`/news/${alert.id}`}
+                        href={localizePath(`/news/${alert.id}`, locale)}
                         className="inline-flex items-center gap-1 text-xs font-bold text-red-700 hover:text-red-900"
                       >
                         {t.news.readMore} <ArrowRight className="w-3.5 h-3.5" />
@@ -234,7 +227,7 @@ export default function NewsFeedPage() {
                     )}
                   </div>
 
-                  <Link href={`/news/${article.id}`}>
+                  <Link href={localizePath(`/news/${article.id}`, locale)}>
                     <h2 className="text-base font-bold text-[#000000] hover:text-[#0075de] transition-colors leading-snug line-clamp-2">
                       {article.title}
                     </h2>
@@ -261,7 +254,7 @@ export default function NewsFeedPage() {
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
                     <Link
-                      href={`/news/${article.id}`}
+                      href={localizePath(`/news/${article.id}`, locale)}
                       className="inline-flex items-center gap-1 text-xs font-bold text-[#0075de] hover:underline"
                     >
                       {t.news.readMore} <ArrowRight className="w-3 h-3" />

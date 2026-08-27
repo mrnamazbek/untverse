@@ -57,7 +57,7 @@ export interface Question {
   difficulty: string;
   points: number;
   order_index: number;
-  extra_data?: any;
+  extra_data?: Record<string, unknown> | null;
   options: QuestionOption[];
 }
 

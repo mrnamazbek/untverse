@@ -1,48 +1,33 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { getClientLocale, i18nDict, Locale } from "@/lib/i18n";
+import { i18nDict, Locale, localizePath, SUPPORTED_LOCALES } from "@/lib/i18n";
 import { CurrentUntRule, ExamSpecification } from "@/types/data_platform";
 import {
   BookMarked,
-  Layers,
-  Award,
-  CheckCircle2,
   Calendar,
-  Clock,
-  HelpCircle,
-  ExternalLink,
   ChevronDown,
   ChevronUp,
   Cpu,
-  GraduationCap,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 
 export default function UntKnowledgePage() {
+  const params = useParams();
+  const rawLocale = params?.locale as string;
+  const locale: Locale = (SUPPORTED_LOCALES.includes(rawLocale as Locale) ? rawLocale : "kk") as Locale;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [locale, setLocale] = useState<Locale>("kk");
   const [rules, setRules] = useState<CurrentUntRule | null>(null);
   const [specifications, setSpecifications] = useState<ExamSpecification[]>([]);
   const [expandedSection, setExpandedSection] = useState<string | null>("CS-4");
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    setLocale(getClientLocale());
-    const handleLocale = () => setLocale(getClientLocale());
-    window.addEventListener("localeChange", handleLocale);
-    return () => window.removeEventListener("localeChange", handleLocale);
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [locale]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
       const [rulesRes, specsRes] = await Promise.all([
@@ -60,7 +45,11 @@ export default function UntKnowledgePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [locale]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const t = i18nDict[locale] || i18nDict.kk;
   const activeSpec = specifications[0];
@@ -201,7 +190,7 @@ export default function UntKnowledgePage() {
                     </p>
                   </div>
                   <Link
-                    href="/practice"
+                    href={localizePath("/practice", locale)}
                     className="btn-primary inline-flex items-center gap-1.5 text-xs py-2 px-3.5"
                   >
                     <span>{locale === "kk" ? "Тренажерде жаттығу" : "Тренироваться"}</span>
@@ -261,7 +250,7 @@ export default function UntKnowledgePage() {
                                     </h4>
                                     {topic.learning_objectives && (
                                       <p className="text-[11px] text-[#615d59] mt-1">
-                                        {topic.learning_objectives.learning_objective}
+                                        {String(topic.learning_objectives.learning_objective || "")}
                                       </p>
                                     )}
                                   </div>

@@ -14,8 +14,8 @@ export interface CurrentUntRule {
     max_score: number;
     format: string;
   };
-  subjects_breakdown: Record<string, any>;
-  profile_combinations: Record<string, any>;
+  subjects_breakdown: Record<string, unknown>;
+  profile_combinations: Record<string, unknown>;
   testing_periods: Array<{
     period: string;
     type: string;
@@ -23,7 +23,7 @@ export interface CurrentUntRule {
     dates: string;
   }>;
   important_deadlines: Record<string, string>;
-  grant_rules_summary: Record<string, any>;
+  grant_rules_summary: Record<string, unknown>;
   official_source_urls: string[];
   last_verified_at: string | null;
   verified_by: string;
@@ -33,7 +33,7 @@ export interface SpecificationTopic {
   id: number;
   code: string;
   title: string;
-  learning_objectives?: Record<string, any>;
+  learning_objectives?: Record<string, unknown>;
   order_index: number;
 }
 

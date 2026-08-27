@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Footer } from "@/components/layout/Footer";
@@ -9,7 +10,7 @@ import { fetchApi } from "@/lib/api";
 import { Quiz } from "@/types/learning";
 import { SpacedCard, MistakeLogItem } from "@/types/analytics";
 import { BankQuestion, ExamSpecification } from "@/types/data_platform";
-import { getClientLocale, i18nDict, Locale } from "@/lib/i18n";
+import { getClientLocale, i18nDict, Locale, SUPPORTED_LOCALES, localizePath } from "@/lib/i18n";
 import {
   CheckSquare,
   Clock,
@@ -33,43 +34,31 @@ import {
 } from "lucide-react";
 
 export default function PracticePage() {
+  const params = useParams();
+  const rawLocale = params?.locale as string;
+  const locale: Locale = (SUPPORTED_LOCALES.includes(rawLocale as Locale) ? rawLocale : "kk") as Locale;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [locale, setLocale] = useState<Locale>("kk");
   const [activeTab, setActiveTab] = useState<"bank" | "quizzes" | "srs" | "mistakes">("bank");
   
   // Data states
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [srsCards, setSrsCards] = useState<SpacedCard[]>([]);
-  const [mistakes, setMistakes] = useState<MistakeLogItem[]>([]);
+  const [, setMistakes] = useState<MistakeLogItem[]>([]);
   const [bankQuestions, setBankQuestions] = useState<BankQuestion[]>([]);
   const [totalQuestions, setTotalQuestions] = useState(0);
   
   // Filters for Question Bank
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
-  const [selectedTopicId, setSelectedTopicId] = useState<string>("all");
+  const [selectedTopicId] = useState<string>("all");
   const [expandedSolutions, setExpandedSolutions] = useState<Record<number, boolean>>({});
   
   // SRS flashcards states
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [isCardRevealed, setIsCardRevealed] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLocale(getClientLocale());
-    const handleLocale = () => setLocale(getClientLocale());
-    window.addEventListener("localeChange", handleLocale);
-    return () => window.removeEventListener("localeChange", handleLocale);
-  }, []);
-
-  useEffect(() => {
-    loadBaseData();
-  }, []);
-
-  useEffect(() => {
-    fetchBankQuestions();
-  }, [locale, difficultyFilter, selectedTopicId]);
-
-  const loadBaseData = async () => {
+  const loadBaseData = useCallback(async () => {
     try {
       const [quizList, cards, mistakeList] = await Promise.all([
         fetchApi<Quiz[]>("/quizzes").catch(() => []),
@@ -84,9 +73,9 @@ export default function PracticePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchBankQuestions = async () => {
+  const fetchBankQuestions = useCallback(async () => {
     try {
       const diffParam = difficultyFilter !== "all" ? `&difficulty=${difficultyFilter}` : "";
       const topicParam = selectedTopicId !== "all" ? `&topic_id=${selectedTopicId}` : "";
@@ -99,7 +88,15 @@ export default function PracticePage() {
     } catch (err) {
       console.error("Failed to load bank questions", err);
     }
-  };
+  }, [locale, difficultyFilter, selectedTopicId]);
+
+  useEffect(() => {
+    loadBaseData();
+  }, [loadBaseData]);
+
+  useEffect(() => {
+    fetchBankQuestions();
+  }, [fetchBankQuestions]);
 
   const toggleSolution = async (qId: number) => {
     const isExpanded = !!expandedSolutions[qId];

@@ -28,30 +28,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Question Header & Stem */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 text-[#0075de] border border-blue-200/50">
-            {question.question_type === "single_choice" && "Один верный ответ"}
-            {question.question_type === "multiple_choice" && "Несколько верных ответов"}
-            {question.question_type === "true_false" && "Истина / Ложь"}
-            {question.question_type === "fill_gap" && "Ввод ответа"}
-            {question.question_type === "sql" && "SQL запрос"}
-            {question.question_type === "matching" && "Сопоставление"}
-          </span>
-          <span className="text-xs text-[#a39e98]">•</span>
-          <span className="text-xs font-medium text-[#615d59]">
-            {question.points} {question.points === 1 ? "балл" : "балла"}
-          </span>
-        </div>
-
-        <h3 className="text-base sm:text-lg font-semibold text-[#000000] leading-relaxed whitespace-pre-wrap">
+      {/* Question Prompt */}
+      <div>
+        <h3 className="text-base font-semibold text-[#000000] leading-relaxed whitespace-pre-line">
           {question.text}
         </h3>
 
-        {/* Code Snippet block if present */}
         {question.code_snippet && (
-          <div className="p-4 bg-[#213183] text-white rounded-xl font-mono text-xs sm:text-sm overflow-x-auto shadow-inner border border-blue-900">
+          <div className="mt-4 p-4 bg-[#1e1e1e] text-[#d4d4d4] rounded-xl font-mono text-xs overflow-x-auto leading-relaxed border border-[#333]">
             <pre>{question.code_snippet}</pre>
           </div>
         )}
@@ -64,8 +48,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             const isSelected = selectedOptionIds.includes(opt.id);
             const isCorrect = correctOptionIds.includes(opt.id);
 
-            let borderClass = "border-[#e6e6e6]";
-            let bgClass = "bg-white hover:bg-[#f6f5f4]";
+            let borderClass = "border-[#e6e6e6] bg-white hover:bg-[#f6f5f4]";
             let textClass = "text-[#31302e]";
 
             if (isReviewMode) {
@@ -87,7 +70,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 type="button"
                 onClick={() => !isReviewMode && onOptionToggle(opt.id)}
                 disabled={isReviewMode}
-                className={`w-full p-3.5 sm:p-4 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer ${borderClass} ${bgClass} ${textClass}`}
+                className={`w-full p-3.5 sm:p-4 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer ${borderClass} ${textClass}`}
               >
                 <div
                   className={`w-5 h-5 rounded-${isMultiple ? "md" : "full"} mt-0.5 flex items-center justify-center shrink-0 border transition-all ${

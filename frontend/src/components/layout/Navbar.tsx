@@ -2,10 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { getAuth, clearAuth } from "@/lib/auth";
 import { AuthResponse } from "@/types/api";
-import { getClientLocale, setClientLocale, i18nDict, Locale } from "@/lib/i18n";
+import {
+  getClientLocale,
+  switchLocaleUrl,
+  setClientLocaleCookie,
+  localizePath,
+  i18nDict,
+  Locale,
+  SUPPORTED_LOCALES,
+} from "@/lib/i18n";
 import {
   Flame,
   Zap,
@@ -14,7 +22,6 @@ import {
   Shield,
   Award,
   Menu,
-  Globe,
   Newspaper,
   BookMarked,
 } from "lucide-react";
@@ -25,38 +32,39 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const router = useRouter();
+  const pathname = usePathname();
   const [auth, setAuth] = useState<AuthResponse | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [locale, setLocale] = useState<Locale>("kk");
+
+  // Derive active locale from URL pathname first
+  const currentPathLocale = (pathname.split("/")[1] as Locale) || "kk";
+  const activeLocale: Locale = SUPPORTED_LOCALES.includes(currentPathLocale)
+    ? currentPathLocale
+    : getClientLocale();
 
   useEffect(() => {
-    setAuth(getAuth());
-    setLocale(getClientLocale());
+    const userAuth = getAuth();
+    if (userAuth) setAuth(userAuth);
 
     const handleStorage = () => setAuth(getAuth());
-    const handleLocale = () => setLocale(getClientLocale());
-
     window.addEventListener("storage", handleStorage);
-    window.addEventListener("localeChange", handleLocale);
-
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener("localeChange", handleLocale);
-    };
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
-  const handleLanguageChange = (newLocale: Locale) => {
-    setClientLocale(newLocale);
-    setLocale(newLocale);
+  const handleLanguageChange = (targetLocale: Locale) => {
+    if (targetLocale === activeLocale) return;
+    setClientLocaleCookie(targetLocale);
+    const targetUrl = switchLocaleUrl(targetLocale);
+    router.push(targetUrl);
   };
 
   const handleLogout = () => {
     clearAuth();
     setAuth(null);
-    router.push("/login");
+    router.push(localizePath("/login", activeLocale));
   };
 
-  const t = i18nDict[locale] || i18nDict.kk;
+  const t = i18nDict[activeLocale] || i18nDict.kk;
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#ffffff] border-b border-[#e6e6e6] px-4 lg:px-8 py-2.5 transition-all">
@@ -72,7 +80,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             </button>
           )}
 
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href={localizePath("/", activeLocale)} className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-[#0075de] flex items-center justify-center text-white font-bold text-base shadow-sm group-hover:scale-105 transition-transform">
               U
             </div>
@@ -86,17 +94,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             </div>
           </Link>
 
-          {/* Quick Header Nav Links */}
+          {/* Header Links */}
           <nav className="hidden md:flex items-center gap-1 ml-4 pl-4 border-l border-[#e6e6e6]">
             <Link
-              href="/news"
+              href={localizePath("/news", activeLocale)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#615d59] hover:text-[#000000] hover:bg-[#f6f5f4] transition-colors"
             >
               <Newspaper className="w-3.5 h-3.5 text-[#0075de]" />
               <span>{t.nav.news}</span>
             </Link>
             <Link
-              href="/unt"
+              href={localizePath("/unt", activeLocale)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#615d59] hover:text-[#000000] hover:bg-[#f6f5f4] transition-colors"
             >
               <BookMarked className="w-3.5 h-3.5 text-[#9d34da]" />
@@ -106,12 +114,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
         </div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Language Switcher Pill */}
+          {/* Language Switcher Pill (Preserves query, params, hash) */}
           <div className="flex items-center bg-[#f6f5f4] border border-[#e6e6e6] rounded-full p-0.5 text-[11px] font-semibold text-[#615d59]">
             <button
               onClick={() => handleLanguageChange("kk")}
               className={`px-2 py-0.5 rounded-full transition-colors ${
-                locale === "kk"
+                activeLocale === "kk"
                   ? "bg-[#0075de] text-white shadow-xs"
                   : "hover:text-[#000000]"
               }`}
@@ -122,7 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <button
               onClick={() => handleLanguageChange("ru")}
               className={`px-2 py-0.5 rounded-full transition-colors ${
-                locale === "ru"
+                activeLocale === "ru"
                   ? "bg-[#0075de] text-white shadow-xs"
                   : "hover:text-[#000000]"
               }`}
@@ -133,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <button
               onClick={() => handleLanguageChange("en")}
               className={`px-2 py-0.5 rounded-full transition-colors ${
-                locale === "en"
+                activeLocale === "en"
                   ? "bg-[#0075de] text-white shadow-xs"
                   : "hover:text-[#000000]"
               }`}
@@ -148,7 +156,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               {/* Streak Counter */}
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-[#fff5eb] border border-[#ffd8b2] rounded-full text-xs font-semibold text-[#dd5b00]">
                 <Flame className="w-3.5 h-3.5 fill-[#dd5b00]" />
-                <span>{auth.streak_count || 0} {locale === "kk" ? "күн" : "дн"}</span>
+                <span>{auth.streak_count || 0} {activeLocale === "kk" ? "күн" : "дн"}</span>
               </div>
 
               {/* XP & Level Indicator */}
@@ -184,7 +192,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                     </div>
 
                     <Link
-                      href="/profile"
+                      href={localizePath("/profile", activeLocale)}
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#31302e] hover:bg-[#f6f5f4] transition-colors"
                     >
@@ -193,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                     </Link>
 
                     <Link
-                      href="/achievements"
+                      href={localizePath("/achievements", activeLocale)}
                       onClick={() => setIsMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#31302e] hover:bg-[#f6f5f4] transition-colors"
                     >
@@ -203,7 +211,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
                     {auth.role === "admin" && (
                       <Link
-                        href="/admin"
+                        href={localizePath("/admin", activeLocale)}
                         onClick={() => setIsMenuOpen(false)}
                         className="flex items-center gap-2.5 px-4 py-2 text-xs text-[#0075de] font-semibold hover:bg-blue-50 transition-colors"
                       >
@@ -227,10 +235,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Link href="/login" className="btn-utility text-xs py-1.5 px-3">
+              <Link href={localizePath("/login", activeLocale)} className="btn-utility text-xs py-1.5 px-3">
                 {t.nav.login}
               </Link>
-              <Link href="/register" className="btn-primary text-xs py-1.5 px-3.5">
+              <Link href={localizePath("/register", activeLocale)} className="btn-primary text-xs py-1.5 px-3.5">
                 {t.nav.register}
               </Link>
             </div>

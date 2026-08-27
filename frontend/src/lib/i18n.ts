@@ -1,4 +1,6 @@
 export type Locale = "kk" | "ru" | "en";
+export const SUPPORTED_LOCALES: Locale[] = ["kk", "ru", "en"];
+export const DEFAULT_LOCALE: Locale = "kk";
 
 export interface Translations {
   nav: {
@@ -312,18 +314,59 @@ export const i18nDict: Record<Locale, Translations> = {
   },
 };
 
+/**
+ * Extracts the locale from current pathname in browser or defaults to 'kk'.
+ */
 export const getClientLocale = (): Locale => {
-  if (typeof window === "undefined") return "kk";
-  const stored = localStorage.getItem("untverse_locale") as Locale;
-  if (stored && ["kk", "ru", "en"].includes(stored)) {
-    return stored;
+  if (typeof window === "undefined") return DEFAULT_LOCALE;
+  const path = window.location.pathname;
+  const firstSegment = path.split("/")[1] as Locale;
+  if (SUPPORTED_LOCALES.includes(firstSegment)) {
+    return firstSegment;
   }
-  return "kk"; // Default first-class Kazakh language
+  // Check cookie or localStorage fallback
+  const match = document.cookie.match(/untverse_locale=([^;]+)/);
+  if (match && SUPPORTED_LOCALES.includes(match[1] as Locale)) {
+    return match[1] as Locale;
+  }
+  return DEFAULT_LOCALE;
 };
 
-export const setClientLocale = (locale: Locale): void => {
+/**
+ * Switches the locale while preserving the exact path, dynamic params, and query string.
+ * Example: /kk/learn/python?id=10 -> switch to 'ru' -> /ru/learn/python?id=10
+ */
+export const switchLocaleUrl = (targetLocale: Locale): string => {
+  if (typeof window === "undefined") return `/${targetLocale}`;
+  const { pathname, search, hash } = window.location;
+  const segments = pathname.split("/").filter(Boolean);
+  
+  if (segments.length > 0 && SUPPORTED_LOCALES.includes(segments[0] as Locale)) {
+    segments[0] = targetLocale;
+  } else {
+    segments.unshift(targetLocale);
+  }
+
+  const newPathname = "/" + segments.join("/");
+  return `${newPathname}${search || ""}${hash || ""}`;
+};
+
+/**
+ * Helper to construct an in-app link with the current or target locale.
+ * Example: localizePath('/learn', 'kk') -> '/kk/learn'
+ */
+export const localizePath = (path: string, locale: Locale = DEFAULT_LOCALE): string => {
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  const firstSegment = cleanPath.split("/")[1] as Locale;
+  if (SUPPORTED_LOCALES.includes(firstSegment)) {
+    return cleanPath;
+  }
+  return `/${locale}${cleanPath === "/" ? "" : cleanPath}`;
+};
+
+export const setClientLocaleCookie = (locale: Locale): void => {
   if (typeof window !== "undefined") {
+    document.cookie = `untverse_locale=${locale}; path=/; max-age=31536000; SameSite=Lax`;
     localStorage.setItem("untverse_locale", locale);
-    window.dispatchEvent(new Event("localeChange"));
   }
 };

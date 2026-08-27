@@ -47,6 +47,33 @@ app.add_middleware(
 
 
 @app.middleware("http")
+async def enforce_strict_content_type(request: Request, call_next):
+    """
+    Strict Content-Type enforcement for mutating requests (POST, PUT, PATCH).
+    Protects against malformed payloads and improves API correctness.
+    """
+    if request.method in {"POST", "PUT", "PATCH"}:
+        content_length = request.headers.get("content-length")
+        # Check if request has a payload body
+        if content_length and int(content_length) > 0:
+            content_type = request.headers.get("content-type", "").lower()
+            allowed_types = (
+                "application/json",
+                "application/x-www-form-urlencoded",
+                "multipart/form-data",
+                "application/x-ndjson",
+            )
+            if not any(content_type.startswith(t) for t in allowed_types):
+                return JSONResponse(
+                    status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+                    content={
+                        "detail": f"Unsupported Media Type: '{content_type}'. Expected application/json, application/x-www-form-urlencoded, multipart/form-data, or application/x-ndjson."
+                    },
+                )
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def add_process_time_and_request_id(request: Request, call_next):
     request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
     start_time = time.perf_counter()

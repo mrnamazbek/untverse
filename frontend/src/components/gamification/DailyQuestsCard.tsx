@@ -32,8 +32,8 @@ export const DailyQuestsCard: React.FC<DailyQuestsCardProps> = ({
       if (onRewardClaimed) {
         onRewardClaimed(res.xp_reward);
       }
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Произошла ошибка");
     } finally {
       setClaimingId(null);
     }

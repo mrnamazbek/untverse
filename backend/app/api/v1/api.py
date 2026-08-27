@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 from app.api.v1.endpoints import (
     auth, users, courses, quizzes, coding, gamification, analytics, admin,
-    unt_knowledge, questions, news, localization, data_admin, search
+    unt_knowledge, questions, news, localization, data_admin, search, stream
 )
 
 api_router = APIRouter()
@@ -22,3 +22,5 @@ api_router.include_router(news.router, prefix="/news", tags=["Новости и 
 api_router.include_router(localization.router, prefix="/localization", tags=["Локализация и QA терминологии"])
 api_router.include_router(data_admin.router, prefix="/admin/data", tags=["Управление данными и источниками"])
 api_router.include_router(search.router, prefix="/search", tags=["Поиск"])
+api_router.include_router(stream.router, prefix="/stream", tags=["Потоки данных (SSE / JSONL)"])
+

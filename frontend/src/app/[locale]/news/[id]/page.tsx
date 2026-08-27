@@ -1,48 +1,31 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useState, useEffect, useCallback } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { getClientLocale, i18nDict, Locale } from "@/lib/i18n";
+import { i18nDict, Locale, localizePath, SUPPORTED_LOCALES } from "@/lib/i18n";
 import { NewsArticle } from "@/types/data_platform";
 import {
   ArrowLeft,
   Calendar,
   ShieldCheck,
   ExternalLink,
-  History,
-  Share2,
-  Bookmark,
-  Sparkles,
-  Newspaper,
 } from "lucide-react";
 
 export default function NewsDetailPage() {
   const params = useParams();
-  const router = useRouter();
+  const rawLocale = params?.locale as string;
+  const locale: Locale = (SUPPORTED_LOCALES.includes(rawLocale as Locale) ? rawLocale : "kk") as Locale;
+  const articleId = params?.id as string;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [locale, setLocale] = useState<Locale>("kk");
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const articleId = params?.id;
-
-  useEffect(() => {
-    setLocale(getClientLocale());
-    const handleLocale = () => setLocale(getClientLocale());
-    window.addEventListener("localeChange", handleLocale);
-    return () => window.removeEventListener("localeChange", handleLocale);
-  }, []);
-
-  useEffect(() => {
-    if (articleId) {
-      fetchArticle();
-    }
-  }, [articleId, locale]);
-
-  const fetchArticle = async () => {
+  const fetchArticle = useCallback(async () => {
+    if (!articleId) return;
     setIsLoading(true);
     try {
       const res = await fetch(`/api/v1/news/${articleId}?locale=${locale}`);
@@ -55,7 +38,11 @@ export default function NewsDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [articleId, locale]);
+
+  useEffect(() => {
+    fetchArticle();
+  }, [fetchArticle]);
 
   const t = i18nDict[locale] || i18nDict.kk;
 
@@ -68,7 +55,7 @@ export default function NewsDetailPage() {
         {/* Back navigation */}
         <div className="mb-6">
           <Link
-            href="/news"
+            href={localizePath("/news", locale)}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#615d59] hover:text-[#000000] transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
