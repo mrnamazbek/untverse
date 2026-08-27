@@ -5,9 +5,14 @@ import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import dynamic from "next/dynamic";
 import { DotShaderBackground } from "@/components/visuals/DotShaderBackground";
-import { RobotScene } from "@/components/visuals/RobotScene";
 import { Locale, SUPPORTED_LOCALES, localizePath } from "@/lib/i18n";
+
+const RobotScene = dynamic(
+  () => import("@/components/visuals/RobotScene").then((m) => m.RobotScene),
+  { ssr: false }
+);
 import {
   Sparkles,
   CheckCircle2,
@@ -184,21 +189,36 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-[#f6f5f4]">
       <Navbar />
 
-      <section className="hero-surface text-white pt-12 pb-14 sm:pt-16 sm:pb-18 px-6 lg:px-12 relative overflow-hidden">
+      <section className="hero-surface text-white pt-12 pb-14 sm:pt-16 sm:pb-18 px-6 lg:px-12 relative overflow-hidden min-h-[580px] lg:min-h-[660px] flex flex-col justify-center">
         <DotShaderBackground variant="hero" />
 
-        <div className="max-w-6xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-[1.06fr_0.94fr] items-center gap-5 lg:gap-10">
-          <div className="text-center lg:text-left lg:py-8">
+        {/* Grand 3D Robot in the Background (right side) */}
+        <div
+          className="absolute top-1/2 right-[-2%] sm:right-[0%] lg:right-[2%] xl:right-[4%] -translate-y-1/2 w-[85%] sm:w-[55%] md:w-[48%] lg:w-[44%] xl:w-[39%] max-w-[550px] h-[80%] sm:h-[88%] lg:h-[96%] pointer-events-auto z-0 overflow-visible opacity-25 sm:opacity-45 md:opacity-75 lg:opacity-90"
+          aria-hidden="true"
+        >
+          <div className="absolute inset-0 w-full h-full scale-[1.02] sm:scale-[1.08] lg:scale-[1.15] xl:scale-[1.20] translate-y-[4%] sm:translate-y-[1%] lg:translate-y-[-2%] origin-center">
+            <RobotScene
+              scene="/spline/scene.splinecode"
+              className="w-full h-full [&_canvas]:!w-full [&_canvas]:!h-full"
+              trackCursor
+            />
+          </div>
+        </div>
+
+        {/* Hero Content (left column, high z-index) */}
+        <div className="max-w-6xl mx-auto w-full relative z-10">
+          <div className="max-w-2xl lg:max-w-2xl text-center lg:text-left py-4 sm:py-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-white mb-6 backdrop-blur-sm">
               <Sparkles className="w-3.5 h-3.5 text-blue-300" />
               <span>{copy.badge}</span>
             </div>
 
-            <h1 className="display-1 text-white font-bold tracking-tight mb-6 max-w-3xl">
+            <h1 className="display-1 text-white font-bold tracking-tight mb-6 max-w-2xl leading-tight drop-shadow-sm">
               {copy.title}
             </h1>
 
-            <p className="text-base sm:text-lg text-blue-100/90 font-normal max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg text-blue-100/90 font-normal max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
               {copy.intro}
             </p>
 
@@ -212,18 +232,15 @@ export default function HomePage() {
               </Link>
               <Link
                 href={localizePath("/practice", locale)}
-                className="btn-secondary w-full sm:w-auto px-7 py-3 text-base bg-white/10 text-white border-white/20 hover:bg-white/20"
+                className="btn-secondary w-full sm:w-auto px-7 py-3 text-base bg-white/10 text-white border-white/20 hover:bg-white/20 backdrop-blur-sm"
               >
                 {copy.sample}
               </Link>
             </div>
           </div>
 
-          <div className="relative order-first lg:order-none">
-            <RobotScene />
-          </div>
-
-          <div className="lg:col-span-2 mt-2 pt-7 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {/* Stats Bar */}
+          <div className="mt-8 pt-6 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center relative z-10 backdrop-blur-[2px]">
             <div>
               <div className="text-2xl sm:text-3xl font-bold text-white">50/50</div>
               <div className="text-xs text-blue-200/80 mt-1">{copy.stats[0]}</div>

@@ -444,86 +444,9 @@ html[data-theme="dark"] .hero-surface {
   font-weight: 800;
 }
 
-.robot-scene {
-  position: relative;
-  min-height: 19rem;
-  width: min(100%, 34rem);
-  margin-inline: auto;
-  overflow: hidden;
-  border-radius: 1.5rem;
-  background: radial-gradient(circle at 50% 50%, rgb(122 194 255 / 0.13), transparent 60%);
-}
-
-.robot-canvas {
-  position: absolute !important;
-  inset: 0;
-  z-index: 2;
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-  opacity: 0;
-  transition: opacity 360ms ease;
-}
-
-.robot-canvas.is-loaded {
-  opacity: 1;
-}
-
-.robot-fallback {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  opacity: 1;
-  transition: opacity 260ms ease;
-}
-
-.robot-fallback.is-hidden {
-  opacity: 0;
-}
-
-.robot-fallback-core {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  width: 6.75rem;
-  height: 6.75rem;
-  place-items: center;
-  border: 1px solid rgb(154 213 255 / 0.42);
-  border-radius: 2rem;
-  color: #bde3ff;
-  background: rgb(39 105 185 / 0.22);
-  box-shadow: 0 0 0 1rem rgb(92 162 255 / 0.04), 0 0 4rem rgb(73 151 255 / 0.25);
-}
-
-.robot-fallback-orbit {
-  position: absolute;
-  width: 13rem;
-  height: 13rem;
-  border: 1px solid rgb(138 202 255 / 0.22);
-  border-radius: 50%;
-}
-
-.robot-fallback-orbit-one {
-  transform: rotateX(64deg) rotateZ(23deg);
-}
-
-.robot-fallback-orbit-two {
-  width: 18rem;
-  height: 18rem;
-  opacity: 0.52;
-  transform: rotateY(67deg) rotateZ(-33deg);
-}
-
 @media (max-width: 640px) {
   .navbar-register {
     display: none !important;
-  }
-
-  .robot-scene {
-    min-height: 15rem;
-    max-width: 22rem;
   }
 
   .dot-shader-hero {

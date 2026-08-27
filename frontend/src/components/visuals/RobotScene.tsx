@@ -1,215 +1,215 @@
 "use client";
 
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Bot } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
 
-const ROBOT_SCENE = "/models/untverse-robot.splinecode";
-const RUNTIME_LOADER = "/models/load-spline-runtime.mjs";
-
-type SplineApplication = {
-  canvas: HTMLCanvasElement;
-  load: (scene: string) => Promise<void>;
-  dispose: () => void;
-  setBackgroundColor: (color: string) => void;
+type SplineObj = {
+  name: string;
+  visible: boolean;
+  material?: { layers?: Array<{ type: string; updateTexture: (url: string) => Promise<void> }> };
+  children?: SplineObj[];
+  hide?: () => void;
+  show?: () => void;
 };
 
-type SplineApplicationConstructor = new (
-  canvas: HTMLCanvasElement,
-  options: { renderOnDemand: boolean; htmlContentMode: "none" },
-) => SplineApplication;
+type SplineApp = {
+  findObjectByName: (name: string) => SplineObj | undefined;
+  load: (scene: string) => Promise<void>;
+  canvas?: HTMLCanvasElement;
+  requestRender?: () => void;
+  dispose?: () => void;
+  setBackgroundColor?: (color: string) => void;
+};
 
-declare global {
-  interface Window {
-    __untverseSplineRuntime?: { Application: SplineApplicationConstructor };
-  }
+type SplineAppConstructor = new (
+  canvas: HTMLCanvasElement,
+  options: { renderOnDemand: boolean; htmlContentMode?: "none" }
+) => SplineApp;
+
+interface RobotSceneProps {
+  scene?: string;
+  className?: string;
+  trackCursor?: boolean;
 }
 
-let runtimePromise: Promise<SplineApplicationConstructor> | null = null;
-let errorFilterReferences = 0;
+const DEFAULT_SCENE = "/spline/scene.splinecode";
+
+let splineFilterCount = 0;
 let originalConsoleError: typeof console.error | null = null;
 
-function loadSplineRuntime() {
-  if (window.__untverseSplineRuntime?.Application) {
-    return Promise.resolve(window.__untverseSplineRuntime.Application);
-  }
-  if (runtimePromise) return runtimePromise;
-
-  runtimePromise = new Promise<SplineApplicationConstructor>((resolve, reject) => {
-    const resolveRuntime = () => {
-      const Application = window.__untverseSplineRuntime?.Application;
-      if (Application) resolve(Application);
-    };
-    const rejectRuntime = () => reject(new Error("Spline runtime could not be loaded"));
-    const existing = document.querySelector<HTMLScriptElement>(`script[src="${RUNTIME_LOADER}"]`);
-
-    window.addEventListener("untverse:spline-runtime-ready", resolveRuntime, { once: true });
-    if (existing) {
-      existing.addEventListener("error", rejectRuntime, { once: true });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.type = "module";
-    script.src = RUNTIME_LOADER;
-    script.addEventListener("error", rejectRuntime, { once: true });
-    document.head.appendChild(script);
-  });
-
-  return runtimePromise;
-}
-
-/**
- * The current Spline runtime reports one known, non-actionable `Missing property`
- * message for this scene's animation data. It does not affect the rendered scene.
- * Keep all other runtime errors observable.
- */
-function installKnownSplineErrorFilter() {
-  if (errorFilterReferences++ > 0) return;
+function installSplineErrorFilter() {
+  if (splineFilterCount++ > 0) return;
   originalConsoleError = console.error;
   console.error = (...args: unknown[]) => {
     const first = args[0];
-    const message = typeof first === "string" ? first : first instanceof Error ? first.message : "";
-    if (message === "Missing property") return;
+    const msg = typeof first === "string" ? first : first instanceof Error ? first.message : "";
+    if (msg === "Missing property") return;
     originalConsoleError?.apply(console, args as Parameters<typeof console.error>);
   };
 }
 
-function uninstallKnownSplineErrorFilter() {
-  errorFilterReferences -= 1;
-  if (errorFilterReferences === 0 && originalConsoleError) {
+function uninstallSplineErrorFilter() {
+  if (splineFilterCount > 0) splineFilterCount--;
+  if (splineFilterCount === 0 && originalConsoleError) {
     console.error = originalConsoleError;
     originalConsoleError = null;
   }
 }
 
-/**
- * Client-only, on-demand Spline canvas. The supplied scene retains its authored
- * camera, lights, timeline, and look-at interaction; pointer positions are
- * forwarded into its canvas rather than overwriting those authored transforms.
- */
-export function RobotScene() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const applicationRef = useRef<SplineApplication | null>(null);
-  const [isNearViewport, setIsNearViewport] = useState(false);
-  const [isDocumentVisible, setIsDocumentVisible] = useState(true);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const [status, setStatus] = useState<"loading" | "ready" | "failed">("loading");
+export function RobotScene({
+  scene = DEFAULT_SCENE,
+  className = "w-full h-full",
+  trackCursor = true,
+}: RobotSceneProps) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const appRef = useRef<SplineApp | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setIsNearViewport(entry.isIntersecting),
-      { rootMargin: "240px" },
-    );
-    observer.observe(container);
-
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotionPreference = () => setReducedMotion(mediaQuery.matches);
-    updateMotionPreference();
-    mediaQuery.addEventListener("change", updateMotionPreference);
-
-    const onVisibilityChange = () => {
-      setIsDocumentVisible(document.visibilityState === "visible");
-    };
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      observer.disconnect();
-      mediaQuery.removeEventListener("change", updateMotionPreference);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
+    installSplineErrorFilter();
+    return () => uninstallSplineErrorFilter();
   }, []);
 
-  useEffect(() => {
-    installKnownSplineErrorFilter();
-    return () => uninstallKnownSplineErrorFilter();
-  }, []);
+  const removeWatermark = useCallback(() => {
+    const links = document.querySelectorAll('a[href*="spline.design"]');
+    links.forEach((link) => {
+      const parent = link.parentElement;
+      if (parent && parent.style.position === "absolute") {
+        parent.remove();
+      } else {
+        link.remove();
+      }
+    });
 
-  const shouldMount = isNearViewport && isDocumentVisible && !reducedMotion;
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !shouldMount) return;
-
-    let cancelled = false;
-    let application: SplineApplication | null = null;
-    setStatus("loading");
-
-    const mount = async () => {
-      try {
-        const Application = await loadSplineRuntime();
-        if (cancelled || !canvasRef.current) return;
-
-        application = new Application(canvas, {
-          renderOnDemand: true,
-          htmlContentMode: "none",
-        });
-        application.setBackgroundColor("transparent");
-        await application.load(ROBOT_SCENE);
-        if (cancelled) return;
-
-        applicationRef.current = application;
-        setStatus("ready");
-      } catch (error) {
-        if (!cancelled) {
-          console.error("Unable to load the UNTverse Spline scene", error);
-          setStatus("failed");
+    const allLinks = document.querySelectorAll("a");
+    allLinks.forEach((link) => {
+      const text = link.innerText || "";
+      if (
+        text.toLowerCase().includes("built with spline") ||
+        link.getAttribute("href")?.includes("spline.design")
+      ) {
+        const parent = link.parentElement;
+        if (parent && parent.style.position === "absolute") {
+          parent.remove();
+        } else {
+          link.remove();
         }
       }
-    };
+    });
+  }, []);
 
-    void mount();
+  useEffect(() => {
+    let app: SplineApp | null = null;
+    let cancelled = false;
+
+    async function mount() {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+
+      try {
+        // Native ESM browser load from UNPKG with full chunk resolution
+        // @ts-expect-error dynamic browser runtime import
+        const runtime = await import(/* webpackIgnore: true */ "https://unpkg.com/@splinetool/runtime@1.12.97/build/runtime.js");
+        const Application = runtime.Application as SplineAppConstructor;
+        if (cancelled || !canvasRef.current || !Application) return;
+
+        app = new Application(canvasRef.current, { renderOnDemand: true });
+        app.setBackgroundColor?.("transparent");
+        await app.load(scene);
+        if (cancelled) return;
+
+        // Hide foreign branding logo if present in the scene
+        try {
+          const logoObj = app.findObjectByName("logo_ddc");
+          if (logoObj) {
+            logoObj.visible = false;
+            logoObj.hide?.();
+          }
+        } catch {
+          // ignore
+        }
+
+        appRef.current = app;
+        setIsLoaded(true);
+
+        removeWatermark();
+        const watermarkInterval = setInterval(removeWatermark, 150);
+        setTimeout(() => clearInterval(watermarkInterval), 5000);
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to load Spline scene:", err);
+          setHasError(true);
+        }
+      }
+    }
+
+    mount();
 
     return () => {
       cancelled = true;
-      applicationRef.current = null;
-      application?.dispose();
+      app?.dispose?.();
     };
-  }, [shouldMount]);
+  }, [scene, removeWatermark]);
 
   useEffect(() => {
-    if (status !== "ready" || reducedMotion) return;
-    const canvas = applicationRef.current?.canvas;
+    if (!trackCursor || !isLoaded) return;
+    const app = appRef.current;
+    const canvas = app?.canvas || canvasRef.current;
     if (!canvas) return;
 
-    const forwardPointerPosition = (event: PointerEvent) => {
-      if (event.target === canvas) return;
-      canvas.dispatchEvent(
-        new PointerEvent("pointermove", {
-          bubbles: false,
-          clientX: event.clientX,
-          clientY: event.clientY,
-          screenX: event.screenX,
-          screenY: event.screenY,
-          pointerId: event.pointerId || 1,
-          pointerType: event.pointerType || "mouse",
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return;
+    }
+
+    const forward = (e: PointerEvent) => {
+      if (e.target === canvas) return;
+      try {
+        const synthetic = new PointerEvent("pointermove", {
+          clientX: e.clientX,
+          clientY: e.clientY,
+          screenX: e.screenX,
+          screenY: e.screenY,
+          pointerId: e.pointerId || 1,
+          pointerType: e.pointerType || "mouse",
           isPrimary: true,
-        }),
-      );
+          bubbles: false,
+          cancelable: true,
+        });
+        canvas.dispatchEvent(synthetic);
+      } catch {
+        // Safe fallback
+      }
     };
 
-    window.addEventListener("pointermove", forwardPointerPosition, { passive: true });
-    return () => window.removeEventListener("pointermove", forwardPointerPosition);
-  }, [reducedMotion, status]);
+    window.addEventListener("pointermove", forward, { passive: true });
+    return () => window.removeEventListener("pointermove", forward);
+  }, [trackCursor, isLoaded]);
 
   return (
-    <div ref={containerRef} className="robot-scene" aria-hidden="true">
-      <div className={`robot-fallback ${status === "ready" ? "is-hidden" : ""}`}>
-        <div className="robot-fallback-orbit robot-fallback-orbit-one" />
-        <div className="robot-fallback-orbit robot-fallback-orbit-two" />
-        <div className="robot-fallback-core">
-          <Bot className="h-12 w-12" strokeWidth={1.4} />
+    <div className={`relative w-full h-full overflow-visible ${className}`}>
+      {!isLoaded && !hasError && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-12 h-12 rounded-full border-2 border-blue-400/20 border-t-blue-400 animate-spin" />
         </div>
-      </div>
-      {shouldMount && (
-        <canvas
-          ref={canvasRef}
-          className={`robot-canvas ${status === "ready" ? "is-loaded" : ""}`}
-        />
       )}
+
+      {hasError && (
+        <div className="absolute inset-0 flex items-center justify-center text-blue-300/40">
+          <Bot className="w-16 h-16" strokeWidth={1.2} />
+        </div>
+      )}
+
+      <canvas
+        ref={canvasRef}
+        className={`w-full h-full block transition-opacity duration-700 ${
+          isLoaded ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ display: "block", width: "100%", height: "100%" }}
+      />
     </div>
   );
 }
