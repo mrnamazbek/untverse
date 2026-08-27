@@ -8,12 +8,7 @@ from app.models.gamification import Achievement, DailyMission
 from app.core.security import get_password_hash
 
 
-async def init_db_data(session: AsyncSession):
-    # Check if DB is already seeded
-    existing_user = await session.execute(select(User).limit(1))
-    if existing_user.scalars().first():
-        return
-
+async def _seed_base_data(session: AsyncSession):
     # 1. Seed Users (Admin & Demo Student)
     admin_user = User(
         email="admin@unt-informatics.kz",
@@ -582,3 +577,13 @@ print("YES" if text == text[::-1] else "NO")
     ])
 
     await session.commit()
+
+
+async def init_db_data(session: AsyncSession):
+    existing_user = await session.execute(select(User).limit(1))
+    if not existing_user.scalars().first():
+        await _seed_base_data(session)
+
+    # Always seed / update Data Platform components (Sources, Glossary, Specifications, Bank Questions, UNT News)
+    from app.db.seed_data_platform import seed_data_platform
+    await seed_data_platform(session)
