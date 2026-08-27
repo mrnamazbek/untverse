@@ -38,6 +38,76 @@ export interface Translations {
     tryAgain: string;
     close: string;
   };
+  auth: {
+    loginTitle: string;
+    loginSubtitle: string;
+    registerTitle: string;
+    registerSubtitle: string;
+    emailLabel: string;
+    emailPlaceholder: string;
+    passwordLabel: string;
+    passwordPlaceholder: string;
+    displayNameLabel: string;
+    displayNamePlaceholder: string;
+    targetScoreLabel: string;
+    loginButton: string;
+    loggingIn: string;
+    registerButton: string;
+    registering: string;
+    quickDemoTitle: string;
+    demoStudent: string;
+    demoAdmin: string;
+    noAccountPrompt: string;
+    registerLink: string;
+    hasAccountPrompt: string;
+    loginLink: string;
+    orDivider: string;
+    passwordMinLength: string;
+    setPasswordTitle: string;
+    setPasswordSubtitle: string;
+    newPasswordLabel: string;
+    newPasswordPlaceholder: string;
+    setPasswordButton: string;
+    passwordSetSuccess: string;
+  };
+  oauth: {
+    googleSignIn: string;
+    googleSignUp: string;
+    connectingGoogle: string;
+    redirecting: string;
+    authenticating: string;
+    callbackTitle: string;
+    callbackPreparing: string;
+    callbackSuccess: string;
+    errorTitle: string;
+    errorSubtitle: string;
+    retryButton: string;
+    homeButton: string;
+    accountLinkedNotice: string;
+    secureAuthBadge: string;
+  };
+  errors: {
+    AUTH_INVALID_CREDENTIALS: string;
+    AUTH_USER_NOT_FOUND: string;
+    AUTH_USER_INACTIVE: string;
+    AUTH_PASSWORD_NOT_SET: string;
+    AUTH_EMAIL_ALREADY_EXISTS: string;
+    AUTH_OAUTH_INIT_FAILED: string;
+    AUTH_OAUTH_STATE_INVALID: string;
+    AUTH_OAUTH_STATE_EXPIRED: string;
+    AUTH_OAUTH_CODE_EXCHANGE_FAILED: string;
+    AUTH_OAUTH_EMAIL_UNVERIFIED: string;
+    AUTH_SESSION_EXPIRED: string;
+    AUTH_SESSION_REVOKED: string;
+    AUTH_SESSION_REUSE_DETECTED: string;
+    AUTH_UNAUTHORIZED: string;
+    AUTH_FORBIDDEN: string;
+    AUTH_INVALID_REDIRECT_URI: string;
+    AUTH_CANNOT_UNLINK_LAST_PROVIDER: string;
+    defaultError: string;
+    networkError: string;
+    unknownError: string;
+  };
   news: {
     title: string;
     subtitle: string;
@@ -79,7 +149,6 @@ export interface Translations {
     examTip: string;
   };
 }
-
 export const i18nDict: Record<Locale, Translations> = {
   kk: {
     nav: {
@@ -116,6 +185,76 @@ export const i18nDict: Record<Locale, Translations> = {
       viewAll: "Барлығын көру",
       tryAgain: "Қайта көру",
       close: "Жабу",
+    },
+    auth: {
+      loginTitle: "Аккаунтқа кіру",
+      loginSubtitle: "ҰБТ-ға дайындықты жалғастырыңыз және стрикіңізді сақтаңыз",
+      registerTitle: "Жүйеге тіркелу",
+      registerSubtitle: "Профиль жасап, ҰБТ-да 50 баллға жету жолын бастаңыз",
+      emailLabel: "Email мекенжайы",
+      emailPlaceholder: "student@example.com",
+      passwordLabel: "Құпиясөз",
+      passwordPlaceholder: "••••••••",
+      displayNameLabel: "Сіздің есіміңіз немесе лақап атыңыз",
+      displayNamePlaceholder: "Әлихан Нұрланов",
+      targetScoreLabel: "ҰБТ-дағы мақсатты балл",
+      loginButton: "Жүйеге кіру",
+      loggingIn: "Авторизация...",
+      registerButton: "Аккаунт жасау",
+      registering: "Тіркелу жүруде...",
+      quickDemoTitle: "Тестілеу үшін жылдам кіру:",
+      demoStudent: "Оқушы (student@...)",
+      demoAdmin: "Әкімшілік",
+      noAccountPrompt: "Әлі аккаунтыңыз жоқ па?",
+      registerLink: "Тіркелу",
+      hasAccountPrompt: "Тіркеліп қойғансыз ба?",
+      loginLink: "Жүйеге кіру",
+      orDivider: "немесе",
+      passwordMinLength: "Құпиясөз (кемінде 6 таңба)",
+      setPasswordTitle: "Құпиясөз орнату",
+      setPasswordSubtitle: "Аккаунтқа тікелей кіру үшін тұрақты құпиясөз орнатыңыз",
+      newPasswordLabel: "Жаңа құпиясөз",
+      newPasswordPlaceholder: "Кемінде 8 таңба",
+      setPasswordButton: "Құпиясөзді сақтау",
+      passwordSetSuccess: "Құпиясөз сәтті орнатылды!",
+    },
+    oauth: {
+      googleSignIn: "Google арқылы кіру",
+      googleSignUp: "Google арқылы тіркелу",
+      connectingGoogle: "Google-ге бағытталуда...",
+      redirecting: "Қайта бағытталуда...",
+      authenticating: "Google арқылы кіру тексерілуде...",
+      callbackTitle: "Сәтті авторизация!",
+      callbackPreparing: "Оқу кеңістігіңіз дайындалуда, бір сәт күтіңіз...",
+      callbackSuccess: "Сіз жүйеге сәтті кірдіңіз!",
+      errorTitle: "Авторизация қатесі",
+      errorSubtitle: "Жүйеге кіру кезінде қате орын алды",
+      retryButton: "Қайта көру",
+      homeButton: "Басты бетке оралу",
+      accountLinkedNotice: "Google аккаунтыңыз сәтті байланыстырылды",
+      secureAuthBadge: "Қауіпсіз OAuth 2.0 PKCE қорғауы",
+    },
+    errors: {
+      AUTH_INVALID_CREDENTIALS: "Email немесе құпиясөз қате",
+      AUTH_USER_NOT_FOUND: "Пайдаланушы табылмады",
+      AUTH_USER_INACTIVE: "Сіздің аккаунтыңыз бұғатталған",
+      AUTH_PASSWORD_NOT_SET: "Аккаунтқа құпиясөз орнатылмаған. Google арқылы кіріңіз немесе кіруді қалпына келтіріңіз",
+      AUTH_EMAIL_ALREADY_EXISTS: "Бұл email бар пайдаланушы тіркелген",
+      AUTH_OAUTH_INIT_FAILED: "Google OAuth инициализациясының қатесі",
+      AUTH_OAUTH_STATE_INVALID: "Авторизация сессиясының қолтаңбасы жарамсыз",
+      AUTH_OAUTH_STATE_EXPIRED: "Авторизацияны күту уақыты аяқталды (10 мин). Қайталап көріңіз",
+      AUTH_OAUTH_CODE_EXCHANGE_FAILED: "Google авторизация кодын алмасу қатесі",
+      AUTH_OAUTH_EMAIL_UNVERIFIED: "Google аккаунтындағы email расталмаған. Байланыстыру мүмкін емес",
+      AUTH_SESSION_EXPIRED: "Сессия аяқталды. Қайта кіруіңізді сұраймыз",
+      AUTH_SESSION_REVOKED: "Сессия кері қайтарылды",
+      AUTH_SESSION_REUSE_DETECTED: "Сессияны қайталап пайдалану әрекеті анықталды. Қауіпсіздік үшін барлық құрылғылар ажыратылды",
+      AUTH_UNAUTHORIZED: "Авторизация қажет",
+      AUTH_FORBIDDEN: "Қолжетімділікке тыйым салынған",
+      AUTH_INVALID_REDIRECT_URI: "Рұқсат етілмеген қайта бағыттау мекенжайы",
+      AUTH_CANNOT_UNLINK_LAST_PROVIDER: "Жалғыз кіру әдісін ажыратуға болмайды",
+      defaultError: "Авторизация кезінде қате орын алды",
+      networkError: "Желілік байланыс қатесі немесе сервер жауап бермеді",
+      unknownError: "Белгісіз қате",
     },
     news: {
       title: "ҰБТ / ЕНТ Ресми Жаңалықтары",
@@ -194,6 +333,76 @@ export const i18nDict: Record<Locale, Translations> = {
       tryAgain: "Попробовать снова",
       close: "Закрыть",
     },
+    auth: {
+      loginTitle: "Вход в аккаунт",
+      loginSubtitle: "Продолжите подготовку к ЕНТ и сохраняйте свой стрик",
+      registerTitle: "Регистрация в системе",
+      registerSubtitle: "Создайте профиль и начните путь к 50 баллам на ЕНТ",
+      emailLabel: "Email адрес",
+      emailPlaceholder: "student@example.com",
+      passwordLabel: "Пароль",
+      passwordPlaceholder: "••••••••",
+      displayNameLabel: "Ваше имя или никнейм",
+      displayNamePlaceholder: "Алихан Нурланов",
+      targetScoreLabel: "Целевой балл на ЕНТ",
+      loginButton: "Войти в систему",
+      loggingIn: "Авторизация...",
+      registerButton: "Создать аккаунт",
+      registering: "Создание аккаунта...",
+      quickDemoTitle: "Быстрый вход для тестирования:",
+      demoStudent: "Ученик (student@...)",
+      demoAdmin: "Администратор",
+      noAccountPrompt: "Еще нет аккаунта?",
+      registerLink: "Зарегистрироваться",
+      hasAccountPrompt: "Уже зарегистрированы?",
+      loginLink: "Войти в систему",
+      orDivider: "или",
+      passwordMinLength: "Пароль (от 6 символов)",
+      setPasswordTitle: "Установка пароля",
+      setPasswordSubtitle: "Задайте постоянный пароль для прямого входа в аккаунт",
+      newPasswordLabel: "Новый пароль",
+      newPasswordPlaceholder: "Не менее 8 символов",
+      setPasswordButton: "Сохранить пароль",
+      passwordSetSuccess: "Пароль успешно установлен!",
+    },
+    oauth: {
+      googleSignIn: "Войти через Google",
+      googleSignUp: "Зарегистрироваться через Google",
+      connectingGoogle: "Переход в Google...",
+      redirecting: "Перенаправление...",
+      authenticating: "Проверка авторизации Google...",
+      callbackTitle: "Успешная авторизация!",
+      callbackPreparing: "Подготовка вашего учебного пространства, пожалуйста, подождите...",
+      callbackSuccess: "Вы успешно вошли в систему!",
+      errorTitle: "Ошибка авторизации",
+      errorSubtitle: "Не удалось выполнить вход в систему",
+      retryButton: "Попробовать снова",
+      homeButton: "На главную",
+      accountLinkedNotice: "Google-аккаунт успешно привязан",
+      secureAuthBadge: "Защищено протоколом OAuth 2.0 PKCE",
+    },
+    errors: {
+      AUTH_INVALID_CREDENTIALS: "Неверный email или пароль",
+      AUTH_USER_NOT_FOUND: "Пользователь не найден",
+      AUTH_USER_INACTIVE: "Ваш аккаунт деактивирован",
+      AUTH_PASSWORD_NOT_SET: "Для аккаунта не задан пароль. Войдите через Google или воспользуйтесь восстановлением доступа",
+      AUTH_EMAIL_ALREADY_EXISTS: "Пользователь с таким email уже зарегистрирован",
+      AUTH_OAUTH_INIT_FAILED: "Ошибка инициализации Google OAuth",
+      AUTH_OAUTH_STATE_INVALID: "Недействительная подпись сессии авторизации",
+      AUTH_OAUTH_STATE_EXPIRED: "Время ожидания авторизации истекло (10 мин). Повторите попытку",
+      AUTH_OAUTH_CODE_EXCHANGE_FAILED: "Ошибка обмена авторизационного кода Google",
+      AUTH_OAUTH_EMAIL_UNVERIFIED: "Email в аккаунте Google не подтвержден. Привязка невозможна",
+      AUTH_SESSION_EXPIRED: "Сессия завершена. Пожалуйста, выполните повторный вход",
+      AUTH_SESSION_REVOKED: "Сессия была отозвана",
+      AUTH_SESSION_REUSE_DETECTED: "Обнаружена попытка повторного использования сессии. Все устройства отключены в целях безопасности",
+      AUTH_UNAUTHORIZED: "Требуется авторизация",
+      AUTH_FORBIDDEN: "Доступ запрещен",
+      AUTH_INVALID_REDIRECT_URI: "Недопустимый адрес перенаправления",
+      AUTH_CANNOT_UNLINK_LAST_PROVIDER: "Нельзя отвязать единственный способ входа",
+      defaultError: "Произошла ошибка при аутентификации",
+      networkError: "Ошибка сети или сервер недоступен",
+      unknownError: "Неизвестная ошибка",
+    },
     news: {
       title: "Официальные новости ЕНТ / ҰБТ",
       subtitle: "Ежедневно верифицированная информация Национального центра тестирования и МНВО РК",
@@ -270,6 +479,76 @@ export const i18nDict: Record<Locale, Translations> = {
       viewAll: "View All",
       tryAgain: "Try Again",
       close: "Close",
+    },
+    auth: {
+      loginTitle: "Sign in to account",
+      loginSubtitle: "Continue your UNT preparation and maintain your study streak",
+      registerTitle: "Create an account",
+      registerSubtitle: "Set up your profile and begin your journey to 50/50 on UNT",
+      emailLabel: "Email address",
+      emailPlaceholder: "student@example.com",
+      passwordLabel: "Password",
+      passwordPlaceholder: "••••••••",
+      displayNameLabel: "Full name or nickname",
+      displayNamePlaceholder: "Alikhan Nurlanov",
+      targetScoreLabel: "Target UNT score",
+      loginButton: "Sign In",
+      loggingIn: "Signing in...",
+      registerButton: "Create Account",
+      registering: "Creating account...",
+      quickDemoTitle: "Quick demo login for testing:",
+      demoStudent: "Student (student@...)",
+      demoAdmin: "Administrator",
+      noAccountPrompt: "Don't have an account yet?",
+      registerLink: "Sign Up",
+      hasAccountPrompt: "Already registered?",
+      loginLink: "Sign In",
+      orDivider: "or",
+      passwordMinLength: "Password (min 6 characters)",
+      setPasswordTitle: "Set account password",
+      setPasswordSubtitle: "Create a permanent password for direct account access",
+      newPasswordLabel: "New password",
+      newPasswordPlaceholder: "At least 8 characters",
+      setPasswordButton: "Save password",
+      passwordSetSuccess: "Password successfully set!",
+    },
+    oauth: {
+      googleSignIn: "Sign in with Google",
+      googleSignUp: "Sign up with Google",
+      connectingGoogle: "Connecting to Google...",
+      redirecting: "Redirecting...",
+      authenticating: "Verifying Google authentication...",
+      callbackTitle: "Authentication successful!",
+      callbackPreparing: "Preparing your learning environment, please wait...",
+      callbackSuccess: "You have successfully signed in!",
+      errorTitle: "Authentication Error",
+      errorSubtitle: "Could not complete sign in",
+      retryButton: "Try again",
+      homeButton: "Back to Home",
+      accountLinkedNotice: "Google account successfully linked",
+      secureAuthBadge: "Secured with OAuth 2.0 PKCE",
+    },
+    errors: {
+      AUTH_INVALID_CREDENTIALS: "Invalid email or password",
+      AUTH_USER_NOT_FOUND: "User not found",
+      AUTH_USER_INACTIVE: "Your account has been deactivated",
+      AUTH_PASSWORD_NOT_SET: "Password is not set for this account. Please sign in with Google",
+      AUTH_EMAIL_ALREADY_EXISTS: "A user with this email already exists",
+      AUTH_OAUTH_INIT_FAILED: "Failed to initialize Google OAuth",
+      AUTH_OAUTH_STATE_INVALID: "Invalid authorization session state",
+      AUTH_OAUTH_STATE_EXPIRED: "Authorization session expired (10 min). Please try again",
+      AUTH_OAUTH_CODE_EXCHANGE_FAILED: "Failed to exchange Google authorization code",
+      AUTH_OAUTH_EMAIL_UNVERIFIED: "Google email is unverified. Account linking rejected",
+      AUTH_SESSION_EXPIRED: "Session expired. Please log in again",
+      AUTH_SESSION_REVOKED: "Session was revoked",
+      AUTH_SESSION_REUSE_DETECTED: "Token reuse detected. All sessions revoked for security",
+      AUTH_UNAUTHORIZED: "Authentication required",
+      AUTH_FORBIDDEN: "Access forbidden",
+      AUTH_INVALID_REDIRECT_URI: "Invalid redirect URI",
+      AUTH_CANNOT_UNLINK_LAST_PROVIDER: "Cannot unlink the only login method",
+      defaultError: "An error occurred during authentication",
+      networkError: "Network error or server unreachable",
+      unknownError: "Unknown error",
     },
     news: {
       title: "Official UNT / ҰБТ News Feed",
@@ -385,3 +664,15 @@ export const setClientLocaleCookie = (locale: Locale): void => {
     localStorage.setItem("untverse_locale", locale);
   }
 };
+
+export function getLocalizedAuthError(
+  code?: string,
+  locale: Locale = DEFAULT_LOCALE,
+  fallbackMessage?: string
+): string {
+  const dict = i18nDict[locale] || i18nDict.kk;
+  if (code && code in dict.errors) {
+    return dict.errors[code as keyof typeof dict.errors];
+  }
+  return fallbackMessage || dict.errors.defaultError;
+}

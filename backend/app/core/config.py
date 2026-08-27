@@ -1,5 +1,5 @@
 from typing import List, Union, Optional
-from pydantic import AnyHttpUrl, field_validator
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -10,6 +10,9 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "sqlite+aiosqlite:///./informatics.db"
+
+    # Deployment scheduler. This has no development default on purpose.
+    NEWS_INGESTION_SECRET: Optional[str] = None
 
     # Security
     JWT_SECRET: str = "super_secret_jwt_dev_key_change_in_production_987654321"
@@ -46,6 +49,20 @@ class Settings(BaseSettings):
                 return v.replace("postgresql://", "postgresql+asyncpg://", 1)
             return v
         return "sqlite+aiosqlite:///./informatics.db"
+
+    @model_validator(mode="after")
+    def require_safe_production_settings(self) -> "Settings":
+        if self.ENVIRONMENT != "production":
+            return self
+        if self.JWT_SECRET == "super_secret_jwt_dev_key_change_in_production_987654321" or len(self.JWT_SECRET) < 32:
+            raise ValueError("JWT_SECRET must be a unique, cryptographically random production secret")
+        if not self.AUTH_COOKIE_SECURE:
+            raise ValueError("AUTH_COOKIE_SECURE must be true in production")
+        if not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
+            raise ValueError("Production requires a PostgreSQL DATABASE_URL")
+        if not self.FRONTEND_URL.startswith("https://") or not self.GOOGLE_REDIRECT_URI.startswith("https://"):
+            raise ValueError("FRONTEND_URL and GOOGLE_REDIRECT_URI must use HTTPS in production")
+        return self
 
     model_config = SettingsConfigDict(
         env_file=".env",

@@ -49,8 +49,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
 
     const handleStorage = () => setAuth(getAuth());
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener("unt_auth_change", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("unt_auth_change", handleStorage);
+    };
   }, []);
+
 
   const t = i18nDict[activeLocale] || i18nDict.kk;
 

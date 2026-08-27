@@ -1,37 +1,29 @@
-name: UNTverse Daily News & Ingestion Scheduler
+name: Trigger deployed UNT news ingestion
+
+permissions: {}
 
 on:
   schedule:
     # 06:00 Asia/Almaty = 01:00 UTC
-    # 18:00 Asia/Almaty = 13:00 UTC
-    - cron: '0 1,13 * * *'
+    - cron: '0 1 * * *'
   workflow_dispatch:  # Allows manual execution from GitHub UI
 
+concurrency:
+  group: deployed-ntc-news-ingestion
+  cancel-in-progress: false
+
 jobs:
-  run-daily-ingestion:
-    name: Run UNT News & Knowledge Ingestion
+  trigger-deployed-ingestion:
+    name: Trigger production UNT ingestion
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install dependencies
-        working-directory: ./backend
+      - name: Invoke authenticated deployment endpoint
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Execute Daily Ingestion
-        working-directory: ./backend
-        run: |
-          PYTHONPATH=. python app/infrastructure/scheduler/daily_ingest.py
+          curl --fail --silent --show-error \
+            --retry 2 --retry-all-errors \
+            --request POST "${INGESTION_ENDPOINT}" \
+            --header "X-UNT-Ingestion-Key: ${NEWS_INGESTION_SECRET}"
         env:
-          ENVIRONMENT: production
-          DATABASE_URL: sqlite+aiosqlite:///./unt_informatics.db
+          INGESTION_ENDPOINT: ${{ secrets.INGESTION_ENDPOINT }}
+          NEWS_INGESTION_SECRET: ${{ secrets.NEWS_INGESTION_SECRET }}

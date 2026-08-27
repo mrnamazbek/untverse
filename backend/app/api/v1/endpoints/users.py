@@ -4,9 +4,17 @@ from app.db.session import get_db
 from app.api.v1.deps import get_current_user
 from app.models.user import User
 from app.schemas.user import UserResponse, UserProfileResponse, UserProfileUpdate
+from app.schemas.auth import FullUserResponse
 from app.repositories.user_repo import UserRepository
 
 router = APIRouter()
+
+
+@router.get("/me", response_model=FullUserResponse, summary="Получить текущего пользователя")
+async def get_current_user_info(
+    current_user: User = Depends(get_current_user)
+):
+    return current_user
 
 
 @router.get("/profile", response_model=UserProfileResponse)

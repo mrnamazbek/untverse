@@ -7,6 +7,7 @@ from app.models.user import (
     User, UserProfile, Role, UserRole, UserRoleEnum,
     AuthAccount, RefreshSession, RefreshToken
 )
+from app.models.gamification import Streak
 from app.repositories.base import BaseRepository
 
 
@@ -88,6 +89,10 @@ class UserRepository(BaseRepository[User]):
             user_role = UserRole(user_id=user.id, role_id=role_record.id)
             self.session.add(user_role)
 
+        # Initialize streak record
+        streak = Streak(user_id=user.id, current_streak=0, longest_streak=0, freeze_count=0)
+        self.session.add(streak)
+
         await self.session.flush()
         return await self.get_with_profile(user.id)
 
@@ -98,7 +103,8 @@ class UserRepository(BaseRepository[User]):
             select(AuthAccount)
             .options(
                 selectinload(AuthAccount.user).selectinload(User.profile),
-                selectinload(AuthAccount.user).selectinload(User.auth_accounts)
+                selectinload(AuthAccount.user).selectinload(User.auth_accounts),
+                selectinload(AuthAccount.user).selectinload(User.user_roles).selectinload(UserRole.role)
             )
             .where(
                 AuthAccount.provider == provider,
@@ -196,7 +202,8 @@ class UserRepository(BaseRepository[User]):
             select(RefreshSession)
             .options(
                 selectinload(RefreshSession.user).selectinload(User.profile),
-                selectinload(RefreshSession.user).selectinload(User.auth_accounts)
+                selectinload(RefreshSession.user).selectinload(User.auth_accounts),
+                selectinload(RefreshSession.user).selectinload(User.user_roles).selectinload(UserRole.role)
             )
             .where(RefreshSession.token_hash == token_hash)
         )

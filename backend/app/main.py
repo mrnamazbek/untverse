@@ -4,8 +4,10 @@ import uuid
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from datetime import datetime, timezone
 from sqlalchemy import text
 from app.core.config import settings
+from app.core.exceptions import AuthException
 from app.api.v1.api import api_router
 from app.db.base import Base
 from app.db.session import async_engine, AsyncSessionLocal
@@ -30,9 +32,9 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Production-grade SaaS платформа подготовки к ЕНТ по Информатике",
     version="1.0.0",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    openapi_url=f"{settings.API_V1_STR}/openapi.json" if settings.ENVIRONMENT != "production" else None,
+    docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
+    redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
     lifespan=lifespan,
 )
 
@@ -82,6 +84,22 @@ async def add_process_time_and_request_id(request: Request, call_next):
     response.headers["X-Process-Time"] = f"{process_time:.4f}s"
     response.headers["X-Request-ID"] = request_id
     return response
+
+
+@app.exception_handler(AuthException)
+async def auth_exception_handler(request: Request, exc: AuthException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "code": exc.code,
+            "message": exc.message,
+            "localized": exc.localized,
+            "details": exc.details,
+            "detail": exc.message,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        },
+    )
+
 
 
 @app.get("/health", tags=["Оркестрация и Здоровье"])

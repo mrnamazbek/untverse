@@ -272,6 +272,7 @@ Copy `.env.example` to `.env` to configure deployment settings:
 | `REFRESH_TOKEN_EXPIRE_DAYS` | `30` | Refresh token expiration in database |
 | `CORS_ORIGINS` | `["http://localhost:3000"]` | Allowed frontend origin URLs |
 | `NEXT_PUBLIC_API_URL` | `http://localhost:8000/api/v1` | API base URL for frontend fetch client |
+| `NEWS_INGESTION_SECRET` | *(required in prod)* | Deployment-only secret for the daily NTC news ingestion endpoint |
 
 ---
 
@@ -282,6 +283,7 @@ Copy `.env.example` to `.env` to configure deployment settings:
 2. Provision a **PostgreSQL** database service.
 3. Deploy the `backend/` directory using the provided [`railway.json`](railway.json) configuration.
 4. Set environment variables (`DATABASE_URL`, `JWT_SECRET`, `ENVIRONMENT=production`, `CORS_ORIGINS`).
+5. Configure the authenticated daily NTC news trigger as described in [Daily NTC news ingestion](docs/deployment/DAILY_NTC_NEWS_INGESTION.md).
 
 ### Vercel (Frontend)
 1. Import the `frontend/` folder in [Vercel](https://vercel.com).

@@ -40,7 +40,6 @@ export interface UserProfile {
   created_at: string;
   updated_at?: string | null;
 }
-
 export interface AuthAccount {
   id: number;
   provider: AuthProvider | string;
@@ -95,8 +94,18 @@ export interface TokenResponse {
   redirect_to?: string | null;
 }
 
+export type UnifiedTokenResponse = TokenResponse;
+
 export interface GoogleLoginResponse extends TokenResponse {
   is_new_user: boolean;
+}
+
+export interface LocalTokenRefreshRequest {
+  refresh_token?: string;
+}
+
+export interface SetPasswordRequest {
+  new_password: string;
 }
 
 export interface LocalizedErrorMessage {
@@ -112,3 +121,5 @@ export interface LocalizedErrorResponse {
   details?: Record<string, unknown> | null;
   timestamp: string;
 }
+
+export type AuthErrorResponse = LocalizedErrorResponse;

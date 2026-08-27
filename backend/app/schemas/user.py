@@ -1,6 +1,7 @@
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from app.schemas.auth import AuthAccountResponse, UnifiedTokenResponse, FullUserResponse
 
 
 class UserBase(BaseModel):
@@ -10,29 +11,18 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(..., min_length=6, max_length=100)
     display_name: str = Field(..., min_length=2, max_length=100)
-    role: Optional[str] = "student"
 
 
 class UserLogin(UserBase):
     password: str
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
-    user_id: int
-    email: str
-    role: str
-    display_name: str
-    current_level: int
-    total_xp: int
-    rank_title: str
-    streak_count: int
+class TokenResponse(UnifiedTokenResponse):
+    pass
 
 
 class TokenRefreshRequest(BaseModel):
-    refresh_token: str
+    refresh_token: Optional[str] = None
 
 
 class UserProfileUpdate(BaseModel):
@@ -54,6 +44,7 @@ class UserProfileResponse(BaseModel):
     rank_title: str
     streak_count: int
     created_at: datetime
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -66,6 +57,8 @@ class UserResponse(UserBase):
     email_verified: bool = False
     last_login_at: Optional[datetime] = None
     created_at: datetime
+    updated_at: Optional[datetime] = None
     profile: Optional[UserProfileResponse] = None
+    auth_accounts: Optional[List[AuthAccountResponse]] = None
 
     model_config = ConfigDict(from_attributes=True)

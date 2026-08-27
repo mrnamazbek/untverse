@@ -49,7 +49,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
     const handleStorage = () => setAuth(getAuth());
     window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
+    window.addEventListener("unt_auth_change", handleStorage);
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("unt_auth_change", handleStorage);
+    };
   }, []);
 
   const handleLanguageChange = (targetLocale: Locale) => {
@@ -59,11 +63,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     router.replace(targetUrl);
   };
 
-  const handleLogout = () => {
-    clearAuth();
-    setAuth(null);
-    router.push(localizePath("/login", activeLocale));
+  const handleLogout = async () => {
+    try {
+      const { logout } = await import("@/lib/api");
+      const current = getAuth();
+      await logout(current?.refresh_token).catch(() => {});
+    } finally {
+      clearAuth();
+      setAuth(null);
+      router.push(localizePath("/login", activeLocale));
+    }
   };
+
 
   const t = i18nDict[activeLocale] || i18nDict.kk;
 
