@@ -1,6 +1,11 @@
 from app.schemas.user import (
     UserCreate, UserLogin, UserResponse, UserProfileResponse, UserProfileUpdate, TokenResponse, TokenRefreshRequest
 )
+from app.schemas.auth import (
+    OAuthInitRequest, OAuthInitResponse, OAuthCallbackRequest,
+    GoogleLoginResponse, UnifiedTokenResponse, AuthAccountResponse,
+    FullUserResponse, LocalizedErrorResponse, AuthErrorCode, SupportedLocale, AuthProvider
+)
 from app.schemas.course import (
     CourseResponse, CourseCreate, TopicResponse, TopicCreate, LessonResponse, LessonCreate, LessonCompleteResponse
 )

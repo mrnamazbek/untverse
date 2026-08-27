@@ -1,5 +1,8 @@
 from app.db.base import Base, TimestampMixin
-from app.models.user import User, UserProfile, UserRole, RefreshToken
+from app.models.user import (
+    User, UserProfile, UserRole, Role, UserRoleEnum, RoleEnum,
+    AuthAccount, RefreshSession, RefreshToken
+)
 from app.models.course import (
     Course, Topic, Lesson, LessonProgress, StudySession,
     CourseTranslation, TopicTranslation, LessonTranslation,
@@ -33,6 +36,11 @@ __all__ = [
     "User",
     "UserProfile",
     "UserRole",
+    "Role",
+    "UserRoleEnum",
+    "RoleEnum",
+    "AuthAccount",
+    "RefreshSession",
     "RefreshToken",
     "Course",
     "Topic",

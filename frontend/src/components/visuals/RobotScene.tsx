@@ -3,10 +3,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Bot } from "lucide-react";
 
+type SplineLayer = { type: string; updateTexture: (url: string) => Promise<void> };
 type SplineObj = {
   name: string;
   visible: boolean;
-  material?: { layers?: Array<{ type: string; updateTexture: (url: string) => Promise<void> }> };
+  material?: { layers?: SplineLayer[] };
   children?: SplineObj[];
   hide?: () => void;
   show?: () => void;
@@ -29,6 +30,8 @@ type SplineAppConstructor = new (
 interface RobotSceneProps {
   scene?: string;
   className?: string;
+  logoImg?: string;
+  logoTarget?: string;
   trackCursor?: boolean;
 }
 
@@ -59,6 +62,8 @@ function uninstallSplineErrorFilter() {
 export function RobotScene({
   scene = DEFAULT_SCENE,
   className = "w-full h-full",
+  logoImg,
+  logoTarget = "logo_ddc",
   trackCursor = true,
 }: RobotSceneProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -108,7 +113,7 @@ export function RobotScene({
       if (!canvas) return;
 
       try {
-        // Native ESM browser load from UNPKG with full chunk resolution
+        // Native ESM browser load from UNPKG
         // @ts-expect-error dynamic browser runtime import
         const runtime = await import(/* webpackIgnore: true */ "https://unpkg.com/@splinetool/runtime@1.12.97/build/runtime.js");
         const Application = runtime.Application as SplineAppConstructor;
@@ -119,15 +124,22 @@ export function RobotScene({
         await app.load(scene);
         if (cancelled) return;
 
-        // Hide foreign branding logo if present in the scene
-        try {
-          const logoObj = app.findObjectByName("logo_ddc");
-          if (logoObj) {
-            logoObj.visible = false;
-            logoObj.hide?.();
+        // Apply custom UNTverse chest emblem texture
+        if (logoImg) {
+          try {
+            const targets = [logoTarget, "logo_ddc", "Body"].filter(Boolean) as string[];
+            for (const targetName of targets) {
+              const obj = app.findObjectByName(targetName);
+              if (obj && obj.material?.layers) {
+                const textureLayer = obj.material.layers.find((l: SplineLayer) => l.type === "texture");
+                if (textureLayer) {
+                  await textureLayer.updateTexture(logoImg);
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Failed to update logo texture:", err);
           }
-        } catch {
-          // ignore
         }
 
         appRef.current = app;
@@ -150,7 +162,7 @@ export function RobotScene({
       cancelled = true;
       app?.dispose?.();
     };
-  }, [scene, removeWatermark]);
+  }, [scene, logoImg, logoTarget, removeWatermark]);
 
   useEffect(() => {
     if (!trackCursor || !isLoaded) return;

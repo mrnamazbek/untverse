@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -16,6 +16,17 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours in dev
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+
+    # Google OAuth 2.0 PKCE
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_REDIRECT_URI: str = "http://localhost:8000/api/v1/auth/oauth/google/callback"
+
+    # Client URLs & Cookies
+    FRONTEND_URL: str = "http://localhost:3000"
+    AUTH_COOKIE_DOMAIN: Optional[str] = None
+    AUTH_COOKIE_SECURE: bool = False
+    AUTH_COOKIE_SAMESITE: str = "lax"
 
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [

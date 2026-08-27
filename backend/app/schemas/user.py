@@ -63,6 +63,8 @@ class UserResponse(UserBase):
     role: str
     is_active: bool
     is_verified: bool
+    email_verified: bool = False
+    last_login_at: Optional[datetime] = None
     created_at: datetime
     profile: Optional[UserProfileResponse] = None
 

@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models.user import User, UserProfile, UserRole
+from app.models.user import User, UserProfile, UserRole, Role, AuthAccount
 from app.models.course import Course, Topic, Lesson, CourseTranslation, TopicTranslation, LessonTranslation
 from app.models.quiz import Quiz, Question, QuestionOption, QuizType, QuestionType
 from app.models.coding import CodingTask, TestCase
@@ -129,6 +129,20 @@ async def _ensure_learning_translations(session: AsyncSession):
 
 
 async def _seed_base_data(session: AsyncSession):
+    # 0. Seed Roles
+    roles_dict = {
+        "student": "Ученик / Студент платформы UNTverse",
+        "teacher": "Преподаватель / Репетитор по информатике",
+        "admin": "Администратор системы",
+        "moderator": "Модератор контента и заданий",
+    }
+    role_entities = {}
+    for name, desc in roles_dict.items():
+        role_obj = Role(name=name, description=desc)
+        session.add(role_obj)
+        role_entities[name] = role_obj
+    await session.flush()
+
     # 1. Seed Users (Admin & Demo Student)
     admin_user = User(
         email="admin@unt-informatics.kz",
@@ -136,9 +150,21 @@ async def _seed_base_data(session: AsyncSession):
         role=UserRole.ADMIN.value,
         is_active=True,
         is_verified=True,
+        email_verified=True,
     )
     session.add(admin_user)
     await session.flush()
+
+    session.add(AuthAccount(
+        user_id=admin_user.id,
+        provider="password",
+        provider_account_id=admin_user.email,
+        provider_email=admin_user.email,
+    ))
+    session.add(UserRole(
+        user_id=admin_user.id,
+        role_id=role_entities["admin"].id,
+    ))
 
     admin_profile = UserProfile(
         user_id=admin_user.id,
@@ -158,9 +184,21 @@ async def _seed_base_data(session: AsyncSession):
         role=UserRole.STUDENT.value,
         is_active=True,
         is_verified=True,
+        email_verified=True,
     )
     session.add(demo_student)
     await session.flush()
+
+    session.add(AuthAccount(
+        user_id=demo_student.id,
+        provider="password",
+        provider_account_id=demo_student.email,
+        provider_email=demo_student.email,
+    ))
+    session.add(UserRole(
+        user_id=demo_student.id,
+        role_id=role_entities["student"].id,
+    ))
 
     student_profile = UserProfile(
         user_id=demo_student.id,
