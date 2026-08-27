@@ -1,13 +1,13 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
-from app.api.v1.deps import get_current_user
+from app.api.v1.deps import get_current_user, get_optional_current_user
 from app.models.user import User
 from app.services.gamification_service import GamificationService
 from app.repositories.gamification_repo import GamificationRepository
 from app.schemas.gamification import (
-    GamificationProfileResponse, LeaderboardEntryResponse
+    GamificationProfileResponse, LeaderboardEntryResponse, AchievementResponse, DailyMissionResponse
 )
 from app.core.exceptions import BadRequestException
 
@@ -21,6 +21,28 @@ async def get_gamification_profile(
 ):
     service = GamificationService(db)
     return await service.get_profile_gamification(current_user.id)
+
+
+@router.get("/achievements", response_model=List[AchievementResponse])
+async def get_achievements(
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    repo = GamificationRepository(db)
+    user_id = current_user.id if current_user else 0
+    raw = await repo.get_user_achievements(user_id)
+    return [AchievementResponse(**ach) for ach in raw]
+
+
+@router.get("/missions", response_model=List[DailyMissionResponse])
+async def get_missions(
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    repo = GamificationRepository(db)
+    user_id = current_user.id if current_user else 0
+    raw = await repo.get_user_daily_missions(user_id)
+    return [DailyMissionResponse(**m) for m in raw]
 
 
 @router.get("/leaderboard", response_model=List[LeaderboardEntryResponse])

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Clock, AlertTriangle } from "lucide-react";
 import { formatTime } from "@/lib/utils";
 
@@ -16,7 +16,7 @@ export const QuizTimer: React.FC<QuizTimerProps> = ({
   onTick,
 }) => {
   const [secondsLeft, setSecondsLeft] = useState(initialSeconds);
-  const [elapsed, setElapsed] = useState(0);
+  const elapsedRef = useRef(0);
 
   useEffect(() => {
     if (secondsLeft <= 0) {
@@ -25,6 +25,11 @@ export const QuizTimer: React.FC<QuizTimerProps> = ({
     }
 
     const timer = setInterval(() => {
+      elapsedRef.current += 1;
+      if (onTick) {
+        onTick(elapsedRef.current);
+      }
+
       setSecondsLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
@@ -33,16 +38,10 @@ export const QuizTimer: React.FC<QuizTimerProps> = ({
         }
         return prev - 1;
       });
-
-      setElapsed((prev) => {
-        const next = prev + 1;
-        if (onTick) onTick(next);
-        return next;
-      });
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [secondsLeft, onTimeExpired, onTick]);
+  }, [initialSeconds, onTimeExpired, onTick]);
 
   const isLow = secondsLeft <= 60;
 
