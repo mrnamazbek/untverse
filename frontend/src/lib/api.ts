@@ -2,7 +2,15 @@ import { getAuth, saveAuth, clearAuth } from "./auth";
 import { AuthResponse } from "@/types/api";
 import { getClientLocale, localeToLanguageTag } from "./i18n";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+export function getApiBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/api/v1`;
+  }
+  return "http://127.0.0.1:8000/api/v1";
+}
 
 interface RequestOptions extends RequestInit {
   requiresAuth?: boolean;
@@ -12,6 +20,7 @@ export async function fetchApi<T = unknown>(endpoint: string, options: RequestOp
   const { requiresAuth = true, headers = {}, ...rest } = options;
   const auth = getAuth();
   const locale = getClientLocale();
+  const baseUrl = getApiBaseUrl();
 
   const customHeaders: Record<string, string> = {
     "Content-Type": "application/json",
@@ -23,7 +32,9 @@ export async function fetchApi<T = unknown>(endpoint: string, options: RequestOp
     customHeaders["Authorization"] = `Bearer ${auth.access_token}`;
   }
 
-  const url = new URL(endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`);
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const fullUrl = endpoint.startsWith("http") ? endpoint : `${baseUrl}${cleanEndpoint}`;
+  const url = new URL(fullUrl);
   // Locale is carried for every content endpoint. Endpoints that do not use it
   // safely ignore the query parameter; localized endpoints receive one source
   // of truth instead of each page assembling its own URL.
@@ -40,7 +51,7 @@ export async function fetchApi<T = unknown>(endpoint: string, options: RequestOp
   // Handle Token Refresh on 401 if refresh token is available
   if (response.status === 401 && auth?.refresh_token && !endpoint.includes("/auth/refresh")) {
     try {
-      const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+      const refreshRes = await fetch(`${baseUrl}/auth/refresh`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token: auth.refresh_token }),

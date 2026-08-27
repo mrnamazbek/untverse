@@ -1,6 +1,7 @@
 import React from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DotShaderBackground } from "@/components/visuals/DotShaderBackground";
 import { SUPPORTED_LOCALES, Locale } from "@/lib/i18n";
 
 const metadataByLocale: Record<Locale, { title: string; description: string }> = {
@@ -65,7 +66,8 @@ export default async function LocaleLayout({
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="app-visual-layer relative flex min-h-screen flex-col">
+      <DotShaderBackground />
       {children}
     </div>
   );

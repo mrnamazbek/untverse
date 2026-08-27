@@ -1,0 +1,12 @@
+[     723ms] [WARNING] updating from  130 to  122 @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:3138
+[     723ms] [WARNING] Your .splinecode file is more recent than the library. Please upgrade @splinetool/runtime to the latest version. @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:8174
+[    3165ms] [ERROR] Missing property @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:8106
+[   19064ms] [WARNING] updating from  130 to  122 @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:3138
+[   19064ms] [WARNING] Your .splinecode file is more recent than the library. Please upgrade @splinetool/runtime to the latest version. @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:8174
+[   19196ms] [ERROR] Missing property @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:8106
+[   56969ms] [WARNING] updating from  130 to  122 @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:3138
+[   56969ms] [WARNING] Your .splinecode file is more recent than the library. Please upgrade @splinetool/runtime to the latest version. @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:8174
+[   57103ms] [ERROR] Missing property @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:8106
+[  115036ms] [WARNING] updating from  130 to  122 @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:3138
+[  115036ms] [WARNING] Your .splinecode file is more recent than the library. Please upgrade @splinetool/runtime to the latest version. @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:8174
+[  115142ms] [ERROR] Missing property @ http://localhost:3001/_next/static/chunks/3i71ussb__d95.js:8106

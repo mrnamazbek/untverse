@@ -1,0 +1,158 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - link "U UNTverse ҰБТ / ЕНТ Информатика 50/50" [ref=e7] [cursor=pointer]:
+            - /url: /kk
+            - generic [ref=e8]: U
+            - generic [ref=e9]:
+              - generic [ref=e10]: UNTverse
+              - generic [ref=e11]: ҰБТ / ЕНТ Информатика 50/50
+          - navigation [ref=e12]:
+            - link "ҰБТ Жаңалықтары" [ref=e13] [cursor=pointer]:
+              - /url: /kk/news
+            - link "ҰБТ Ережелері 2026" [ref=e18] [cursor=pointer]:
+              - /url: /kk/unt
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - button "Қазақ тіліне ауысу" [pressed] [ref=e25]: ҚАЗ
+            - button "Переключить на русский язык" [ref=e26]: РУС
+            - button "Switch to English" [ref=e27]: ENG
+          - 'button "Theme: system. Change theme" [ref=e29] [cursor=pointer]'
+          - generic [ref=e36]:
+            - link "Кіру" [ref=e37] [cursor=pointer]:
+              - /url: /kk/login
+            - link "Тіркелу" [ref=e38] [cursor=pointer]:
+              - /url: /kk/register
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e42]: Қазақстан ҰБТ 2026 • Информатика 50/50
+        - heading "Информатикадан ҰБТ-ға жаңа буын дайындығы" [level=1] [ref=e47]
+        - paragraph [ref=e48]: ҰБТ-ның нақты тапсырмалары, Python кодын жедел тексеру, SuperMemo SM-2 арқылы қателерді аралықпен қайталау және үздіктер рейтингі бар интерактивті платформа.
+        - generic [ref=e49]:
+          - link "Тегін бастау" [ref=e50] [cursor=pointer]:
+            - /url: /kk/register
+          - link "ҰБТ байқау тестін өту" [ref=e54] [cursor=pointer]:
+            - /url: /kk/practice
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e66]: 50/50
+          - generic [ref=e67]: Ең жоғары балл
+        - generic [ref=e68]:
+          - generic [ref=e69]: 100%
+          - generic [ref=e70]: ҰТО бағдарламасына сәйкестік
+        - generic [ref=e71]:
+          - generic [ref=e72]: SM-2
+          - generic [ref=e73]: Қателерді ақылды қайталау
+        - generic [ref=e74]:
+          - generic [ref=e75]: Python + SQL
+          - generic [ref=e76]: Тапсырмаларды жедел тексеру
+    - main [ref=e77]:
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - generic [ref=e80]: ҰБТ бағдарламасы
+          - heading "Грантқа түсуге арналған 6 негізгі бөлім" [level=2] [ref=e81]
+          - paragraph [ref=e82]: Әр тақырып іргелі ұғымдардан ҰТО тестеріндегі күрделі тұстарға дейін түсіндіріледі.
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - generic [ref=e86]: ҰБТ-да 6–8 сұрақ
+              - heading "Санау жүйелері және логика" [level=3] [ref=e92]
+              - paragraph [ref=e93]: Екілік, сегіздік және он алтылық арифметика, ақиқат кестелері мен логикалық өрнектер.
+            - link "Бөлімді оқу" [ref=e94] [cursor=pointer]:
+              - /url: /kk/learn
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - generic [ref=e100]: ҰБТ-да 15–18 сұрақ
+              - heading "Python бағдарламалау" [level=3] [ref=e107]
+              - paragraph [ref=e108]: Жол тілімдері, тізімдер, сөздіктер, рекурсия, сұрыптау алгоритмдері және код талдауы.
+            - link "Бөлімді оқу" [ref=e109] [cursor=pointer]:
+              - /url: /kk/learn
+          - generic [ref=e113]:
+            - generic [ref=e114]:
+              - generic [ref=e115]: ҰБТ-да 6–8 сұрақ
+              - heading "Дерекқорлар және SQL" [level=3] [ref=e122]
+              - paragraph [ref=e123]: Реляциялық үлгілер, бастапқы және сыртқы кілттер, қалыптандыру, SELECT, JOIN және GROUP BY.
+            - link "Бөлімді оқу" [ref=e124] [cursor=pointer]:
+              - /url: /kk/learn
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - generic [ref=e130]: ҰБТ-да 5–7 сұрақ
+              - heading "Компьютерлік желілер және интернет" [level=3] [ref=e138]
+              - paragraph [ref=e139]: IP адрестеу, ішкі желі маскалары, DNS, TCP/IP хаттамалары, OSI моделі және трафик.
+            - link "Бөлімді оқу" [ref=e140] [cursor=pointer]:
+              - /url: /kk/learn
+          - generic [ref=e144]:
+            - generic [ref=e145]:
+              - generic [ref=e146]: ҰБТ-да 4–6 сұрақ
+              - heading "Ақпараттық қауіпсіздік" [level=3] [ref=e151]
+              - paragraph [ref=e152]: Шифрлау, стеганография, аутентификация, киберқауіптер және дербес деректерді қорғау.
+            - link "Бөлімді оқу" [ref=e153] [cursor=pointer]:
+              - /url: /kk/learn
+          - generic [ref=e157]:
+            - generic [ref=e158]:
+              - generic [ref=e159]: ҰБТ-да 5–8 сұрақ
+              - heading "Алгоритмдер мен деректер құрылымдары" [level=3] [ref=e174]
+              - paragraph [ref=e175]: Екілік іздеу, стек, кезек, ағаш, граф және Big O күрделілігін бағалау.
+            - link "Бөлімді оқу" [ref=e176] [cursor=pointer]:
+              - /url: /kk/learn
+      - generic [ref=e180]:
+        - generic [ref=e181]:
+          - generic [ref=e182]:
+            - generic [ref=e183]: Браузердегі интерактивті IDE
+            - heading "Орта орнатпай-ақ код жазыңыз" [level=3] [ref=e189]
+            - paragraph [ref=e190]: Кодты тікелей браузерде жазыңыз. Жүйе шешімді ашық және жасырын тестілерден өткізіп, орындау уақытын өлшейді және синтаксис қателерін көрсетеді.
+          - generic [ref=e191]:
+            - generic [ref=e192]: "# Тапсырма: аралықтағы жұп сандардың қосындысы"
+            - generic [ref=e193]: "def sum_evens(n: int) -> int:"
+            - generic [ref=e194]: return sum(x for x in range(2, n + 1, 2))
+            - generic [ref=e195]:
+              - generic [ref=e196]: ✓ Барлық 3 тест өтті
+              - generic [ref=e197]: "Уақыт: 12 мс"
+        - generic [ref=e198]:
+          - generic [ref=e199]:
+            - generic [ref=e200]: SuperMemo SM-2
+            - heading "Қателермен жұмыс" [level=3] [ref=e214]
+            - paragraph [ref=e215]: Қате жіберген сұрақтар жеке қайталау кезегіне түсіп, берік есте сақтау үшін 1, 6 және 14 күннен соң қайта ұсынылады.
+          - generic [ref=e217]:
+            - generic [ref=e218]: Бекіту аралығы
+            - generic [ref=e219]: 14 күн
+      - generic [ref=e223]:
+        - generic [ref=e224]: Грант калькуляторы
+        - heading "IT мамандықтарына түсу мүмкіндігіңізді бағалаңыз" [level=2] [ref=e225]
+        - paragraph [ref=e226]: "Информатикадан ағымдағы балыңызды жылжытыңыз:"
+        - generic [ref=e227]:
+          - generic [ref=e228]:
+            - generic [ref=e229]: "Информатика балы:"
+            - generic [ref=e230]: 38 / 50
+          - slider [ref=e231] [cursor=pointer]: "38"
+          - generic [ref=e232]:
+            - generic [ref=e233]:
+              - generic [ref=e234]: "Грантқа өту шегі:"
+              - generic [ref=e235]: 35+
+            - generic [ref=e236]:
+              - generic [ref=e237]: "Жетекші ЖОО-лардағы IT грантына мүмкіндік:"
+              - generic [ref=e238]: 50% (орташа)
+        - link "Балды 50/50-ге жеткізу" [ref=e239] [cursor=pointer]:
+          - /url: /kk/register
+    - contentinfo [ref=e240]:
+      - generic [ref=e241]:
+        - generic [ref=e242]:
+          - generic [ref=e243]:
+            - generic [ref=e244]: U
+            - generic [ref=e245]: UNTverse
+          - generic [ref=e246]: •
+          - generic [ref=e247]: © 2026 Ұлттық бірыңғай тестілеуге дайындалудың интеллектуалды платформасы
+        - generic [ref=e248]:
+          - link "Оқу бағдарламасы" [ref=e249] [cursor=pointer]:
+            - /url: /kk/learn
+          - link "Тренажер" [ref=e250] [cursor=pointer]:
+            - /url: /kk/practice
+          - link "Жаңалықтар" [ref=e251] [cursor=pointer]:
+            - /url: /kk/news
+          - link "Ережелер 2026" [ref=e252] [cursor=pointer]:
+            - /url: /kk/unt
+          - link "Көшбасшылар" [ref=e253] [cursor=pointer]:
+            - /url: /kk/leaderboard
+  - alert [ref=e254]

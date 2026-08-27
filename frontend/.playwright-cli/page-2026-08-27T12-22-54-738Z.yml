@@ -1,0 +1,166 @@
+- generic [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - link "U UNTverse ҰБТ / ЕНТ Информатика 50/50" [ref=e7] [cursor=pointer]:
+            - /url: /en
+            - generic [ref=e8]: U
+            - generic [ref=e9]:
+              - generic [ref=e10]: UNTverse
+              - generic [ref=e11]: ҰБТ / ЕНТ Информатика 50/50
+          - navigation [ref=e12]:
+            - link "UNT News" [ref=e13] [cursor=pointer]:
+              - /url: /en/news
+            - link "UNT 2026 Rules" [ref=e18] [cursor=pointer]:
+              - /url: /en/unt
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - button "Қазақ тіліне ауысу" [ref=e25]: ҚАЗ
+            - button "Переключить на русский язык" [ref=e26]: РУС
+            - button "Switch to English" [pressed] [ref=e27]: ENG
+          - generic [ref=e28]:
+            - 'button "Theme: system. Change theme" [expanded] [active] [ref=e29] [cursor=pointer]'
+            - menu "Choose colour theme" [ref=e258]:
+              - menuitemradio "Light" [ref=e259] [cursor=pointer]
+              - menuitemradio "Dark" [ref=e267] [cursor=pointer]
+              - menuitemradio "System" [checked] [ref=e271] [cursor=pointer]:
+                - generic [ref=e275]: ✓
+          - generic [ref=e36]:
+            - link "Sign In" [ref=e37] [cursor=pointer]:
+              - /url: /en/login
+            - link "Sign Up" [ref=e38] [cursor=pointer]:
+              - /url: /en/register
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e42]: Kazakhstan UNT 2026 • Informatics 50/50
+        - heading "Next-generation UNT Informatics preparation" [level=1] [ref=e47]
+        - paragraph [ref=e48]: An interactive platform with real UNT-style tasks, live Python checking, SuperMemo SM-2 error review, and a nationwide learner leaderboard.
+        - generic [ref=e49]:
+          - link "Start for free" [ref=e50] [cursor=pointer]:
+            - /url: /en/register
+          - link "Take a UNT practice test" [ref=e54] [cursor=pointer]:
+            - /url: /en/practice
+      - iframe [ref=e257]:
+        
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - generic [ref=e67]: 50/50
+          - generic [ref=e68]: Maximum score
+        - generic [ref=e69]:
+          - generic [ref=e70]: 100%
+          - generic [ref=e71]: Aligned with NTC curriculum
+        - generic [ref=e72]:
+          - generic [ref=e73]: SM-2
+          - generic [ref=e74]: Smart error review
+        - generic [ref=e75]:
+          - generic [ref=e76]: Python + SQL
+          - generic [ref=e77]: Live task checking
+    - main [ref=e78]:
+      - generic [ref=e79]:
+        - generic [ref=e80]:
+          - generic [ref=e81]: UNT curriculum
+          - heading "Six essential sections for an IT grant" [level=2] [ref=e82]
+          - paragraph [ref=e83]: Each topic moves from core principles to the common traps used in NTC exam questions.
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]:
+              - generic [ref=e87]: 6–8 UNT questions
+              - heading "Number systems and logic" [level=3] [ref=e93]
+              - paragraph [ref=e94]: Binary, octal, and hexadecimal arithmetic, truth tables, and logical expressions.
+            - link "Explore module" [ref=e95] [cursor=pointer]:
+              - /url: /en/learn
+          - generic [ref=e99]:
+            - generic [ref=e100]:
+              - generic [ref=e101]: 15–18 UNT questions
+              - heading "Python programming" [level=3] [ref=e108]
+              - paragraph [ref=e109]: String slices, lists, dictionaries, recursion, sorting algorithms, and code analysis.
+            - link "Explore module" [ref=e110] [cursor=pointer]:
+              - /url: /en/learn
+          - generic [ref=e114]:
+            - generic [ref=e115]:
+              - generic [ref=e116]: 6–8 UNT questions
+              - heading "Databases and SQL" [level=3] [ref=e123]
+              - paragraph [ref=e124]: Relational models, primary and foreign keys, normalization, SELECT, JOIN, and GROUP BY.
+            - link "Explore module" [ref=e125] [cursor=pointer]:
+              - /url: /en/learn
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - generic [ref=e131]: 5–7 UNT questions
+              - heading "Computer networks and the internet" [level=3] [ref=e139]
+              - paragraph [ref=e140]: IP addressing, subnet masks, DNS, TCP/IP protocols, the OSI model, and traffic calculation.
+            - link "Explore module" [ref=e141] [cursor=pointer]:
+              - /url: /en/learn
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - generic [ref=e147]: 4–6 UNT questions
+              - heading "Information security" [level=3] [ref=e152]
+              - paragraph [ref=e153]: Encryption, steganography, authentication, cyber threats, and personal-data protection.
+            - link "Explore module" [ref=e154] [cursor=pointer]:
+              - /url: /en/learn
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - generic [ref=e160]: 5–8 UNT questions
+              - heading "Algorithms and data structures" [level=3] [ref=e175]
+              - paragraph [ref=e176]: Binary search, stacks, queues, trees, graphs, and Big O complexity.
+            - link "Explore module" [ref=e177] [cursor=pointer]:
+              - /url: /en/learn
+      - generic [ref=e181]:
+        - generic [ref=e182]:
+          - generic [ref=e183]:
+            - generic [ref=e184]: Interactive IDE in the browser
+            - heading "Practise code without installing a setup" [level=3] [ref=e190]
+            - paragraph [ref=e191]: Write code in the browser. The system runs open and hidden tests, measures execution time, and points out syntax errors.
+          - generic [ref=e192]:
+            - generic [ref=e193]: "# Task: sum of even numbers in a range"
+            - generic [ref=e194]: "def sum_evens(n: int) -> int:"
+            - generic [ref=e195]: return sum(x for x in range(2, n + 1, 2))
+            - generic [ref=e196]:
+              - generic [ref=e197]: ✓ All 3 tests passed
+              - generic [ref=e198]: "Time: 12 ms"
+        - generic [ref=e199]:
+          - generic [ref=e200]:
+            - generic [ref=e201]: SuperMemo SM-2
+            - heading "Learn from mistakes" [level=3] [ref=e215]
+            - paragraph [ref=e216]: Questions answered incorrectly enter a personal review queue and return after 1, 6, and 14 days for reliable retention.
+          - generic [ref=e218]:
+            - generic [ref=e219]: Review interval
+            - generic [ref=e220]: 14 days
+      - generic [ref=e224]:
+        - generic [ref=e225]: Grant calculator
+        - heading "Estimate your chances of entering an IT programme" [level=2] [ref=e226]
+        - paragraph [ref=e227]: "Move the slider for your current Informatics score:"
+        - generic [ref=e228]:
+          - generic [ref=e229]:
+            - generic [ref=e230]: "Informatics score:"
+            - generic [ref=e231]: 38 / 50
+          - slider [ref=e232] [cursor=pointer]: "38"
+          - generic [ref=e233]:
+            - generic [ref=e234]:
+              - generic [ref=e235]: "Grant threshold:"
+              - generic [ref=e236]: 35+
+            - generic [ref=e237]:
+              - generic [ref=e238]: "Chance of an IT grant at leading universities:"
+              - generic [ref=e239]: 50% (moderate)
+        - link "Raise your score to 50/50" [ref=e240] [cursor=pointer]:
+          - /url: /en/register
+    - contentinfo [ref=e241]:
+      - generic [ref=e242]:
+        - generic [ref=e243]:
+          - generic [ref=e244]:
+            - generic [ref=e245]: U
+            - generic [ref=e246]: UNTverse
+          - generic [ref=e247]: •
+          - generic [ref=e248]: © 2026 An intelligent platform for UNT preparation
+        - generic [ref=e249]:
+          - link "Curriculum" [ref=e250] [cursor=pointer]:
+            - /url: /en/learn
+          - link "Practice" [ref=e251] [cursor=pointer]:
+            - /url: /en/practice
+          - link "News" [ref=e252] [cursor=pointer]:
+            - /url: /en/news
+          - link "2026 rules" [ref=e253] [cursor=pointer]:
+            - /url: /en/unt
+          - link "Leaderboard" [ref=e254] [cursor=pointer]:
+            - /url: /en/leaderboard
+  - alert [ref=e255]

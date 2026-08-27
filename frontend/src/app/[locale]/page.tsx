@@ -5,6 +5,8 @@ import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { DotShaderBackground } from "@/components/visuals/DotShaderBackground";
+import { RobotScene } from "@/components/visuals/RobotScene";
 import { Locale, SUPPORTED_LOCALES, localizePath } from "@/lib/i18n";
 import {
   Sparkles,
@@ -182,43 +184,46 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-[#f6f5f4]">
       <Navbar />
 
-      {/* Hero Section with Deep Indigo Night Band as per DESIGN-notion.md */}
-      <section className="bg-[#213183] text-white pt-16 pb-20 px-6 lg:px-12 relative overflow-hidden">
-        {/* Subtle geometric grid background */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px]" />
+      <section className="hero-surface text-white pt-12 pb-14 sm:pt-16 sm:pb-18 px-6 lg:px-12 relative overflow-hidden">
+        <DotShaderBackground variant="hero" />
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-white mb-6 backdrop-blur-sm">
-            <Sparkles className="w-3.5 h-3.5 text-blue-300" />
-            <span>{copy.badge}</span>
+        <div className="max-w-6xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-[1.06fr_0.94fr] items-center gap-5 lg:gap-10">
+          <div className="text-center lg:text-left lg:py-8">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-xs font-semibold text-white mb-6 backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5 text-blue-300" />
+              <span>{copy.badge}</span>
+            </div>
+
+            <h1 className="display-1 text-white font-bold tracking-tight mb-6 max-w-3xl">
+              {copy.title}
+            </h1>
+
+            <p className="text-base sm:text-lg text-blue-100/90 font-normal max-w-2xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+              {copy.intro}
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-4">
+              <Link
+                href={localizePath("/register", locale)}
+                className="btn-primary w-full sm:w-auto px-8 py-3 text-base shadow-lg shadow-blue-500/30 bg-[#0075de] hover:bg-[#005bab] font-semibold"
+              >
+                <span>{copy.start}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href={localizePath("/practice", locale)}
+                className="btn-secondary w-full sm:w-auto px-7 py-3 text-base bg-white/10 text-white border-white/20 hover:bg-white/20"
+              >
+                {copy.sample}
+              </Link>
+            </div>
           </div>
 
-          <h1 className="display-1 text-white font-bold tracking-tight mb-6 max-w-4xl mx-auto">
-            {copy.title}
-          </h1>
-
-          <p className="text-base sm:text-lg text-blue-100/90 font-normal max-w-2xl mx-auto mb-8 leading-relaxed">
-            {copy.intro}
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link
-              href={localizePath("/register", locale)}
-              className="btn-primary w-full sm:w-auto px-8 py-3 text-base shadow-lg shadow-blue-500/30 bg-[#0075de] hover:bg-[#005bab] font-semibold"
-            >
-              <span>{copy.start}</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href={localizePath("/practice", locale)}
-              className="btn-secondary w-full sm:w-auto px-7 py-3 text-base bg-white/10 text-white border-white/20 hover:bg-white/20"
-            >
-              {copy.sample}
-            </Link>
+          <div className="relative order-first lg:order-none">
+            <RobotScene />
           </div>
 
-          {/* Quick Stats Bar */}
-          <div className="mt-14 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="lg:col-span-2 mt-2 pt-7 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             <div>
               <div className="text-2xl sm:text-3xl font-bold text-white">50/50</div>
               <div className="text-xs text-blue-200/80 mt-1">{copy.stats[0]}</div>

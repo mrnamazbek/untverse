@@ -32,7 +32,7 @@ export const Footer: React.FC = () => {
           </span>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
           <Link href={localizePath("/learn", locale)} className="hover:text-[#000000] transition-colors">
             {locale === "kk" ? "Оқу бағдарламасы" : locale === "en" ? "Curriculum" : "Программа ЕНТ"}
           </Link>

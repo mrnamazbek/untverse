@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import { ThemeProvider, themeInitializationScript } from "@/components/theme/ThemeProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -26,8 +27,13 @@ export default async function RootLayout({
   const lang = locale === "kk" ? "kk-KZ" : locale === "en" ? "en" : "ru-KZ";
 
   return (
-    <html lang={lang} className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang={lang} className="h-full antialiased" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} />
+      </head>
+      <body className="min-h-full flex flex-col">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

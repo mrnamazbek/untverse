@@ -5,6 +5,7 @@ import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useRouter, usePathname } from "next/navigation";
 import { getAuth, clearAuth } from "@/lib/auth";
 import { AuthResponse } from "@/types/api";
+import { ThemeSwitcher } from "@/components/theme/ThemeSwitcher";
 import {
   getClientLocale,
   switchLocaleUrl,
@@ -157,6 +158,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             </button>
           </div>
 
+          <ThemeSwitcher />
+
           {auth ? (
             <div className="flex items-center gap-2 sm:gap-3">
               {/* Streak Counter */}
@@ -244,7 +247,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               <Link href={localizePath("/login", activeLocale)} className="btn-utility text-xs py-1.5 px-3">
                 {t.nav.login}
               </Link>
-              <Link href={localizePath("/register", activeLocale)} className="btn-primary text-xs py-1.5 px-3.5">
+              <Link href={localizePath("/register", activeLocale)} className="btn-primary navbar-register text-xs py-1.5 px-3.5">
                 {t.nav.register}
               </Link>
             </div>
