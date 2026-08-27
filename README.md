@@ -131,19 +131,21 @@ Detailed architectural decisions are documented as Architecture Decision Records
 | Feature | Status | Description |
 | :--- | :---: | :--- |
 | **Authentication & RBAC** | ✅ Available | JWT access + rotating refresh tokens in DB, student/teacher/admin roles |
+| **Multilingual i18n Routing** | ✅ Available | Strict segment-based `/kk`, `/ru`, `/en` with Next.js 16 `proxy.ts` parameter preservation |
+| **UNT 2026 Knowledge Base** | ✅ Available | 6 core sections, 24 taxonomy topics, IT grant score cutoffs (115-138) and schedules |
+| **Verified Question Bank** | ✅ Available | Questions with official NTC provenance, difficulty levels (A/B/C) and step-by-step solutions |
+| **Daily Ingestion & News** | ✅ Available | Automated 06:00 & 18:00 news aggregator with SHA-256 deduplication and HTML sanitization |
+| **SSE & JSONL Streaming** | ✅ Available | Real-time SSE progress/events and high-throughput NDJSON bulk question export |
 | **Curriculum Roadmap** | ✅ Available | 6 comprehensive UNT topic modules with theoretical lessons and notes |
 | **Interactive Quiz Engine** | ✅ Available | Timed quizzes, single/multiple choice, SQL queries, instant answer review |
-| **Python Code Sandbox** | ✅ Available | In-browser IDE, AST security blocking, execution against visible & hidden test cases |
+| **Python Code Sandbox** | ✅ Available | In-browser IDE, AST security blocking, execution against test cases |
 | **SuperMemo SM-2 Repetition** | ✅ Available | Spaced repetition flashcards for questions missed in previous tests |
-| **Gamification Core** | ✅ Available | XP engine, formulas for levels ($\text{Lvl} = 1 + \sqrt{\text{XP}/150}$), streaks, rank titles |
+| **Gamification Core** | ✅ Available | XP engine, levels ($\text{Lvl} = 1 + \sqrt{\text{XP}/150}$), streaks, rank titles |
 | **Daily Quests** | ✅ Available | Daily auto-resetting missions with claimable XP rewards |
 | **Achievements & Badges** | ✅ Available | Milestones for score thresholds, streaks, and coding challenges |
 | **National Leaderboard** | ✅ Available | Top-ranked students sorted by total XP and streak performance |
 | **Readiness Analytics** | ✅ Available | Predicted UNT score (out of 50), category mastery bars, mistake logs |
-| **Admin Management Portal** | ✅ Available | Teacher analytics dashboard, dynamic topic creation form |
-| **Full 50-Question Mock UNT** | 🚧 In progress | Full-scale randomized 50-question simulation matching final exam layout |
-| **AI Step-by-Step Tutor** | 🧭 Planned | Context-aware LLM tutor providing hints without revealing full solutions |
-| **Multiplayer Quiz Battles** | 🧭 Planned | Real-time 1v1 student speed challenge matches |
+| **Admin Management Portal** | ✅ Available | Teacher analytics dashboard, dynamic topic & source ingestion management |
 
 ---
 
@@ -154,21 +156,26 @@ untverse/
 ├── backend/                  # FastAPI Application
 │   ├── alembic/              # Database migration scripts
 │   ├── app/
-│   │   ├── api/v1/           # Versioned REST API endpoints
+│   │   ├── api/v1/           # Versioned REST & streaming endpoints
+│   │   │   └── endpoints/    # Auth, Users, News, Questions, UNT, Stream, etc.
 │   │   ├── core/             # Configuration, security, exceptions, events
 │   │   ├── db/               # Session management, Base model, seed script
-│   │   ├── models/           # SQLAlchemy 2.0 entities (18 tables)
+│   │   ├── models/           # SQLAlchemy 2.0 entities (23 tables)
 │   │   ├── repositories/     # Database access layer
 │   │   ├── schemas/          # Pydantic v2 validation models
-│   │   └── services/         # Business logic (Auth, CodeSandbox, Gamification, SM-2)
-│   ├── tests/                # Pytest unit and integration test suite
+│   │   └── services/         # Domain logic (News, Ingestion, QuestionBank, SM-2)
+│   ├── tests/                # 19 Pytest unit and integration tests (74% coverage)
 │   ├── Dockerfile            # Multi-stage Python 3.11 runner
 │   └── requirements.txt      # Backend dependencies
 ├── frontend/                 # Next.js 16 Web Application
 │   ├── src/
-│   │   ├── app/              # Next.js App Router (16 pages)
+│   │   ├── app/              # Next.js App Router
+│   │   │   ├── [locale]/     # Localized routes (kk/ru/en for 16+ pages)
+│   │   │   ├── layout.tsx    # Root HTML layout
+│   │   │   └── page.tsx      # Root locale redirect
 │   │   ├── components/       # UI components (Layout, Quiz, Coding IDE, Gamification)
-│   │   ├── lib/              # API client, Auth session, utility functions
+│   │   ├── lib/              # API client, i18n dictionaries, Auth session
+│   │   ├── proxy.ts          # Next.js 16 proxy for i18n & request intercept
 │   │   └── types/            # TypeScript domain interfaces
 │   ├── Dockerfile            # Multi-stage Node.js 20 Alpine runner
 │   └── package.json          # Frontend dependencies
@@ -176,7 +183,7 @@ untverse/
 │   ├── adr/                  # Architecture Decision Records (ADR-001 to ADR-005)
 │   ├── images/               # Verified UI screenshots
 │   └── architecture_overview.md
-├── .github/                  # GitHub workflows, issue & PR templates
+├── .github/                  # CI workflows (Green on push/PR) & daily scheduler
 ├── docker-compose.yml        # Multi-container local orchestration
 └── README.md                 # Project documentation
 ```
