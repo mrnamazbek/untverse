@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: unt_postgres
+    environment:
+      POSTGRES_DB: unt_informatics
+      POSTGRES_USER: unt_user
+      POSTGRES_PASSWORD: unt_secure_password_2026
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U unt_user -d unt_informatics"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - unt_network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: unt_backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://unt_user:unt_secure_password_2026@postgres:5432/unt_informatics
+      JWT_SECRET: super_secure_production_jwt_secret_kazakhstan_2026
+      ENVIRONMENT: production
+      CORS_ORIGINS: '["http://localhost:3000", "http://127.0.0.1:3000", "https://unt-informatics.kz"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - unt_network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: unt_frontend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - unt_network
+
+volumes:
+  postgres_data:
+
+networks:
+  unt_network:
+    driver: bridge
