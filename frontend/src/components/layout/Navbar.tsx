@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useRouter, usePathname } from "next/navigation";
-import { getAuth, clearAuth } from "@/lib/auth";
-import { AuthResponse } from "@/types/api";
+import { getAuth, clearAuth, useAuthSession } from "@/lib/auth";
 import { ThemeSwitcher } from "@/components/theme/ThemeSwitcher";
 import {
   getClientLocale,
@@ -34,7 +33,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const router = useRouter();
   const pathname = usePathname();
-  const [auth, setAuth] = useState<AuthResponse | null>(null);
+  const auth = useAuthSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Derive active locale from URL pathname first
@@ -42,19 +41,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const activeLocale: Locale = SUPPORTED_LOCALES.includes(currentPathLocale)
     ? currentPathLocale
     : getClientLocale();
-
-  useEffect(() => {
-    const userAuth = getAuth();
-    if (userAuth) setAuth(userAuth);
-
-    const handleStorage = () => setAuth(getAuth());
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener("unt_auth_change", handleStorage);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener("unt_auth_change", handleStorage);
-    };
-  }, []);
 
   const handleLanguageChange = (targetLocale: Locale) => {
     if (targetLocale === activeLocale) return;
@@ -70,7 +56,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       await logout(current?.refresh_token).catch(() => {});
     } finally {
       clearAuth();
-      setAuth(null);
       router.push(localizePath("/login", activeLocale));
     }
   };

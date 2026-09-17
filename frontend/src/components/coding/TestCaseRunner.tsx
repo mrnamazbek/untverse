@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { CodeRunResult } from "@/types/learning";
-import { CheckCircle2, XCircle, Clock, AlertOctagon, Terminal } from "lucide-react";
+import { CheckCircle2, XCircle, Terminal } from "lucide-react";
 
 interface TestCaseRunnerProps {
   result: CodeRunResult | null;

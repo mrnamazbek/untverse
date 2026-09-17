@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef, Suspense } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { getMe as getMeApi, handleGoogleCallback as handleGoogleCallbackApi } from "@/lib/api";
-import { saveAuth, saveUser, userToAuthSession, getAuth } from "@/lib/auth";
+import { saveAuth, saveUser, userToAuthSession, getAuth, sanitizeRedirectUrl } from "@/lib/auth";
 import { getClientLocale, i18nDict, Locale, localizePath, SUPPORTED_LOCALES } from "@/lib/i18n";
 import { Loader2, Sparkles, CheckCircle2, Shield } from "lucide-react";
 
@@ -36,7 +36,7 @@ function CallbackHandler() {
       const state = searchParams.get("state");
       const errorParam = searchParams.get("error");
       const errorDesc = searchParams.get("error_description");
-      const redirectToParam = searchParams.get("redirect_to") || "/dashboard";
+      const redirectToParam = sanitizeRedirectUrl(searchParams.get("redirect_to"));
 
       // 1. Google returned an error
       if (errorParam) {
@@ -59,7 +59,7 @@ function CallbackHandler() {
           saveAuth(loginResp);
 
           if (loginResp.redirect_to) {
-            destination = loginResp.redirect_to;
+            destination = sanitizeRedirectUrl(loginResp.redirect_to);
           }
         }
 

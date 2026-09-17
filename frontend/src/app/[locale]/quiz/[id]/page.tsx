@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { fetchApi } from "@/lib/api";
@@ -14,8 +14,6 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  AlertCircle,
-  HelpCircle,
   Zap,
   RotateCcw,
   Trophy,
@@ -23,7 +21,6 @@ import {
 
 export default function QuizPlayPage() {
   const params = useParams();
-  const router = useRouter();
   const quizId = params?.id as string;
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);

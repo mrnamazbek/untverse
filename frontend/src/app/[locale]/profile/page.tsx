@@ -5,27 +5,14 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Footer } from "@/components/layout/Footer";
 import { fetchApi } from "@/lib/api";
-import { getAuth } from "@/lib/auth";
 import { StudentDashboardAnalytics, MistakeLogItem } from "@/types/analytics";
 import { GamificationProfile } from "@/types/gamification";
-import {
-  User,
-  Target,
-  BarChart3,
-  TrendingUp,
-  BrainCircuit,
-  AlertCircle,
-  Clock,
-  CheckCircle2,
-  Zap,
-} from "lucide-react";
 
 export default function ProfileAnalyticsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [analytics, setAnalytics] = useState<StudentDashboardAnalytics | null>(null);
   const [gamification, setGamification] = useState<GamificationProfile | null>(null);
   const [mistakes, setMistakes] = useState<MistakeLogItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadProfileData = async () => {
@@ -40,8 +27,6 @@ export default function ProfileAnalyticsPage() {
         setMistakes(mistakeList);
       } catch (err) {
         console.error("Failed to load analytics", err);
-      } finally {
-        setLoading(false);
       }
     };
     loadProfileData();

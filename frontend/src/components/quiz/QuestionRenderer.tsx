@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Question } from "@/types/learning";
-import { Check, Circle } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface QuestionRendererProps {
   question: Question;

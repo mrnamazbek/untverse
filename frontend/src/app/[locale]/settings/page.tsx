@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Footer } from "@/components/layout/Footer";
 import { fetchApi, setPassword as setPasswordApi } from "@/lib/api";
 import { getAuth, updateLocalProfile } from "@/lib/auth";
 import { getClientLocale, i18nDict, Locale, SUPPORTED_LOCALES } from "@/lib/i18n";
-import { User, Target, Save, CheckCircle2, Lock, Shield, KeyRound, AlertCircle, Loader2 } from "lucide-react";
+import { Target, Save, CheckCircle2, Lock, KeyRound, AlertCircle, Loader2 } from "lucide-react";
 import { useParams } from "next/navigation";
 
 export default function SettingsPage() {
@@ -21,7 +21,7 @@ export default function SettingsPage() {
   const t = i18nDict[locale] || i18nDict.kk;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [displayName, setDisplayName] = useState("");
+  const [displayName, setDisplayName] = useState(() => (typeof window !== "undefined" ? getAuth()?.display_name || "" : ""));
   const [bio, setBio] = useState("");
   const [targetScore, setTargetScore] = useState(50);
   const [saved, setSaved] = useState(false);
@@ -33,13 +33,6 @@ export default function SettingsPage() {
   const [passwordSaving, setPasswordSaving] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const auth = getAuth();
-    if (auth) {
-      setDisplayName(auth.display_name || "");
-    }
-  }, []);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

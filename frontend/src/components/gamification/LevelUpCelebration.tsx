@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import confetti from "canvas-confetti";
-import { Zap, Award, X, Sparkles } from "lucide-react";
+import { Award, X, Sparkles } from "lucide-react";
 
 interface LevelUpCelebrationProps {
   newLevel: number;

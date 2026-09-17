@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { AuthResponse } from "@/types/api";
 import { User, TokenResponse } from "@/types/auth";
 
@@ -5,14 +6,27 @@ export const AUTH_KEY = "unt_auth_session";
 export const USER_KEY = "unt_user_profile";
 export const AUTH_CHANGE_EVENT = "unt_auth_change";
 
+let cachedRawAuth: string | null = null;
+let cachedParsedAuth: AuthResponse | null = null;
+
 function dispatchAuthChange() {
   if (typeof window !== "undefined") {
+    cachedRawAuth = localStorage.getItem(AUTH_KEY);
+    try {
+      cachedParsedAuth = cachedRawAuth ? JSON.parse(cachedRawAuth) : null;
+    } catch {
+      cachedParsedAuth = null;
+    }
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
   }
 }
+
 export function saveAuth(data: AuthResponse): void {
   if (typeof window !== "undefined") {
-    localStorage.setItem(AUTH_KEY, JSON.stringify(data));
+    const raw = JSON.stringify(data);
+    localStorage.setItem(AUTH_KEY, raw);
+    cachedRawAuth = raw;
+    cachedParsedAuth = data;
     dispatchAuthChange();
   }
 }
@@ -20,12 +34,33 @@ export function saveAuth(data: AuthResponse): void {
 export function getAuth(): AuthResponse | null {
   if (typeof window === "undefined") return null;
   const raw = localStorage.getItem(AUTH_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
+  if (raw === cachedRawAuth) return cachedParsedAuth;
+  cachedRawAuth = raw;
+  if (!raw) {
+    cachedParsedAuth = null;
     return null;
   }
+  try {
+    cachedParsedAuth = JSON.parse(raw);
+    return cachedParsedAuth;
+  } catch {
+    cachedParsedAuth = null;
+    return null;
+  }
+}
+
+function subscribeAuth(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(AUTH_CHANGE_EVENT, callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    window.removeEventListener(AUTH_CHANGE_EVENT, callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+export function useAuthSession(): AuthResponse | null {
+  return useSyncExternalStore(subscribeAuth, getAuth, () => null);
 }
 
 export function clearAuth(): void {
@@ -100,4 +135,22 @@ export function getAccessToken(): string | null {
 
 export function getRefreshToken(): string | null {
   return getAuth()?.refresh_token || null;
+}
+
+/**
+ * Sanitizes redirect target URLs to prevent Open Redirect attacks.
+ * Only allows relative paths starting with a single '/' and rejects protocol-relative ('//') or external URLs.
+ */
+export function sanitizeRedirectUrl(url?: string | null): string {
+  if (!url || typeof url !== "string") return "/dashboard";
+  const trimmed = url.trim();
+  if (
+    !trimmed.startsWith("/") ||
+    trimmed.startsWith("//") ||
+    trimmed.includes("://") ||
+    trimmed.toLowerCase().startsWith("javascript:")
+  ) {
+    return "/dashboard";
+  }
+  return trimmed;
 }

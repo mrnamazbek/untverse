@@ -8,7 +8,7 @@ import {
   AuthErrorCode,
   LocalizedErrorMessage,
 } from "@/types/auth";
-import { getClientLocale, localeToLanguageTag, Locale } from "./i18n";
+import { getClientLocale, localeToLanguageTag } from "./i18n";
 
 export class ApiError extends Error {
   code?: AuthErrorCode | string;

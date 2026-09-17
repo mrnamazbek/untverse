@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -28,25 +28,29 @@ export default function UntKnowledgePage() {
   const [expandedSection, setExpandedSection] = useState<string | null>("CS-4");
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const [rules, specifications] = await Promise.all([
-        fetchApi<CurrentUntRule>("/unt/current", { requiresAuth: false }),
-        fetchApi<ExamSpecification[]>("/unt/specifications", { requiresAuth: false }),
-      ]);
-      setRules(rules);
-      setSpecifications(specifications);
-    } catch (err) {
-      console.error("Failed to load UNT specs", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [locale]);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    let isMounted = true;
+    Promise.all([
+      fetchApi<CurrentUntRule>("/unt/current", { requiresAuth: false }),
+      fetchApi<ExamSpecification[]>("/unt/specifications", { requiresAuth: false }),
+    ])
+      .then(([rules, specifications]) => {
+        if (isMounted) {
+          setRules(rules);
+          setSpecifications(specifications);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load UNT specs", err);
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const t = i18nDict[locale] || i18nDict.kk;
   const activeSpec = specifications[0];

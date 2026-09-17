@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -31,38 +31,50 @@ export default function NewsFeedPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchNews = useCallback(async () => {
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const queryParams = new URLSearchParams({ limit: "30" });
+        if (category !== "all") queryParams.set("category", category);
+        if (searchQuery.trim()) queryParams.set("search", searchQuery.trim());
+        const [newsData, alertsData] = await Promise.all([
+          fetchApi<{ items: NewsArticle[] }>(`/news?${queryParams}`, { requiresAuth: false }).catch(() => ({ items: [] })),
+          fetchApi<NewsAlert[]>("/news/alerts", { requiresAuth: false }).catch(() => []),
+        ]);
+        if (isMounted) {
+          setNewsList(newsData.items || []);
+          setAlerts(alertsData || []);
+        }
+      } catch (err) {
+        console.error("Failed to load news data", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, [category, searchQuery]);
+
+  const handleSearchSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsLoading(true);
     try {
-      const params = new URLSearchParams({ limit: "30" });
-      if (category !== "all") params.set("category", category);
-      if (searchQuery.trim()) params.set("search", searchQuery.trim());
-      const data = await fetchApi<{ items: NewsArticle[] }>(`/news?${params}`, { requiresAuth: false });
+      const queryParams = new URLSearchParams({ limit: "30" });
+      if (category !== "all") queryParams.set("category", category);
+      if (searchQuery.trim()) queryParams.set("search", searchQuery.trim());
+      const data = await fetchApi<{ items: NewsArticle[] }>(`/news?${queryParams}`, { requiresAuth: false });
       setNewsList(data.items || []);
     } catch (err) {
       console.error("Failed to load news", err);
     } finally {
       setIsLoading(false);
     }
-  }, [locale, category, searchQuery]);
-
-  const fetchAlerts = useCallback(async () => {
-    try {
-      const data = await fetchApi<NewsAlert[]>("/news/alerts", { requiresAuth: false });
-      setAlerts(data || []);
-    } catch (err) {
-      console.error("Failed to load alerts", err);
-    }
-  }, [locale]);
-
-  useEffect(() => {
-    fetchNews();
-    fetchAlerts();
-  }, [fetchNews, fetchAlerts]);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchNews();
   };
 
   const t = i18nDict[locale] || i18nDict.kk;

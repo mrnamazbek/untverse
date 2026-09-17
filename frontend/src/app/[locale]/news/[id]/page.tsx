@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { Navbar } from "@/components/layout/Navbar";
@@ -26,22 +26,30 @@ export default function NewsDetailPage() {
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchArticle = useCallback(async () => {
-    if (!articleId) return;
-    setIsLoading(true);
-    try {
-      const data = await fetchApi<NewsArticle>(`/news/${articleId}`, { requiresAuth: false });
-      setArticle(data);
-    } catch (err) {
-      console.error("Failed to load article detail", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [articleId, locale]);
-
   useEffect(() => {
-    fetchArticle();
-  }, [fetchArticle]);
+    if (!articleId) return;
+    let isMounted = true;
+
+    async function loadArticle() {
+      try {
+        const data = await fetchApi<NewsArticle>(`/news/${articleId}`, { requiresAuth: false });
+        if (isMounted) {
+          setArticle(data);
+        }
+      } catch (err) {
+        console.error("Failed to load article detail", err);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadArticle();
+    return () => {
+      isMounted = false;
+    };
+  }, [articleId]);
 
   const t = i18nDict[locale] || i18nDict.kk;
 

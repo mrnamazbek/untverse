@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { useParams } from "next/navigation";
 import { Navbar } from "@/components/layout/Navbar";
@@ -9,23 +9,15 @@ import { Footer } from "@/components/layout/Footer";
 import { fetchApi } from "@/lib/api";
 import { Quiz } from "@/types/learning";
 import { SpacedCard, MistakeLogItem } from "@/types/analytics";
-import { BankQuestion, ExamSpecification } from "@/types/data_platform";
-import { getClientLocale, i18nDict, Locale, SUPPORTED_LOCALES, localizePath } from "@/lib/i18n";
+import { BankQuestion } from "@/types/data_platform";
+import { i18nDict, Locale, SUPPORTED_LOCALES } from "@/lib/i18n";
 import {
   CheckSquare,
   Clock,
-  BrainCircuit,
-  AlertTriangle,
-  Play,
-  RotateCcw,
   Sparkles,
-  Trophy,
-  Zap,
   CheckCircle2,
-  HelpCircle,
   ShieldCheck,
   ExternalLink,
-  BookOpen,
   Filter,
   Lightbulb,
   Layers,
@@ -58,43 +50,55 @@ export default function PracticePage() {
   const [isCardRevealed, setIsCardRevealed] = useState(false);
   const [, setLoading] = useState(true);
 
-  const loadBaseData = useCallback(async () => {
-    try {
-      const [quizList, cards, mistakeList] = await Promise.all([
-        fetchApi<Quiz[]>("/quizzes").catch(() => []),
-        fetchApi<SpacedCard[]>("/analytics/spaced-repetition/due").catch(() => []),
-        fetchApi<MistakeLogItem[]>("/analytics/mistakes").catch(() => []),
-      ]);
-      setQuizzes(quizList);
-      setSrsCards(cards);
-      setMistakes(mistakeList);
-    } catch (err) {
-      console.error("Failed to load practice data", err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      try {
+        const [quizList, cards, mistakeList] = await Promise.all([
+          fetchApi<Quiz[]>("/quizzes").catch(() => []),
+          fetchApi<SpacedCard[]>("/analytics/spaced-repetition/due").catch(() => []),
+          fetchApi<MistakeLogItem[]>("/analytics/mistakes").catch(() => []),
+        ]);
+        if (isMounted) {
+          setQuizzes(quizList);
+          setSrsCards(cards);
+          setMistakes(mistakeList);
+        }
+      } catch (err) {
+        console.error("Failed to load practice data", err);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
     }
+    loadData();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const fetchBankQuestions = useCallback(async () => {
-    try {
-      const params = new URLSearchParams({ limit: "20" });
-      if (difficultyFilter !== "all") params.set("difficulty", difficultyFilter);
-      if (selectedTopicId !== "all") params.set("topic_id", selectedTopicId);
-      const data = await fetchApi<{ items: BankQuestion[]; total: number }>(`/questions?${params}`, { requiresAuth: false });
-      setBankQuestions(data.items || []);
-      setTotalQuestions(data.total || 0);
-    } catch (err) {
-      console.error("Failed to load bank questions", err);
+  useEffect(() => {
+    let isMounted = true;
+    async function getQuestions() {
+      try {
+        const queryParams = new URLSearchParams({ limit: "20" });
+        if (difficultyFilter !== "all") queryParams.set("difficulty", difficultyFilter);
+        if (selectedTopicId !== "all") queryParams.set("topic_id", selectedTopicId);
+        const data = await fetchApi<{ items: BankQuestion[]; total: number }>(`/questions?${queryParams}`, { requiresAuth: false });
+        if (isMounted) {
+          setBankQuestions(data.items || []);
+          setTotalQuestions(data.total || 0);
+        }
+      } catch (err) {
+        console.error("Failed to load bank questions", err);
+      }
     }
-  }, [locale, difficultyFilter, selectedTopicId]);
-
-  useEffect(() => {
-    loadBaseData();
-  }, [loadBaseData]);
-
-  useEffect(() => {
-    fetchBankQuestions();
-  }, [fetchBankQuestions]);
+    getQuestions();
+    return () => {
+      isMounted = false;
+    };
+  }, [difficultyFilter, selectedTopicId]);
 
   const toggleSolution = async (qId: number) => {
     const isExpanded = !!expandedSolutions[qId];

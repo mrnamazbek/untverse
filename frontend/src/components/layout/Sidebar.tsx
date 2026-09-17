@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { LocalizedLink as Link } from "@/components/navigation/LocalizedLink";
 import { usePathname } from "next/navigation";
 import {
@@ -18,8 +18,7 @@ import {
   Newspaper,
   BookMarked,
 } from "lucide-react";
-import { getAuth } from "@/lib/auth";
-import { AuthResponse } from "@/types/api";
+import { useAuthSession } from "@/lib/auth";
 import {
   getClientLocale,
   localizePath,
@@ -35,26 +34,13 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
-  const [auth, setAuth] = useState<AuthResponse | null>(null);
+  const auth = useAuthSession();
 
   // Derive active locale from URL pathname
   const currentPathLocale = (pathname.split("/")[1] as Locale) || "kk";
   const activeLocale: Locale = SUPPORTED_LOCALES.includes(currentPathLocale)
     ? currentPathLocale
     : getClientLocale();
-
-  useEffect(() => {
-    const userAuth = getAuth();
-    if (userAuth) setAuth(userAuth);
-
-    const handleStorage = () => setAuth(getAuth());
-    window.addEventListener("storage", handleStorage);
-    window.addEventListener("unt_auth_change", handleStorage);
-    return () => {
-      window.removeEventListener("storage", handleStorage);
-      window.removeEventListener("unt_auth_change", handleStorage);
-    };
-  }, []);
 
 
   const t = i18nDict[activeLocale] || i18nDict.kk;

@@ -22,7 +22,6 @@ import {
   clearAuth,
   getUser,
   saveUser,
-  clearUser,
   updateLocalProfile as updateLocalProfileStorage,
   userToAuthSession,
   AUTH_CHANGE_EVENT,
@@ -37,7 +36,7 @@ import {
   setPassword as setPasswordApi,
   getCurrentUser as getCurrentUserApi,
 } from "@/lib/api";
-import { getClientLocale, Locale } from "@/lib/i18n";
+import { getClientLocale } from "@/lib/i18n";
 
 export interface AuthContextType {
   user: User | null;

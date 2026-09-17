@@ -15,7 +15,6 @@ const RobotScene = dynamic(
 );
 import {
   Sparkles,
-  CheckCircle2,
   Code2,
   Database,
   Shield,
@@ -23,11 +22,6 @@ import {
   Cpu,
   BrainCircuit,
   ArrowRight,
-  Trophy,
-  Flame,
-  Zap,
-  Target,
-  BarChart,
 } from "lucide-react";
 
 const homeCopy = {

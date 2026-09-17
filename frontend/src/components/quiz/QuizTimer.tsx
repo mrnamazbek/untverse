@@ -19,7 +19,7 @@ export const QuizTimer: React.FC<QuizTimerProps> = ({
   const elapsedRef = useRef(0);
 
   useEffect(() => {
-    if (secondsLeft <= 0) {
+    if (initialSeconds <= 0) {
       onTimeExpired();
       return;
     }

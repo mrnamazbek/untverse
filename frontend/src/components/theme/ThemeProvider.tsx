@@ -38,23 +38,23 @@ function applyTheme(theme: ResolvedTheme) {
   root.style.colorScheme = theme;
 }
 
+const getInitialPreference = (): ThemePreference => {
+  if (typeof window === "undefined") return "system";
+  const storedTheme = window.localStorage.getItem(STORAGE_KEY);
+  return storedTheme === "light" || storedTheme === "dark" || storedTheme === "system"
+    ? storedTheme
+    : "system";
+};
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [preference, setPreference] = useState<ThemePreference>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
+  const [preference, setPreference] = useState<ThemePreference>(getInitialPreference);
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
+    resolveTheme(getInitialPreference())
+  );
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem(STORAGE_KEY);
-    const nextPreference: ThemePreference =
-      storedTheme === "light" || storedTheme === "dark" || storedTheme === "system"
-        ? storedTheme
-        : "system";
-    const nextResolvedTheme = resolveTheme(nextPreference);
-
-    setPreference(nextPreference);
-    setResolvedTheme(nextResolvedTheme);
-    applyTheme(nextResolvedTheme);
-
-  }, []);
+    applyTheme(resolvedTheme);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     if (preference !== "system") return;
