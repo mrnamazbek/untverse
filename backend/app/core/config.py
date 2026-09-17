@@ -13,6 +13,9 @@ class Settings(BaseSettings):
 
     # Deployment scheduler. This has no development default on purpose.
     NEWS_INGESTION_SECRET: Optional[str] = None
+    # Vercel sends this value as a Bearer token when invoking a configured cron.
+    # It is intentionally separate from the manual ingestion credential.
+    CRON_SECRET: Optional[str] = None
 
     # Security
     JWT_SECRET: str = "super_secret_jwt_dev_key_change_in_production_987654321"
@@ -36,9 +39,10 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "http://localhost:8000",
-        "https://*.vercel.app",
-        "https://*.railway.app",
+        "https://unt-informatics.kz",
+        "https://www.unt-informatics.kz",
     ]
+    BACKEND_CORS_ORIGIN_REGEX: Optional[str] = r"^https://([a-zA-Z0-9_-]+\.)?(vercel\.app|railway\.app)$"
 
     @field_validator("DATABASE_URL", mode="before")
     def assemble_db_connection(cls, v: Union[str, None]) -> str:

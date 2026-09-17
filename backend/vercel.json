@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/v1/internal/jobs/daily-news-ingest",
+      "schedule": "0 1 * * *"
+    }
+  ]
+}

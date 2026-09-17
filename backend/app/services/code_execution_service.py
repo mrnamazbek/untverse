@@ -21,6 +21,12 @@ class SecurityCheckVisitor(ast.NodeVisitor):
         "eval", "exec", "open", "__import__", "compile", "globals", "locals", "getattr", "setattr", "delattr"
     }
 
+    FORBIDDEN_ATTRS = {
+        "__subclasses__", "__bases__", "__base__", "__class__", "__mro__",
+        "__code__", "__globals__", "__builtins__", "__import__", "__dict__",
+        "__loader__", "__spec__", "__reduce__", "__reduce_ex__"
+    }
+
     def __init__(self):
         self.errors = []
 
@@ -42,6 +48,11 @@ class SecurityCheckVisitor(ast.NodeVisitor):
         if isinstance(node.func, ast.Name):
             if node.func.id in self.FORBIDDEN_CALLS:
                 self.errors.append(f"Вызов функции '{node.func.id}()' запрещен в учебных заданиях.")
+        self.generic_visit(node)
+
+    def visit_Attribute(self, node):
+        if node.attr in self.FORBIDDEN_ATTRS:
+            self.errors.append(f"Доступ к системному атрибуту '{node.attr}' запрещен из соображений безопасности.")
         self.generic_visit(node)
 
 
@@ -82,7 +93,7 @@ class CodeExecutionService:
 
         try:
             process = await asyncio.create_subprocess_exec(
-                sys.executable, "-c", wrapper_code,
+                sys.executable, "-I", "-s", "-c", wrapper_code,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,

@@ -42,6 +42,7 @@ coverage/
 # IDE & OS
 .DS_Store
 *.pem
+*.key
 .idea/
 .vscode/
 *.swp

@@ -40,3 +40,11 @@ async def test_coding_tasks_and_execution(client: AsyncClient):
     sec_res = sec_run_resp.json()
     assert sec_res["status"] == "forbidden_syntax"
     assert "запрещен" in sec_res["error_output"]
+
+    # 5. Test security check: introspection / sandbox escape via __subclasses__ or __globals__
+    escape_code = "print(().__class__.__base__.__subclasses__())\n"
+    esc_run_resp = await client.post(f"/api/v1/coding/{task_id}/run", json={"source_code": escape_code}, headers=headers)
+    assert esc_run_resp.status_code == 200
+    esc_res = esc_run_resp.json()
+    assert esc_res["status"] == "forbidden_syntax"
+    assert "запрещен" in esc_res["error_output"]

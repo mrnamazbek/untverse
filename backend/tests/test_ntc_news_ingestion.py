@@ -71,6 +71,7 @@ async def test_daily_ntc_ingestion_is_idempotent_and_records_listing_provenance(
 @pytest.mark.asyncio
 async def test_internal_job_requires_secret_and_invokes_runner(client, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setattr(settings, "NEWS_INGESTION_SECRET", "test-ingestion-secret")
+    monkeypatch.setattr(settings, "CRON_SECRET", "test-vercel-cron-secret")
 
     async def fake_runner():
         return {"status": "success", "items_created": 2}
@@ -86,6 +87,15 @@ async def test_internal_job_requires_secret_and_invokes_runner(client, monkeypat
     assert denied.status_code == 403
     assert accepted.status_code == 200
     assert accepted.json()["items_created"] == 2
+
+    denied_cron = await client.get("/api/v1/internal/jobs/daily-news-ingest")
+    accepted_cron = await client.get(
+        "/api/v1/internal/jobs/daily-news-ingest",
+        headers={"Authorization": "Bearer test-vercel-cron-secret"},
+    )
+    assert denied_cron.status_code == 403
+    assert accepted_cron.status_code == 200
+    assert accepted_cron.json()["items_created"] == 2
 
     monkeypatch.setattr(settings, "ENVIRONMENT", "production")
     monkeypatch.setattr(settings, "DATABASE_URL", "sqlite+aiosqlite:///./unsafe.db")

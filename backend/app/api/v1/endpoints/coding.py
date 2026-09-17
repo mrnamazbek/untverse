@@ -11,6 +11,7 @@ from app.schemas.coding import (
     CodingTaskListItem, CodingTaskResponse, CodeRunRequest, CodeRunResponse, TestCaseResponse
 )
 from app.core.exceptions import NotFoundException
+from app.core.rate_limit import rate_limit
 
 router = APIRouter()
 
@@ -85,7 +86,8 @@ async def run_coding_task(
     task_id: int,
     request: CodeRunRequest,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    _rate_check: None = Depends(rate_limit(max_requests=10, window_seconds=60)),
 ):
     repo = CodingRepository(db)
     task = await repo.get_by_id_with_tests(task_id)

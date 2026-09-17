@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.rate_limit import rate_limit
 from app.db.session import get_db
 from app.services.auth_service import AuthService
 from app.services.oauth_service import GoogleOAuthService
@@ -258,6 +259,7 @@ async def register(
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
+    _rate_check: None = Depends(rate_limit(max_requests=5, window_seconds=60)),
 ):
     user_agent = request.headers.get("user-agent")
     ip_address = request.client.host if request.client else None
@@ -276,6 +278,7 @@ async def login(
     request: Request,
     response: Response,
     db: AsyncSession = Depends(get_db),
+    _rate_check: None = Depends(rate_limit(max_requests=10, window_seconds=60)),
 ):
     user_agent = request.headers.get("user-agent")
     ip_address = request.client.host if request.client else None
@@ -295,6 +298,7 @@ async def refresh_tokens(
     refresh_in: Optional[LocalTokenRefreshRequest] = None,
     refresh_token_cookie: Optional[str] = Cookie(default=None, alias="refresh_token"),
     db: AsyncSession = Depends(get_db),
+    _rate_check: None = Depends(rate_limit(max_requests=30, window_seconds=60)),
 ):
     token_str = None
     if refresh_in and refresh_in.refresh_token:

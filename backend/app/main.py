@@ -16,12 +16,17 @@ from app.db.init_db import init_db_data
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Create tables if not exist and seed initial educational data
-    async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
-    async with AsyncSessionLocal() as session:
-        await init_db_data(session)
+    # Schema creation and initial seeding are intentionally excluded from
+    # production function startup. A Vercel Function can cold-start or scale
+    # concurrently, which would turn DDL and seed writes into a race. Run the
+    # explicit scripts/initialize_production_db.py command during first setup
+    # and Alembic for subsequent schema changes instead.
+    if settings.ENVIRONMENT != "production":
+        async with async_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        async with AsyncSessionLocal() as session:
+            await init_db_data(session)
 
     yield
     # Shutdown
@@ -42,6 +47,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_origin_regex=settings.BACKEND_CORS_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
