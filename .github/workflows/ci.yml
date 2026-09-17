@@ -98,6 +98,8 @@ jobs:
           DATABASE_URL: postgresql+asyncpg://unt_user:test_password@localhost:5432/unt_test
           ENVIRONMENT: testing
           JWT_SECRET: ci_test_jwt_secret_do_not_use_in_production_1234567890
+          GOOGLE_CLIENT_ID: ci-mock-google-client-id.apps.googleusercontent.com
+          GOOGLE_CLIENT_SECRET: ci-mock-google-client-secret-value-1234567890
         run: |
           PYTHONPATH=. pytest tests/ -v \
             --cov=app \
