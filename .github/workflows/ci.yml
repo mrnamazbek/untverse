@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   # ──────────────────────────────────────────────────────────────────────────────
   # Backend: Lint + Test + Coverage
@@ -23,6 +26,7 @@ jobs:
   backend-lint:
     name: "Backend: Ruff Lint"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -48,6 +52,7 @@ jobs:
   backend-test:
     name: "Backend: Tests & Coverage"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: backend-lint
 
     services:
@@ -114,6 +119,7 @@ jobs:
   frontend-check:
     name: "Frontend: Lint & Type Check"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - uses: actions/checkout@v4
@@ -140,6 +146,7 @@ jobs:
   frontend-test:
     name: "Frontend: Unit Tests"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: frontend-check
 
     steps:
@@ -163,6 +170,7 @@ jobs:
   frontend-build:
     name: "Frontend: Production Build"
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [frontend-check, frontend-test]
 
     steps:

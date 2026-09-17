@@ -1,5 +1,6 @@
 name: Trigger deployed UNT news ingestion
 
+# Least privilege: GITHUB_TOKEN has no permissions
 permissions: {}
 
 on:
@@ -16,14 +17,32 @@ jobs:
   trigger-deployed-ingestion:
     name: Trigger production UNT ingestion
     runs-on: ubuntu-latest
+    timeout-minutes: 5
 
     steps:
-      - name: Invoke authenticated deployment endpoint
-        run: |
-          curl --fail --silent --show-error \
-            --retry 2 --retry-all-errors \
-            --request POST "${INGESTION_ENDPOINT}" \
-            --header "X-UNT-Ingestion-Key: ${NEWS_INGESTION_SECRET}"
+      - name: Validate required secrets
+        shell: bash
         env:
           INGESTION_ENDPOINT: ${{ secrets.INGESTION_ENDPOINT }}
           NEWS_INGESTION_SECRET: ${{ secrets.NEWS_INGESTION_SECRET }}
+        run: |
+          if [ -z "$INGESTION_ENDPOINT" ] || [ -z "$NEWS_INGESTION_SECRET" ]; then
+            echo "::error::Обязательные секреты INGESTION_ENDPOINT или NEWS_INGESTION_SECRET не настроены в репозитории."
+            echo "Перейдите в Settings -> Secrets and variables -> Actions и добавьте указанные секреты."
+            exit 1
+          fi
+
+      - name: Invoke authenticated deployment endpoint
+        shell: bash
+        env:
+          INGESTION_ENDPOINT: ${{ secrets.INGESTION_ENDPOINT }}
+          NEWS_INGESTION_SECRET: ${{ secrets.NEWS_INGESTION_SECRET }}
+        run: |
+          curl --fail --silent --show-error \
+            --connect-timeout 10 \
+            --max-time 30 \
+            --retry 3 \
+            --retry-delay 5 \
+            --request POST "${INGESTION_ENDPOINT}" \
+            --header "X-UNT-Ingestion-Key: ${NEWS_INGESTION_SECRET}" \
+            --header "User-Agent: GitHub-Actions-News-Ingest"
