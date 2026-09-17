@@ -6,7 +6,6 @@ from httpx import AsyncClient
 from jose import jwt
 
 from app.core.config import settings
-from app.core.security import decode_token
 from app.core.exceptions import AuthException
 from app.services.oauth_service import GoogleOAuthService
 from app.schemas.auth import AuthErrorCode
@@ -15,6 +14,7 @@ from app.schemas.auth import AuthErrorCode
 # ==========================================
 # 1. GoogleOAuthService Unit Tests
 # ==========================================
+
 
 def test_pkce_generation():
     verifier, challenge = GoogleOAuthService.generate_pkce_challenge()
@@ -28,8 +28,10 @@ def test_pkce_generation():
 
 
 def test_signed_state_lifecycle_and_sanitization():
-    code_verifier = "mock_verifier_86_chars_long_string_abc_123_xyz_456_qwe_789_rty_012_uio_345_pas_678_dfg_901"
-    
+    code_verifier = (
+        "mock_verifier_86_chars_long_string_abc_123_xyz_456_qwe_789_rty_012_uio_345_pas_678_dfg_901"
+    )
+
     # 1. Valid state
     state = GoogleOAuthService.create_signed_state(
         code_verifier=code_verifier,
@@ -71,13 +73,17 @@ def test_signed_state_lifecycle_and_sanitization():
         "typ": "oauth_state",
         "iss": "untverse.kz",
     }
-    expired_state = jwt.encode(expired_payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    expired_state = jwt.encode(
+        expired_payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
+    )
     with pytest.raises(AuthException) as exc_info:
         GoogleOAuthService.verify_and_decode_state(expired_state)
     assert exc_info.value.code == AuthErrorCode.AUTH_OAUTH_STATE_EXPIRED.value
 
     # 4. Tampered State Signature
-    tampered_state = jwt.encode(expired_payload, "wrong_secret_key_1234567890", algorithm=settings.JWT_ALGORITHM)
+    tampered_state = jwt.encode(
+        expired_payload, "wrong_secret_key_1234567890", algorithm=settings.JWT_ALGORITHM
+    )
     with pytest.raises(AuthException) as exc_info:
         GoogleOAuthService.verify_and_decode_state(tampered_state)
     assert exc_info.value.code == AuthErrorCode.AUTH_OAUTH_STATE_INVALID.value
@@ -90,7 +96,9 @@ def test_signed_state_lifecycle_and_sanitization():
         "exp": int((datetime.now(timezone.utc) + timedelta(minutes=10)).timestamp()),
         "typ": "access_token",
     }
-    wrong_type_state = jwt.encode(wrong_type_payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    wrong_type_state = jwt.encode(
+        wrong_type_payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM
+    )
     with pytest.raises(AuthException) as exc_info:
         GoogleOAuthService.verify_and_decode_state(wrong_type_state)
     assert exc_info.value.code == AuthErrorCode.AUTH_OAUTH_STATE_INVALID.value
@@ -107,7 +115,10 @@ def test_verify_id_token_validation(monkeypatch):
     }
     monkeypatch.setattr(settings, "GOOGLE_CLIENT_ID", "test-client-id")
     from app.services import oauth_service
-    monkeypatch.setattr(oauth_service.google_id_token, "verify_oauth2_token", lambda *args: valid_claims)
+
+    monkeypatch.setattr(
+        oauth_service.google_id_token, "verify_oauth2_token", lambda *args: valid_claims
+    )
     user_info = GoogleOAuthService.verify_id_token("verified-by-google")
     assert user_info["sub"] == "google_uid_1092837465"
     assert user_info["email"] == "student@untverse.kz"
@@ -121,14 +132,18 @@ def test_verify_id_token_validation(monkeypatch):
         "email": "unverified@untverse.kz",
         "email_verified": False,
     }
-    monkeypatch.setattr(oauth_service.google_id_token, "verify_oauth2_token", lambda *args: unverified_claims)
+    monkeypatch.setattr(
+        oauth_service.google_id_token, "verify_oauth2_token", lambda *args: unverified_claims
+    )
     with pytest.raises(AuthException) as exc_info:
         GoogleOAuthService.verify_id_token("verified-by-google")
     assert exc_info.value.code == AuthErrorCode.AUTH_OAUTH_EMAIL_UNVERIFIED.value
 
     # 3. Missing sub
     missing_sub = {"email": "no_sub@untverse.kz", "email_verified": True}
-    monkeypatch.setattr(oauth_service.google_id_token, "verify_oauth2_token", lambda *args: missing_sub)
+    monkeypatch.setattr(
+        oauth_service.google_id_token, "verify_oauth2_token", lambda *args: missing_sub
+    )
     with pytest.raises(AuthException) as exc_info:
         GoogleOAuthService.verify_id_token("verified-by-google")
     assert exc_info.value.code == AuthErrorCode.AUTH_OAUTH_CODE_EXCHANGE_FAILED.value
@@ -137,6 +152,7 @@ def test_verify_id_token_validation(monkeypatch):
 # ==========================================
 # 2. Integration API Endpoints Tests
 # ==========================================
+
 
 @pytest.mark.asyncio
 async def test_google_oauth_init_endpoints(client: AsyncClient):
@@ -161,16 +177,22 @@ async def test_google_oauth_callback_provision_new_user(client: AsyncClient, mon
     # Generate valid state
     verifier, challenge = GoogleOAuthService.generate_pkce_challenge()
     state = GoogleOAuthService.create_signed_state(verifier, locale="ru", redirect_to="/dashboard")
-    client.cookies.set("oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state))
+    client.cookies.set(
+        "oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state)
+    )
 
     # Mock exchange_code_for_tokens
-    mock_id_token = jwt.encode({
-        "sub": "google_sub_123456",
-        "email": "new_google_student@untverse.kz",
-        "email_verified": True,
-        "name": "Айгерим Берикова",
-        "picture": "https://lh3.googleusercontent.com/avatar1.jpg",
-    }, "fake_secret", algorithm="HS256")
+    mock_id_token = jwt.encode(
+        {
+            "sub": "google_sub_123456",
+            "email": "new_google_student@untverse.kz",
+            "email_verified": True,
+            "name": "Айгерим Берикова",
+            "picture": "https://lh3.googleusercontent.com/avatar1.jpg",
+        },
+        "fake_secret",
+        algorithm="HS256",
+    )
 
     async def mock_exchange(code: str, code_verifier: str):
         assert code == "auth_code_from_google"
@@ -178,10 +200,18 @@ async def test_google_oauth_callback_provision_new_user(client: AsyncClient, mon
         return {"id_token": mock_id_token, "access_token": "google_access_token"}
 
     monkeypatch.setattr(GoogleOAuthService, "exchange_code_for_tokens", mock_exchange)
-    monkeypatch.setattr(GoogleOAuthService, "verify_id_token", lambda _token, expected_nonce=None: {
-        "sub": "google_sub_123456", "email": "new_google_student@untverse.kz", "email_verified": True,
-        "name": "Айгерим Берикова", "picture": "https://lh3.googleusercontent.com/avatar1.jpg", "nonce": expected_nonce,
-    })
+    monkeypatch.setattr(
+        GoogleOAuthService,
+        "verify_id_token",
+        lambda _token, expected_nonce=None: {
+            "sub": "google_sub_123456",
+            "email": "new_google_student@untverse.kz",
+            "email_verified": True,
+            "name": "Айгерим Берикова",
+            "picture": "https://lh3.googleusercontent.com/avatar1.jpg",
+            "nonce": expected_nonce,
+        },
+    )
 
     # Perform callback POST
     callback_payload = {
@@ -223,7 +253,7 @@ async def test_google_oauth_account_linking_existing_user(client: AsyncClient, m
         "email": "shared_student@untverse.kz",
         "password": "SecurePassword123!",
         "display_name": "Shared Student",
-        "role": "student"
+        "role": "student",
     }
     reg_res = await client.post("/api/v1/auth/register", json=reg_payload)
     assert reg_res.status_code == 201
@@ -231,36 +261,55 @@ async def test_google_oauth_account_linking_existing_user(client: AsyncClient, m
     # 2. Initiate Google login with the same email
     verifier, challenge = GoogleOAuthService.generate_pkce_challenge()
     state = GoogleOAuthService.create_signed_state(verifier, locale="kk", redirect_to="/coding")
-    client.cookies.set("oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state))
+    client.cookies.set(
+        "oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state)
+    )
 
-    mock_id_token = jwt.encode({
-        "sub": "google_linked_sub_7890",
-        "email": "shared_student@untverse.kz",
-        "email_verified": True,
-        "name": "Shared Student Google",
-    }, "fake_secret", algorithm="HS256")
+    mock_id_token = jwt.encode(
+        {
+            "sub": "google_linked_sub_7890",
+            "email": "shared_student@untverse.kz",
+            "email_verified": True,
+            "name": "Shared Student Google",
+        },
+        "fake_secret",
+        algorithm="HS256",
+    )
 
     async def mock_exchange(code: str, code_verifier: str):
         return {"id_token": mock_id_token}
 
     monkeypatch.setattr(GoogleOAuthService, "exchange_code_for_tokens", mock_exchange)
-    monkeypatch.setattr(GoogleOAuthService, "verify_id_token", lambda _token, expected_nonce=None: {
-        "sub": "google_linked_sub_7890", "email": "shared_student@untverse.kz", "email_verified": True,
-        "name": "Shared Student Google", "nonce": expected_nonce,
-    })
+    monkeypatch.setattr(
+        GoogleOAuthService,
+        "verify_id_token",
+        lambda _token, expected_nonce=None: {
+            "sub": "google_linked_sub_7890",
+            "email": "shared_student@untverse.kz",
+            "email_verified": True,
+            "name": "Shared Student Google",
+            "nonce": expected_nonce,
+        },
+    )
 
     # 3. Callback for linking
-    cb_res = await client.post("/api/v1/auth/oauth/google/callback", json={
-        "code": "code_for_linking",
-        "state": state,
-    })
+    cb_res = await client.post(
+        "/api/v1/auth/oauth/google/callback",
+        json={
+            "code": "code_for_linking",
+            "state": state,
+        },
+    )
     assert cb_res.status_code == 409
 
     # 5. Verify user can still login with password
-    pwd_login = await client.post("/api/v1/auth/login", json={
-        "email": "shared_student@untverse.kz",
-        "password": "SecurePassword123!",
-    })
+    pwd_login = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "shared_student@untverse.kz",
+            "password": "SecurePassword123!",
+        },
+    )
     assert pwd_login.status_code == 200
 
 
@@ -268,26 +317,42 @@ async def test_google_oauth_account_linking_existing_user(client: AsyncClient, m
 async def test_google_oauth_browser_get_callback(client: AsyncClient, monkeypatch):
     verifier, challenge = GoogleOAuthService.generate_pkce_challenge()
     state = GoogleOAuthService.create_signed_state(verifier, locale="kk", redirect_to="/profile")
-    client.cookies.set("oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state))
+    client.cookies.set(
+        "oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state)
+    )
 
-    mock_id_token = jwt.encode({
-        "sub": "google_browser_user_555",
-        "email": "browser_user@untverse.kz",
-        "email_verified": True,
-        "name": "Browser User",
-    }, "fake_secret", algorithm="HS256")
+    mock_id_token = jwt.encode(
+        {
+            "sub": "google_browser_user_555",
+            "email": "browser_user@untverse.kz",
+            "email_verified": True,
+            "name": "Browser User",
+        },
+        "fake_secret",
+        algorithm="HS256",
+    )
 
     async def mock_exchange(code: str, code_verifier: str):
         return {"id_token": mock_id_token}
 
     monkeypatch.setattr(GoogleOAuthService, "exchange_code_for_tokens", mock_exchange)
-    monkeypatch.setattr(GoogleOAuthService, "verify_id_token", lambda _token, expected_nonce=None: {
-        "sub": "google_browser_user_555", "email": "browser_user@untverse.kz", "email_verified": True,
-        "name": "Browser User", "nonce": expected_nonce,
-    })
+    monkeypatch.setattr(
+        GoogleOAuthService,
+        "verify_id_token",
+        lambda _token, expected_nonce=None: {
+            "sub": "google_browser_user_555",
+            "email": "browser_user@untverse.kz",
+            "email_verified": True,
+            "name": "Browser User",
+            "nonce": expected_nonce,
+        },
+    )
 
     # GET redirect callback from Google
-    res = await client.get(f"/api/v1/auth/oauth/google/callback?code=mock_browser_code&state={state}", follow_redirects=False)
+    res = await client.get(
+        f"/api/v1/auth/oauth/google/callback?code=mock_browser_code&state={state}",
+        follow_redirects=False,
+    )
     assert res.status_code == 307
     location = res.headers["location"]
     assert f"{settings.FRONTEND_URL}/kk/auth/callback?redirect_to=%2Fprofile" in location
@@ -298,11 +363,14 @@ async def test_google_oauth_browser_get_callback(client: AsyncClient, monkeypatc
 @pytest.mark.asyncio
 async def test_refresh_token_rotation_and_replay_detection(client: AsyncClient):
     # 1. Register a user and obtain initial tokens
-    reg_res = await client.post("/api/v1/auth/register", json={
-        "email": "rotation_test@untverse.kz",
-        "password": "Password123!",
-        "display_name": "Rotation User"
-    })
+    reg_res = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "rotation_test@untverse.kz",
+            "password": "Password123!",
+            "display_name": "Rotation User",
+        },
+    )
     assert reg_res.status_code == 201
     initial_data = reg_res.json()
     token1 = initial_data["refresh_token"]
@@ -338,36 +406,55 @@ async def test_password_not_set_and_set_password_flow(client: AsyncClient, monke
     # 1. Provision user via Google OAuth (without password)
     verifier, challenge = GoogleOAuthService.generate_pkce_challenge()
     state = GoogleOAuthService.create_signed_state(verifier, locale="ru", redirect_to="/dashboard")
-    client.cookies.set("oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state))
+    client.cookies.set(
+        "oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state)
+    )
 
-    mock_id_token = jwt.encode({
-        "sub": "oauth_only_sub_9999",
-        "email": "oauth_only@untverse.kz",
-        "email_verified": True,
-        "name": "OAuth Only User",
-    }, "fake_secret", algorithm="HS256")
+    mock_id_token = jwt.encode(
+        {
+            "sub": "oauth_only_sub_9999",
+            "email": "oauth_only@untverse.kz",
+            "email_verified": True,
+            "name": "OAuth Only User",
+        },
+        "fake_secret",
+        algorithm="HS256",
+    )
 
     async def mock_exchange(code: str, code_verifier: str):
         return {"id_token": mock_id_token}
 
     monkeypatch.setattr(GoogleOAuthService, "exchange_code_for_tokens", mock_exchange)
-    monkeypatch.setattr(GoogleOAuthService, "verify_id_token", lambda _token, expected_nonce=None: {
-        "sub": "oauth_only_sub_9999", "email": "oauth_only@untverse.kz", "email_verified": True,
-        "name": "OAuth Only User", "nonce": expected_nonce,
-    })
+    monkeypatch.setattr(
+        GoogleOAuthService,
+        "verify_id_token",
+        lambda _token, expected_nonce=None: {
+            "sub": "oauth_only_sub_9999",
+            "email": "oauth_only@untverse.kz",
+            "email_verified": True,
+            "name": "OAuth Only User",
+            "nonce": expected_nonce,
+        },
+    )
 
-    cb_res = await client.post("/api/v1/auth/oauth/google/callback", json={
-        "code": "oauth_code_1",
-        "state": state,
-    })
+    cb_res = await client.post(
+        "/api/v1/auth/oauth/google/callback",
+        json={
+            "code": "oauth_code_1",
+            "state": state,
+        },
+    )
     assert cb_res.status_code == 200
     access_token = cb_res.json()["access_token"]
 
     # 2. Try password login -> Must return AUTH_PASSWORD_NOT_SET
-    login_attempt = await client.post("/api/v1/auth/login", json={
-        "email": "oauth_only@untverse.kz",
-        "password": "SomePassword123!",
-    })
+    login_attempt = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "oauth_only@untverse.kz",
+            "password": "SomePassword123!",
+        },
+    )
     assert login_attempt.status_code == 400
     assert login_attempt.json()["code"] == AuthErrorCode.AUTH_PASSWORD_NOT_SET.value
 
@@ -375,16 +462,19 @@ async def test_password_not_set_and_set_password_flow(client: AsyncClient, monke
     set_pwd_res = await client.post(
         "/api/v1/auth/set-password",
         json={"new_password": "NewCreatedPassword123!"},
-        headers={"Authorization": f"Bearer {access_token}"}
+        headers={"Authorization": f"Bearer {access_token}"},
     )
     assert set_pwd_res.status_code == 200
     assert set_pwd_res.json()["message"] == "Пароль успешно установлен"
 
     # 4. Now password login succeeds
-    successful_login = await client.post("/api/v1/auth/login", json={
-        "email": "oauth_only@untverse.kz",
-        "password": "NewCreatedPassword123!",
-    })
+    successful_login = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "oauth_only@untverse.kz",
+            "password": "NewCreatedPassword123!",
+        },
+    )
     assert successful_login.status_code == 200
     assert "access_token" in successful_login.json()
 
@@ -392,11 +482,14 @@ async def test_password_not_set_and_set_password_flow(client: AsyncClient, monke
 @pytest.mark.asyncio
 async def test_logout_and_logout_all(client: AsyncClient):
     # Register user
-    reg_res = await client.post("/api/v1/auth/register", json={
-        "email": "logout_tester@untverse.kz",
-        "password": "Password123!",
-        "display_name": "Logout Tester"
-    })
+    reg_res = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "logout_tester@untverse.kz",
+            "password": "Password123!",
+            "display_name": "Logout Tester",
+        },
+    )
     assert reg_res.status_code == 201
     reg_data = reg_res.json()
     access_token = reg_data["access_token"]
@@ -411,18 +504,17 @@ async def test_logout_and_logout_all(client: AsyncClient):
     assert refresh_fail.status_code == 401
 
     # Login again to get new session
-    login_res = await client.post("/api/v1/auth/login", json={
-        "email": "logout_tester@untverse.kz",
-        "password": "Password123!"
-    })
+    login_res = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "logout_tester@untverse.kz", "password": "Password123!"},
+    )
     assert login_res.status_code == 200
     new_access = login_res.json()["access_token"]
     new_refresh = login_res.json()["refresh_token"]
 
     # Logout all sessions
     logout_all_res = await client.post(
-        "/api/v1/auth/logout-all",
-        headers={"Authorization": f"Bearer {new_access}"}
+        "/api/v1/auth/logout-all", headers={"Authorization": f"Bearer {new_access}"}
     )
     assert logout_all_res.status_code == 200
     assert logout_all_res.json()["revoked_sessions_count"] >= 1
@@ -434,11 +526,14 @@ async def test_logout_and_logout_all(client: AsyncClient):
 
 @pytest.mark.asyncio
 async def test_users_me_and_auth_me(client: AsyncClient):
-    reg_res = await client.post("/api/v1/auth/register", json={
-        "email": "me_tester@untverse.kz",
-        "password": "Password123!",
-        "display_name": "Me Tester"
-    })
+    reg_res = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "me_tester@untverse.kz",
+            "password": "Password123!",
+            "display_name": "Me Tester",
+        },
+    )
     token = reg_res.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -457,6 +552,7 @@ async def test_users_me_and_auth_me(client: AsyncClient):
 # 3. Additional Security Tests (QA Sprint)
 # ==========================================
 
+
 def test_pkce_verifier_length_and_s256_challenge():
     """
     RFC 7636: code_verifier MUST be 43–128 chars, S256 challenge MUST match SHA-256 base64url(no-pad).
@@ -468,8 +564,10 @@ def test_pkce_verifier_length_and_s256_challenge():
         assert len(verifier) >= 43, f"Verifier too short: {len(verifier)} < 43"
         assert len(verifier) <= 128, f"Verifier too long: {len(verifier)} > 128"
         # Only URL-safe base64 characters
-        assert all(c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" for c in verifier), \
-            "Verifier contains non-URL-safe characters"
+        assert all(
+            c in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+            for c in verifier
+        ), "Verifier contains non-URL-safe characters"
         # S256 challenge derivation
         digest = hashlib.sha256(verifier.encode("ascii")).digest()
         expected = base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
@@ -497,10 +595,14 @@ def test_state_jwt_claims_validation():
     raw_payload = jwt.decode(state, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
 
     # typ must be 'oauth_state'
-    assert raw_payload["typ"] == "oauth_state", f"Expected typ='oauth_state', got '{raw_payload.get('typ')}'"
+    assert raw_payload["typ"] == "oauth_state", (
+        f"Expected typ='oauth_state', got '{raw_payload.get('typ')}'"
+    )
 
     # iss must be 'untverse.kz'
-    assert raw_payload["iss"] == "untverse.kz", f"Expected iss='untverse.kz', got '{raw_payload.get('iss')}'"
+    assert raw_payload["iss"] == "untverse.kz", (
+        f"Expected iss='untverse.kz', got '{raw_payload.get('iss')}'"
+    )
 
     # exp must be at most iat + 10 minutes (600 seconds)
     iat = raw_payload["iat"]
@@ -521,7 +623,9 @@ def test_state_jwt_claims_validation():
     assert decoded["redirect_to"] == "/quizzes"
 
     # WRONG SIGNATURE: must raise AUTH_OAUTH_STATE_INVALID
-    forged_state = jwt.encode(raw_payload, "attacker_secret_key_12345", algorithm=settings.JWT_ALGORITHM)
+    forged_state = jwt.encode(
+        raw_payload, "attacker_secret_key_12345", algorithm=settings.JWT_ALGORITHM
+    )
     with pytest.raises(AuthException) as exc_info:
         GoogleOAuthService.verify_and_decode_state(forged_state)
     assert exc_info.value.code == AuthErrorCode.AUTH_OAUTH_STATE_INVALID.value
@@ -552,7 +656,9 @@ def test_open_redirect_defense():
     ]
     for url in dangerous_urls:
         result = GoogleOAuthService.sanitize_redirect_url(url)
-        assert result == "/dashboard", f"OPEN REDIRECT VULNERABILITY: '{url}' -> '{result}' (expected '/dashboard')"
+        assert result == "/dashboard", (
+            f"OPEN REDIRECT VULNERABILITY: '{url}' -> '{result}' (expected '/dashboard')"
+        )
 
     # Valid internal paths MUST pass through
     valid_paths = [
@@ -575,11 +681,14 @@ async def test_replay_detection_revokes_all_sessions(client: AsyncClient):
     After replay is detected, even the latest valid token3 must be rejected.
     """
     # Register user
-    reg = await client.post("/api/v1/auth/register", json={
-        "email": "replay_detection_test@untverse.kz",
-        "password": "SecurePass123!",
-        "display_name": "Replay Tester",
-    })
+    reg = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "replay_detection_test@untverse.kz",
+            "password": "SecurePass123!",
+            "display_name": "Replay Tester",
+        },
+    )
     assert reg.status_code == 201
     token1 = reg.json()["refresh_token"]
 
@@ -602,8 +711,9 @@ async def test_replay_detection_revokes_all_sessions(client: AsyncClient):
 
     # CRITICAL: After replay detection, even the newest token3 MUST be revoked
     post_replay = await client.post("/api/v1/auth/refresh", json={"refresh_token": token3})
-    assert post_replay.status_code == 401, \
+    assert post_replay.status_code == 401, (
         "token3 must be rejected after replay detection revoked ALL sessions"
+    )
 
     # Even token2 must also be rejected
     post_replay2 = await client.post("/api/v1/auth/refresh", json={"refresh_token": token2})
@@ -617,11 +727,14 @@ async def test_session_rotation_invalidates_old_token(client: AsyncClient):
     The NEW token must be the only valid one.
     """
     # Register
-    reg = await client.post("/api/v1/auth/register", json={
-        "email": "rotation_strict_test@untverse.kz",
-        "password": "Password123!",
-        "display_name": "Rotation Strict",
-    })
+    reg = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "rotation_strict_test@untverse.kz",
+            "password": "Password123!",
+            "display_name": "Rotation Strict",
+        },
+    )
     assert reg.status_code == 201
     old_token = reg.json()["refresh_token"]
 
@@ -639,12 +752,13 @@ async def test_session_rotation_invalidates_old_token(client: AsyncClient):
     # Old token MUST be rejected (already rotated out)
     # This triggers replay detection since old_token is already revoked
     old_attempt = await client.post("/api/v1/auth/refresh", json={"refresh_token": old_token})
-    assert old_attempt.status_code == 401, \
-        "Old token must be rejected after rotation"
+    assert old_attempt.status_code == 401, "Old token must be rejected after rotation"
 
 
 @pytest.mark.asyncio
-async def test_account_linking_google_with_existing_email_no_duplicate(client: AsyncClient, monkeypatch):
+async def test_account_linking_google_with_existing_email_no_duplicate(
+    client: AsyncClient, monkeypatch
+):
     """
     Google login with an email that already has a password account MUST:
     1. Link Google provider to the existing user (no new user creation)
@@ -653,48 +767,70 @@ async def test_account_linking_google_with_existing_email_no_duplicate(client: A
     4. Password login still works after linking
     """
     # 1. Register with password
-    reg = await client.post("/api/v1/auth/register", json={
-        "email": "linking_test_no_dup@untverse.kz",
-        "password": "LinkTestPass123!",
-        "display_name": "Link Test User",
-        "role": "student",
-    })
+    reg = await client.post(
+        "/api/v1/auth/register",
+        json={
+            "email": "linking_test_no_dup@untverse.kz",
+            "password": "LinkTestPass123!",
+            "display_name": "Link Test User",
+            "role": "student",
+        },
+    )
     assert reg.status_code == 201
     original_user_id = reg.json()["user_id"]
 
     # 2. Google login with same email
     verifier, _ = GoogleOAuthService.generate_pkce_challenge()
     state = GoogleOAuthService.create_signed_state(verifier, locale="kk", redirect_to="/profile")
-    client.cookies.set("oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state))
+    client.cookies.set(
+        "oauth_transaction", GoogleOAuthService.create_oauth_transaction(verifier, state)
+    )
 
-    mock_id_token = jwt.encode({
-        "sub": "google_link_nodup_sub_5555",
-        "email": "linking_test_no_dup@untverse.kz",
-        "email_verified": True,
-        "name": "Link Test User Google Name",
-        "picture": "https://lh3.googleusercontent.com/link_test.jpg",
-    }, "fake_secret", algorithm="HS256")
+    mock_id_token = jwt.encode(
+        {
+            "sub": "google_link_nodup_sub_5555",
+            "email": "linking_test_no_dup@untverse.kz",
+            "email_verified": True,
+            "name": "Link Test User Google Name",
+            "picture": "https://lh3.googleusercontent.com/link_test.jpg",
+        },
+        "fake_secret",
+        algorithm="HS256",
+    )
 
     async def mock_exchange(code: str, code_verifier: str):
         return {"id_token": mock_id_token}
 
     monkeypatch.setattr(GoogleOAuthService, "exchange_code_for_tokens", mock_exchange)
-    monkeypatch.setattr(GoogleOAuthService, "verify_id_token", lambda _token, expected_nonce=None: {
-        "sub": "google_link_nodup_sub_5555", "email": "linking_test_no_dup@untverse.kz", "email_verified": True,
-        "name": "Link Test User Google Name", "nonce": expected_nonce,
-    })
+    monkeypatch.setattr(
+        GoogleOAuthService,
+        "verify_id_token",
+        lambda _token, expected_nonce=None: {
+            "sub": "google_link_nodup_sub_5555",
+            "email": "linking_test_no_dup@untverse.kz",
+            "email_verified": True,
+            "name": "Link Test User Google Name",
+            "nonce": expected_nonce,
+        },
+    )
 
-    cb = await client.post("/api/v1/auth/oauth/google/callback", json={
-        "code": "code_for_linking_nodup",
-        "state": state,
-    })
+    cb = await client.post(
+        "/api/v1/auth/oauth/google/callback",
+        json={
+            "code": "code_for_linking_nodup",
+            "state": state,
+        },
+    )
     assert cb.status_code == 409
 
     # 4. Password login still works
-    pwd_login = await client.post("/api/v1/auth/login", json={
-        "email": "linking_test_no_dup@untverse.kz",
-        "password": "LinkTestPass123!",
-    })
+    pwd_login = await client.post(
+        "/api/v1/auth/login",
+        json={
+            "email": "linking_test_no_dup@untverse.kz",
+            "password": "LinkTestPass123!",
+        },
+    )
     assert pwd_login.status_code == 200
 
 

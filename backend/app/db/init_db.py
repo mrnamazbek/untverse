@@ -1,7 +1,14 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.user import User, UserProfile, UserRole, Role, AuthAccount
-from app.models.course import Course, Topic, Lesson, CourseTranslation, TopicTranslation, LessonTranslation
+from app.models.course import (
+    Course,
+    Topic,
+    Lesson,
+    CourseTranslation,
+    TopicTranslation,
+    LessonTranslation,
+)
 from app.models.quiz import Quiz, Question, QuestionOption, QuizType, QuestionType
 from app.models.coding import CodingTask, TestCase
 from app.models.gamification import Achievement, DailyMission
@@ -11,26 +18,56 @@ from app.core.security import get_password_hash
 LEARNING_TRANSLATIONS = {
     "courses": {
         "unt-informatics-full": {
-            "kk": ("ҰБТ информатикасы: толық дайындық курсы", "Қазақстандағы Ұлттық бірыңғай тестілеудің «Информатика» бейіндік пәніне арналған кешенді курс."),
-            "en": ("UNT Informatics: Complete preparation course", "A comprehensive course for Kazakhstan's Unified National Testing Informatics profile subject."),
+            "kk": (
+                "ҰБТ информатикасы: толық дайындық курсы",
+                "Қазақстандағы Ұлттық бірыңғай тестілеудің «Информатика» бейіндік пәніне арналған кешенді курс.",
+            ),
+            "en": (
+                "UNT Informatics: Complete preparation course",
+                "A comprehensive course for Kazakhstan's Unified National Testing Informatics profile subject.",
+            ),
         },
     },
     "topics": {
         "number-systems-and-coding": {
-            "kk": ("Санау жүйелері және ақпаратты ұсыну", "Екілік, сегіздік және он алтылық санау жүйелері, ақпаратты кодтау және дерек көлемі."),
-            "en": ("Number systems and information representation", "Binary, octal, and hexadecimal number systems, information encoding, and data volume."),
+            "kk": (
+                "Санау жүйелері және ақпаратты ұсыну",
+                "Екілік, сегіздік және он алтылық санау жүйелері, ақпаратты кодтау және дерек көлемі.",
+            ),
+            "en": (
+                "Number systems and information representation",
+                "Binary, octal, and hexadecimal number systems, information encoding, and data volume.",
+            ),
         },
         "relational-databases-and-sql": {
-            "kk": ("Реляциялық дерекқорлар және SQL тілі", "Деректер моделі, кілттер, қалыптандыру және SQL сұраулары."),
-            "en": ("Relational databases and SQL", "Data models, keys, normalization, and SQL queries."),
+            "kk": (
+                "Реляциялық дерекқорлар және SQL тілі",
+                "Деректер моделі, кілттер, қалыптандыру және SQL сұраулары.",
+            ),
+            "en": (
+                "Relational databases and SQL",
+                "Data models, keys, normalization, and SQL queries.",
+            ),
         },
         "python-and-algorithms": {
-            "kk": ("Python бағдарламалау негіздері", "Python тіліндегі алгоритмдер, жолдар, тізімдер және функциялар."),
-            "en": ("Python programming fundamentals", "Algorithms, strings, lists, and functions in Python."),
+            "kk": (
+                "Python бағдарламалау негіздері",
+                "Python тіліндегі алгоритмдер, жолдар, тізімдер және функциялар.",
+            ),
+            "en": (
+                "Python programming fundamentals",
+                "Algorithms, strings, lists, and functions in Python.",
+            ),
         },
         "networks-and-cybersecurity": {
-            "kk": ("Компьютерлік желілер", "OSI үлгісі, желілік хаттамалар және деректерді беру негіздері."),
-            "en": ("Computer networks", "The OSI model, network protocols, and data transmission fundamentals."),
+            "kk": (
+                "Компьютерлік желілер",
+                "OSI үлгісі, желілік хаттамалар және деректерді беру негіздері.",
+            ),
+            "en": (
+                "Computer networks",
+                "The OSI model, network protocols, and data transmission fundamentals.",
+            ),
         },
     },
     "lessons": {
@@ -100,27 +137,63 @@ async def _ensure_learning_translations(session: AsyncSession):
     topics = list((await session.execute(select(Topic))).scalars().all())
     lessons = list((await session.execute(select(Lesson))).scalars().all())
 
-    course_translations = {(row.course_id, row.locale) for row in (await session.execute(select(CourseTranslation))).scalars().all()}
-    topic_translations = {(row.topic_id, row.locale) for row in (await session.execute(select(TopicTranslation))).scalars().all()}
-    lesson_translations = {(row.lesson_id, row.locale) for row in (await session.execute(select(LessonTranslation))).scalars().all()}
+    course_translations = {
+        (row.course_id, row.locale)
+        for row in (await session.execute(select(CourseTranslation))).scalars().all()
+    }
+    topic_translations = {
+        (row.topic_id, row.locale)
+        for row in (await session.execute(select(TopicTranslation))).scalars().all()
+    }
+    lesson_translations = {
+        (row.lesson_id, row.locale)
+        for row in (await session.execute(select(LessonTranslation))).scalars().all()
+    }
 
     for course in courses:
         if (course.id, "ru") not in course_translations:
-            session.add(CourseTranslation(course_id=course.id, locale="ru", title=course.title, description=course.description))
+            session.add(
+                CourseTranslation(
+                    course_id=course.id,
+                    locale="ru",
+                    title=course.title,
+                    description=course.description,
+                )
+            )
         for locale, values in LEARNING_TRANSLATIONS["courses"].get(course.slug, {}).items():
             if (course.id, locale) not in course_translations:
-                session.add(CourseTranslation(course_id=course.id, locale=locale, title=values[0], description=values[1]))
+                session.add(
+                    CourseTranslation(
+                        course_id=course.id, locale=locale, title=values[0], description=values[1]
+                    )
+                )
 
     for topic in topics:
         if (topic.id, "ru") not in topic_translations:
-            session.add(TopicTranslation(topic_id=topic.id, locale="ru", title=topic.title, description=topic.description))
+            session.add(
+                TopicTranslation(
+                    topic_id=topic.id, locale="ru", title=topic.title, description=topic.description
+                )
+            )
         for locale, values in LEARNING_TRANSLATIONS["topics"].get(topic.slug, {}).items():
             if (topic.id, locale) not in topic_translations:
-                session.add(TopicTranslation(topic_id=topic.id, locale=locale, title=values[0], description=values[1]))
+                session.add(
+                    TopicTranslation(
+                        topic_id=topic.id, locale=locale, title=values[0], description=values[1]
+                    )
+                )
 
     for lesson in lessons:
         if (lesson.id, "ru") not in lesson_translations:
-            session.add(LessonTranslation(lesson_id=lesson.id, locale="ru", title=lesson.title, summary=lesson.summary, content=lesson.content))
+            session.add(
+                LessonTranslation(
+                    lesson_id=lesson.id,
+                    locale="ru",
+                    title=lesson.title,
+                    summary=lesson.summary,
+                    content=lesson.content,
+                )
+            )
         for locale, values in LEARNING_TRANSLATIONS["lessons"].get(lesson.slug, {}).items():
             if (lesson.id, locale) not in lesson_translations:
                 session.add(LessonTranslation(lesson_id=lesson.id, locale=locale, **values))
@@ -155,16 +228,20 @@ async def _seed_base_data(session: AsyncSession):
     session.add(admin_user)
     await session.flush()
 
-    session.add(AuthAccount(
-        user_id=admin_user.id,
-        provider="password",
-        provider_account_id=admin_user.email,
-        provider_email=admin_user.email,
-    ))
-    session.add(UserRole(
-        user_id=admin_user.id,
-        role_id=role_entities["admin"].id,
-    ))
+    session.add(
+        AuthAccount(
+            user_id=admin_user.id,
+            provider="password",
+            provider_account_id=admin_user.email,
+            provider_email=admin_user.email,
+        )
+    )
+    session.add(
+        UserRole(
+            user_id=admin_user.id,
+            role_id=role_entities["admin"].id,
+        )
+    )
 
     admin_profile = UserProfile(
         user_id=admin_user.id,
@@ -189,16 +266,20 @@ async def _seed_base_data(session: AsyncSession):
     session.add(demo_student)
     await session.flush()
 
-    session.add(AuthAccount(
-        user_id=demo_student.id,
-        provider="password",
-        provider_account_id=demo_student.email,
-        provider_email=demo_student.email,
-    ))
-    session.add(UserRole(
-        user_id=demo_student.id,
-        role_id=role_entities["student"].id,
-    ))
+    session.add(
+        AuthAccount(
+            user_id=demo_student.id,
+            provider="password",
+            provider_account_id=demo_student.email,
+            provider_email=demo_student.email,
+        )
+    )
+    session.add(
+        UserRole(
+            user_id=demo_student.id,
+            role_id=role_entities["student"].id,
+        )
+    )
 
     student_profile = UserProfile(
         user_id=demo_student.id,
@@ -214,25 +295,143 @@ async def _seed_base_data(session: AsyncSession):
 
     # 2. Seed Achievements
     achievements_data = [
-        {"code": "first_lesson", "title": "Первый шаг к успеху", "description": "Пройти свой первый теоретический урок", "icon": "book-open", "badge_color": "blue", "category": "learning", "xp_reward": 50, "condition_type": "lessons_count", "condition_value": 1},
-        {"code": "first_quiz", "title": "Боевое крещение", "description": "Успешно завершить первый тест по информатике", "icon": "check-circle", "badge_color": "green", "category": "quizzes", "xp_reward": 50, "condition_type": "quizzes_count", "condition_value": 1},
-        {"code": "perfect_quiz_first", "title": "Абсолютная точность", "description": "Сдать любой тест на 100% без единой ошибки", "icon": "zap", "badge_color": "orange", "category": "mastery", "xp_reward": 100, "condition_type": "perfect_quizzes", "condition_value": 1},
-        {"code": "first_code_task", "title": "Привет, Python!", "description": "Решить первую задачу по программированию с прохождением всех тестов", "icon": "code", "badge_color": "purple", "category": "coding", "xp_reward": 75, "condition_type": "coding_solved", "condition_value": 1},
-        {"code": "streak_3", "title": "Набираем темп", "description": "Удерживать ежедневный стрик обучения 3 дня подряд", "icon": "flame", "badge_color": "orange", "category": "streaks", "xp_reward": 100, "condition_type": "streak_days", "condition_value": 3},
-        {"code": "streak_7", "title": "Недельный марафонец", "description": "Удерживать непрерывный стрик обучения 7 дней подряд", "icon": "flame", "badge_color": "pink", "category": "streaks", "xp_reward": 250, "condition_type": "streak_days", "condition_value": 7},
-        {"code": "streak_30", "title": "Легенда дисциплины", "description": "Удерживать стрик 30 дней подряд", "icon": "crown", "badge_color": "purple", "category": "streaks", "xp_reward": 1000, "condition_type": "streak_days", "condition_value": 30},
-        {"code": "level_5", "title": "Ученик 5 уровня", "description": "Достичь 5-го уровня в профиле", "icon": "award", "badge_color": "sky", "category": "general", "xp_reward": 150, "condition_type": "level_reached", "condition_value": 5},
-        {"code": "level_10", "title": "Мастер алгоритмов (Level 10)", "description": "Достичь 10-го уровня", "icon": "shield", "badge_color": "teal", "category": "general", "xp_reward": 500, "condition_type": "level_reached", "condition_value": 10},
+        {
+            "code": "first_lesson",
+            "title": "Первый шаг к успеху",
+            "description": "Пройти свой первый теоретический урок",
+            "icon": "book-open",
+            "badge_color": "blue",
+            "category": "learning",
+            "xp_reward": 50,
+            "condition_type": "lessons_count",
+            "condition_value": 1,
+        },
+        {
+            "code": "first_quiz",
+            "title": "Боевое крещение",
+            "description": "Успешно завершить первый тест по информатике",
+            "icon": "check-circle",
+            "badge_color": "green",
+            "category": "quizzes",
+            "xp_reward": 50,
+            "condition_type": "quizzes_count",
+            "condition_value": 1,
+        },
+        {
+            "code": "perfect_quiz_first",
+            "title": "Абсолютная точность",
+            "description": "Сдать любой тест на 100% без единой ошибки",
+            "icon": "zap",
+            "badge_color": "orange",
+            "category": "mastery",
+            "xp_reward": 100,
+            "condition_type": "perfect_quizzes",
+            "condition_value": 1,
+        },
+        {
+            "code": "first_code_task",
+            "title": "Привет, Python!",
+            "description": "Решить первую задачу по программированию с прохождением всех тестов",
+            "icon": "code",
+            "badge_color": "purple",
+            "category": "coding",
+            "xp_reward": 75,
+            "condition_type": "coding_solved",
+            "condition_value": 1,
+        },
+        {
+            "code": "streak_3",
+            "title": "Набираем темп",
+            "description": "Удерживать ежедневный стрик обучения 3 дня подряд",
+            "icon": "flame",
+            "badge_color": "orange",
+            "category": "streaks",
+            "xp_reward": 100,
+            "condition_type": "streak_days",
+            "condition_value": 3,
+        },
+        {
+            "code": "streak_7",
+            "title": "Недельный марафонец",
+            "description": "Удерживать непрерывный стрик обучения 7 дней подряд",
+            "icon": "flame",
+            "badge_color": "pink",
+            "category": "streaks",
+            "xp_reward": 250,
+            "condition_type": "streak_days",
+            "condition_value": 7,
+        },
+        {
+            "code": "streak_30",
+            "title": "Легенда дисциплины",
+            "description": "Удерживать стрик 30 дней подряд",
+            "icon": "crown",
+            "badge_color": "purple",
+            "category": "streaks",
+            "xp_reward": 1000,
+            "condition_type": "streak_days",
+            "condition_value": 30,
+        },
+        {
+            "code": "level_5",
+            "title": "Ученик 5 уровня",
+            "description": "Достичь 5-го уровня в профиле",
+            "icon": "award",
+            "badge_color": "sky",
+            "category": "general",
+            "xp_reward": 150,
+            "condition_type": "level_reached",
+            "condition_value": 5,
+        },
+        {
+            "code": "level_10",
+            "title": "Мастер алгоритмов (Level 10)",
+            "description": "Достичь 10-го уровня",
+            "icon": "shield",
+            "badge_color": "teal",
+            "category": "general",
+            "xp_reward": 500,
+            "condition_type": "level_reached",
+            "condition_value": 10,
+        },
     ]
     for ach in achievements_data:
         session.add(Achievement(**ach))
 
     # 3. Seed Daily Missions
     missions_data = [
-        {"title": "Ответить на 10 вопросов ЕНТ", "description": "Пройдите тренировку или тест и ответьте минимум на 10 вопросов", "mission_type": "answer_questions", "target_count": 10, "xp_reward": 60, "icon": "help-circle"},
-        {"title": "Решить задачу на Python", "description": "Напишите код и пройдите автоматические тесты в тренажере", "mission_type": "solve_coding", "target_count": 1, "xp_reward": 80, "icon": "code"},
-        {"title": "Пройти один урок теории", "description": "Изучите материал любого урока по кодированию, базам данных или сетям", "mission_type": "read_lesson", "target_count": 1, "xp_reward": 40, "icon": "book-open"},
-        {"title": "Сдать полноценный квиз", "description": "Завершите тематический квиз или босс-челлендж", "mission_type": "complete_quiz", "target_count": 1, "xp_reward": 50, "icon": "check-square"},
+        {
+            "title": "Ответить на 10 вопросов ЕНТ",
+            "description": "Пройдите тренировку или тест и ответьте минимум на 10 вопросов",
+            "mission_type": "answer_questions",
+            "target_count": 10,
+            "xp_reward": 60,
+            "icon": "help-circle",
+        },
+        {
+            "title": "Решить задачу на Python",
+            "description": "Напишите код и пройдите автоматические тесты в тренажере",
+            "mission_type": "solve_coding",
+            "target_count": 1,
+            "xp_reward": 80,
+            "icon": "code",
+        },
+        {
+            "title": "Пройти один урок теории",
+            "description": "Изучите материал любого урока по кодированию, базам данных или сетям",
+            "mission_type": "read_lesson",
+            "target_count": 1,
+            "xp_reward": 40,
+            "icon": "book-open",
+        },
+        {
+            "title": "Сдать полноценный квиз",
+            "description": "Завершите тематический квиз или босс-челлендж",
+            "mission_type": "complete_quiz",
+            "target_count": 1,
+            "xp_reward": 50,
+            "icon": "check-square",
+        },
     ]
     for m in missions_data:
         session.add(DailyMission(**m))
@@ -244,7 +443,7 @@ async def _seed_base_data(session: AsyncSession):
         description="Комплексная программа подготовки к Единому Национальному Тестированию Казахстана по профилю 'Информатика'. Разбор всех спецификаций НЦТ: от систем счисления до архитектуры сетей и SQL.",
         icon="graduation-cap",
         order_index=1,
-        is_published=True
+        is_published=True,
     )
     session.add(course)
     await session.flush()
@@ -259,7 +458,7 @@ async def _seed_base_data(session: AsyncSession):
         color_accent="sky",
         order_index=1,
         est_minutes=45,
-        xp_reward=150
+        xp_reward=150,
     )
     session.add(topic1)
     await session.flush()
@@ -327,7 +526,7 @@ $$I = K \\times i$$
         quiz_type=QuizType.STANDARD.value,
         time_limit_seconds=420,
         passing_score=70,
-        xp_reward=70
+        xp_reward=70,
     )
     session.add(quiz1)
     await session.flush()
@@ -339,16 +538,18 @@ $$I = K \\times i$$
         difficulty="easy",
         points=1,
         order_index=1,
-        explanation="45 = 32 + 8 + 4 + 1 = 2^5 + 2^3 + 2^2 + 2^0 = 101101₂"
+        explanation="45 = 32 + 8 + 4 + 1 = 2^5 + 2^3 + 2^2 + 2^0 = 101101₂",
     )
     session.add(q1_1)
     await session.flush()
-    session.add_all([
-        QuestionOption(question_id=q1_1.id, text="101101", is_correct=True, order_index=1),
-        QuestionOption(question_id=q1_1.id, text="110101", is_correct=False, order_index=2),
-        QuestionOption(question_id=q1_1.id, text="100111", is_correct=False, order_index=3),
-        QuestionOption(question_id=q1_1.id, text="101110", is_correct=False, order_index=4),
-    ])
+    session.add_all(
+        [
+            QuestionOption(question_id=q1_1.id, text="101101", is_correct=True, order_index=1),
+            QuestionOption(question_id=q1_1.id, text="110101", is_correct=False, order_index=2),
+            QuestionOption(question_id=q1_1.id, text="100111", is_correct=False, order_index=3),
+            QuestionOption(question_id=q1_1.id, text="101110", is_correct=False, order_index=4),
+        ]
+    )
 
     q1_2 = Question(
         quiz_id=quiz1.id,
@@ -357,16 +558,18 @@ $$I = K \\times i$$
         difficulty="medium",
         points=1,
         order_index=2,
-        explanation="16 бит = 2 байта. 1024 символа * 2 байта = 2048 байт (или 2 Кбайт)."
+        explanation="16 бит = 2 байта. 1024 символа * 2 байта = 2048 байт (или 2 Кбайт).",
     )
     session.add(q1_2)
     await session.flush()
-    session.add_all([
-        QuestionOption(question_id=q1_2.id, text="2048 байт", is_correct=True, order_index=1),
-        QuestionOption(question_id=q1_2.id, text="1024 байта", is_correct=False, order_index=2),
-        QuestionOption(question_id=q1_2.id, text="512 байт", is_correct=False, order_index=3),
-        QuestionOption(question_id=q1_2.id, text="4096 байт", is_correct=False, order_index=4),
-    ])
+    session.add_all(
+        [
+            QuestionOption(question_id=q1_2.id, text="2048 байт", is_correct=True, order_index=1),
+            QuestionOption(question_id=q1_2.id, text="1024 байта", is_correct=False, order_index=2),
+            QuestionOption(question_id=q1_2.id, text="512 байт", is_correct=False, order_index=3),
+            QuestionOption(question_id=q1_2.id, text="4096 байт", is_correct=False, order_index=4),
+        ]
+    )
 
     q1_3 = Question(
         quiz_id=quiz1.id,
@@ -375,16 +578,18 @@ $$I = K \\times i$$
         difficulty="hard",
         points=2,
         order_index=3,
-        explanation="2F₁₆ -> 2=0010, F=1111 -> 00101111₂ -> разбиваем на триады: 000 101 111 -> 0, 5, 7 -> 57₈"
+        explanation="2F₁₆ -> 2=0010, F=1111 -> 00101111₂ -> разбиваем на триады: 000 101 111 -> 0, 5, 7 -> 57₈",
     )
     session.add(q1_3)
     await session.flush()
-    session.add_all([
-        QuestionOption(question_id=q1_3.id, text="57", is_correct=True, order_index=1),
-        QuestionOption(question_id=q1_3.id, text="47", is_correct=False, order_index=2),
-        QuestionOption(question_id=q1_3.id, text="67", is_correct=False, order_index=3),
-        QuestionOption(question_id=q1_3.id, text="37", is_correct=False, order_index=4),
-    ])
+    session.add_all(
+        [
+            QuestionOption(question_id=q1_3.id, text="57", is_correct=True, order_index=1),
+            QuestionOption(question_id=q1_3.id, text="47", is_correct=False, order_index=2),
+            QuestionOption(question_id=q1_3.id, text="67", is_correct=False, order_index=3),
+            QuestionOption(question_id=q1_3.id, text="37", is_correct=False, order_index=4),
+        ]
+    )
 
     # Topic 2: Базы данных и SQL
     topic2 = Topic(
@@ -396,7 +601,7 @@ $$I = K \\times i$$
         color_accent="purple",
         order_index=2,
         est_minutes=60,
-        xp_reward=200
+        xp_reward=200,
     )
     session.add(topic2)
     await session.flush()
@@ -460,7 +665,7 @@ ORDER BY column1 ASC;
         quiz_type=QuizType.STANDARD.value,
         time_limit_seconds=480,
         passing_score=75,
-        xp_reward=80
+        xp_reward=80,
     )
     session.add(quiz2)
     await session.flush()
@@ -472,16 +677,18 @@ ORDER BY column1 ASC;
         difficulty="easy",
         points=1,
         order_index=1,
-        explanation="Оператор SELECT DISTINCT возвращает только уникальные значения."
+        explanation="Оператор SELECT DISTINCT возвращает только уникальные значения.",
     )
     session.add(q2_1)
     await session.flush()
-    session.add_all([
-        QuestionOption(question_id=q2_1.id, text="DISTINCT", is_correct=True, order_index=1),
-        QuestionOption(question_id=q2_1.id, text="UNIQUE", is_correct=False, order_index=2),
-        QuestionOption(question_id=q2_1.id, text="GROUP", is_correct=False, order_index=3),
-        QuestionOption(question_id=q2_1.id, text="DIFFERENT", is_correct=False, order_index=4),
-    ])
+    session.add_all(
+        [
+            QuestionOption(question_id=q2_1.id, text="DISTINCT", is_correct=True, order_index=1),
+            QuestionOption(question_id=q2_1.id, text="UNIQUE", is_correct=False, order_index=2),
+            QuestionOption(question_id=q2_1.id, text="GROUP", is_correct=False, order_index=3),
+            QuestionOption(question_id=q2_1.id, text="DIFFERENT", is_correct=False, order_index=4),
+        ]
+    )
 
     q2_2 = Question(
         quiz_id=quiz2.id,
@@ -490,16 +697,26 @@ ORDER BY column1 ASC;
         difficulty="medium",
         points=1,
         order_index=2,
-        explanation="Связь 'Многие-ко-многим' (Many-to-Many, M:N), реализуется через промежуточную связующую таблицу (junction table)."
+        explanation="Связь 'Многие-ко-многим' (Many-to-Many, M:N), реализуется через промежуточную связующую таблицу (junction table).",
     )
     session.add(q2_2)
     await session.flush()
-    session.add_all([
-        QuestionOption(question_id=q2_2.id, text="Многие-ко-многим (M:N)", is_correct=True, order_index=1),
-        QuestionOption(question_id=q2_2.id, text="Один-ко-многим (1:N)", is_correct=False, order_index=2),
-        QuestionOption(question_id=q2_2.id, text="Один-к-одному (1:1)", is_correct=False, order_index=3),
-        QuestionOption(question_id=q2_2.id, text="Древовидная связь", is_correct=False, order_index=4),
-    ])
+    session.add_all(
+        [
+            QuestionOption(
+                question_id=q2_2.id, text="Многие-ко-многим (M:N)", is_correct=True, order_index=1
+            ),
+            QuestionOption(
+                question_id=q2_2.id, text="Один-ко-многим (1:N)", is_correct=False, order_index=2
+            ),
+            QuestionOption(
+                question_id=q2_2.id, text="Один-к-одному (1:1)", is_correct=False, order_index=3
+            ),
+            QuestionOption(
+                question_id=q2_2.id, text="Древовидная связь", is_correct=False, order_index=4
+            ),
+        ]
+    )
 
     # Topic 3: Программирование на Python и алгоритмы
     topic3 = Topic(
@@ -511,7 +728,7 @@ ORDER BY column1 ASC;
         color_accent="green",
         order_index=3,
         est_minutes=75,
-        xp_reward=250
+        xp_reward=250,
     )
     session.add(topic3)
     await session.flush()
@@ -587,18 +804,50 @@ print(sum(x for x in range(a, b + 1) if x % 2 == 0))
         time_limit_seconds=1.5,
         memory_limit_mb=50,
         xp_reward=60,
-        is_published=True
+        is_published=True,
     )
     session.add(task1)
     await session.flush()
 
-    session.add_all([
-        TestCase(task_id=task1.id, input_data="1\n10", expected_output="30", is_hidden=False, order_index=1),
-        TestCase(task_id=task1.id, input_data="2\n4", expected_output="6", is_hidden=False, order_index=2),
-        TestCase(task_id=task1.id, input_data="1\n1", expected_output="0", is_hidden=True, order_index=3),
-        TestCase(task_id=task1.id, input_data="10\n20", expected_output="90", is_hidden=True, order_index=4),
-        TestCase(task_id=task1.id, input_data="-4\n4", expected_output="0", is_hidden=True, order_index=5),
-    ])
+    session.add_all(
+        [
+            TestCase(
+                task_id=task1.id,
+                input_data="1\n10",
+                expected_output="30",
+                is_hidden=False,
+                order_index=1,
+            ),
+            TestCase(
+                task_id=task1.id,
+                input_data="2\n4",
+                expected_output="6",
+                is_hidden=False,
+                order_index=2,
+            ),
+            TestCase(
+                task_id=task1.id,
+                input_data="1\n1",
+                expected_output="0",
+                is_hidden=True,
+                order_index=3,
+            ),
+            TestCase(
+                task_id=task1.id,
+                input_data="10\n20",
+                expected_output="90",
+                is_hidden=True,
+                order_index=4,
+            ),
+            TestCase(
+                task_id=task1.id,
+                input_data="-4\n4",
+                expected_output="0",
+                is_hidden=True,
+                order_index=5,
+            ),
+        ]
+    )
 
     task2 = CodingTask(
         topic_id=topic3.id,
@@ -635,18 +884,50 @@ print("YES" if text == text[::-1] else "NO")
         time_limit_seconds=1.5,
         memory_limit_mb=50,
         xp_reward=80,
-        is_published=True
+        is_published=True,
     )
     session.add(task2)
     await session.flush()
 
-    session.add_all([
-        TestCase(task_id=task2.id, input_data="А роза упала на лапу Азора", expected_output="YES", is_hidden=False, order_index=1),
-        TestCase(task_id=task2.id, input_data="Kazakhstan", expected_output="NO", is_hidden=False, order_index=2),
-        TestCase(task_id=task2.id, input_data="radar", expected_output="YES", is_hidden=True, order_index=3),
-        TestCase(task_id=task2.id, input_data="ab c ba", expected_output="YES", is_hidden=True, order_index=4),
-        TestCase(task_id=task2.id, input_data="Python", expected_output="NO", is_hidden=True, order_index=5),
-    ])
+    session.add_all(
+        [
+            TestCase(
+                task_id=task2.id,
+                input_data="А роза упала на лапу Азора",
+                expected_output="YES",
+                is_hidden=False,
+                order_index=1,
+            ),
+            TestCase(
+                task_id=task2.id,
+                input_data="Kazakhstan",
+                expected_output="NO",
+                is_hidden=False,
+                order_index=2,
+            ),
+            TestCase(
+                task_id=task2.id,
+                input_data="radar",
+                expected_output="YES",
+                is_hidden=True,
+                order_index=3,
+            ),
+            TestCase(
+                task_id=task2.id,
+                input_data="ab c ba",
+                expected_output="YES",
+                is_hidden=True,
+                order_index=4,
+            ),
+            TestCase(
+                task_id=task2.id,
+                input_data="Python",
+                expected_output="NO",
+                is_hidden=True,
+                order_index=5,
+            ),
+        ]
+    )
 
     # Topic 4: Компьютерные сети и безопасность
     topic4 = Topic(
@@ -658,7 +939,7 @@ print("YES" if text == text[::-1] else "NO")
         color_accent="orange",
         order_index=4,
         est_minutes=50,
-        xp_reward=180
+        xp_reward=180,
     )
     session.add(topic4)
     await session.flush()
@@ -692,7 +973,7 @@ print("YES" if text == text[::-1] else "NO")
         time_limit_seconds=1200,
         passing_score=70,
         xp_reward=200,
-        is_published=True
+        is_published=True,
     )
     session.add(boss_quiz)
     await session.flush()
@@ -704,16 +985,18 @@ print("YES" if text == text[::-1] else "NO")
         difficulty="medium",
         points=1,
         order_index=1,
-        explanation="TCP (Transmission Control Protocol) обеспечивает надежную доставку с 3-way handshake."
+        explanation="TCP (Transmission Control Protocol) обеспечивает надежную доставку с 3-way handshake.",
     )
     session.add(bq1)
     await session.flush()
-    session.add_all([
-        QuestionOption(question_id=bq1.id, text="TCP", is_correct=True, order_index=1),
-        QuestionOption(question_id=bq1.id, text="UDP", is_correct=False, order_index=2),
-        QuestionOption(question_id=bq1.id, text="IP", is_correct=False, order_index=3),
-        QuestionOption(question_id=bq1.id, text="ICMP", is_correct=False, order_index=4),
-    ])
+    session.add_all(
+        [
+            QuestionOption(question_id=bq1.id, text="TCP", is_correct=True, order_index=1),
+            QuestionOption(question_id=bq1.id, text="UDP", is_correct=False, order_index=2),
+            QuestionOption(question_id=bq1.id, text="IP", is_correct=False, order_index=3),
+            QuestionOption(question_id=bq1.id, text="ICMP", is_correct=False, order_index=4),
+        ]
+    )
 
     bq2 = Question(
         quiz_id=boss_quiz.id,
@@ -723,16 +1006,18 @@ print("YES" if text == text[::-1] else "NO")
         difficulty="medium",
         points=1,
         order_index=2,
-        explanation="Нечетные x из range(5): 1 и 3. Квадраты: 1²=1, 3²=9. Сумма: 1 + 9 = 10."
+        explanation="Нечетные x из range(5): 1 и 3. Квадраты: 1²=1, 3²=9. Сумма: 1 + 9 = 10.",
     )
     session.add(bq2)
     await session.flush()
-    session.add_all([
-        QuestionOption(question_id=bq2.id, text="10", is_correct=True, order_index=1),
-        QuestionOption(question_id=bq2.id, text="30", is_correct=False, order_index=2),
-        QuestionOption(question_id=bq2.id, text="14", is_correct=False, order_index=3),
-        QuestionOption(question_id=bq2.id, text="25", is_correct=False, order_index=4),
-    ])
+    session.add_all(
+        [
+            QuestionOption(question_id=bq2.id, text="10", is_correct=True, order_index=1),
+            QuestionOption(question_id=bq2.id, text="30", is_correct=False, order_index=2),
+            QuestionOption(question_id=bq2.id, text="14", is_correct=False, order_index=3),
+            QuestionOption(question_id=bq2.id, text="25", is_correct=False, order_index=4),
+        ]
+    )
 
     await session.commit()
 
@@ -746,4 +1031,5 @@ async def init_db_data(session: AsyncSession):
 
     # Always seed / update Data Platform components (Sources, Glossary, Specifications, Bank Questions, UNT News)
     from app.db.seed_data_platform import seed_data_platform
+
     await seed_data_platform(session)

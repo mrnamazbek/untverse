@@ -3,22 +3,22 @@ from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.services.news_service import NewsService
-from app.schemas.data_platform import (
-    NewsArticleResponse, NewsArticleDetailResponse, NewsListResponse, NewsAlertResponse
-)
+from app.schemas.data_platform import NewsArticleDetailResponse, NewsListResponse, NewsAlertResponse
 
 router = APIRouter()
 
 
 @router.get("", response_model=NewsListResponse)
 async def list_news_articles(
-    category: Optional[str] = Query(None, description="Категория (unt, registration, grants, informatics)"),
+    category: Optional[str] = Query(
+        None, description="Категория (unt, registration, grants, informatics)"
+    ),
     locale: str = Query("kk", description="Язык контента (kk, ru, en)"),
     is_breaking: Optional[bool] = Query(None, description="Только срочные новости"),
     search: Optional[str] = Query(None, description="Поисковый запрос"),
     limit: int = Query(15, ge=1, le=50),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Возвращает список актуальных верифицированных новостей ЕНТ с локализацией и атрибуцией источников.
@@ -42,8 +42,7 @@ async def list_news_articles(
 
 @router.get("/alerts", response_model=List[NewsAlertResponse])
 async def get_breaking_alerts(
-    locale: str = Query("kk", description="Язык (kk, ru, en)"),
-    db: AsyncSession = Depends(get_db)
+    locale: str = Query("kk", description="Язык (kk, ru, en)"), db: AsyncSession = Depends(get_db)
 ):
     """
     Возвращает срочные оповещения и напоминания о дедлайнах для баннеров интерфейса.
@@ -56,7 +55,7 @@ async def get_breaking_alerts(
 async def get_news_article_detail(
     id: int,
     locale: str = Query("kk", description="Язык (kk, ru, en)"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Возвращает полную статью с текстом, переводом, историей правок и ссылкой на первоисточник.

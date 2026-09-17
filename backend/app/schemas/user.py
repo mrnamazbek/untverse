@@ -1,7 +1,7 @@
 from typing import Optional, List
 from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
-from app.schemas.auth import AuthAccountResponse, UnifiedTokenResponse, FullUserResponse
+from app.schemas.auth import AuthAccountResponse, UnifiedTokenResponse
 
 
 class UserBase(BaseModel):

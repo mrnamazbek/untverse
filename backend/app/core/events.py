@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Any, Type
+from typing import Callable, Dict, List, Type
 import asyncio
 import logging
 
@@ -59,7 +59,10 @@ class EventDispatcher:
                 else:
                     handler(event, **kwargs)
             except Exception as e:
-                logger.error(f"Error handling event {event_type.__name__} in {handler.__name__}: {e}", exc_info=True)
+                logger.error(
+                    f"Error handling event {event_type.__name__} in {handler.__name__}: {e}",
+                    exc_info=True,
+                )
 
 
 dispatcher = EventDispatcher()

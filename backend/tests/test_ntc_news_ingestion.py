@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.models.news import NewsArticle
 from app.models.sources import IngestionRun, SourceDocument
 from app.services import ntc_news_ingestion
-from app.services.ntc_news_ingestion import FetchedNtcListing, NtcNewsItem, parse_ntc_listing
+from app.services.ntc_news_ingestion import FetchedNtcListing, parse_ntc_listing
 
 
 NTC_LISTING_FIXTURE = """
@@ -50,6 +50,7 @@ async def test_daily_ntc_ingestion_is_idempotent_and_records_listing_provenance(
 
     # The runner normally creates an application session. Use the isolated test DB instead.
     from conftest import TestSessionLocal
+
     monkeypatch.setattr(ntc_news_ingestion, "async_session_maker", TestSessionLocal)
 
     first = await ntc_news_ingestion.run_daily_ntc_news_ingestion(client_factory=FakeNtcClient)
@@ -61,15 +62,27 @@ async def test_daily_ntc_ingestion_is_idempotent_and_records_listing_provenance(
 
     articles = (await db_session.execute(select(NewsArticle))).scalars().all()
     assert len(articles) >= 1
-    matching = [a for a in articles if a.canonical_url.endswith("custom_news_section=unt-2026&lang=kk")]
+    matching = [
+        a for a in articles if a.canonical_url.endswith("custom_news_section=unt-2026&lang=kk")
+    ]
     assert len(matching) == 1
     assert len((await db_session.execute(select(SourceDocument))).scalars().all()) == 2
-    runs = (await db_session.execute(select(IngestionRun).where(IngestionRun.job_name == "daily_ntc_news_cron"))).scalars().all()
+    runs = (
+        (
+            await db_session.execute(
+                select(IngestionRun).where(IngestionRun.job_name == "daily_ntc_news_cron")
+            )
+        )
+        .scalars()
+        .all()
+    )
     assert len(runs) == 2
 
 
 @pytest.mark.asyncio
-async def test_internal_job_requires_secret_and_invokes_runner(client, monkeypatch: pytest.MonkeyPatch):
+async def test_internal_job_requires_secret_and_invokes_runner(
+    client, monkeypatch: pytest.MonkeyPatch
+):
     monkeypatch.setattr(settings, "NEWS_INGESTION_SECRET", "test-ingestion-secret")
     monkeypatch.setattr(settings, "CRON_SECRET", "test-vercel-cron-secret")
 

@@ -1,9 +1,8 @@
-from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_
 from app.db.session import get_db
-from app.models.course import Topic, Lesson
+from app.models.course import Topic
 from app.models.news import NewsArticle, NewsTranslation, NewsStatus
 from app.models.question_bank import BankQuestion, QuestionTranslation
 
@@ -15,7 +14,7 @@ async def unified_search(
     q: str = Query(..., min_length=2, description="Поисковый запрос"),
     locale: str = Query("kk", description="Язык контента (kk, ru, en)"),
     limit: int = Query(20, ge=1, le=50),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Единый мультиязычный поиск по всей платформе UNTverse: вопросы, темы, уроки и новости ЕНТ.
@@ -32,7 +31,7 @@ async def unified_search(
             or_(
                 QuestionTranslation.text.ilike(term),
                 QuestionTranslation.explanation.ilike(term),
-            )
+            ),
         )
         .limit(limit // 3 + 2)
     )
@@ -78,7 +77,7 @@ async def unified_search(
                 NewsTranslation.title.ilike(term),
                 NewsTranslation.summary.ilike(term),
                 NewsTranslation.content.ilike(term),
-            )
+            ),
         )
         .limit(limit // 3 + 2)
     )

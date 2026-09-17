@@ -5,7 +5,9 @@ from app.db.session import get_db
 from app.services.question_bank_service import QuestionBankService
 from app.services.question_selection_service import QuestionSelectionService
 from app.schemas.data_platform import (
-    BankQuestionResponse, BankQuestionDetailResponse, QuestionListResponse
+    BankQuestionResponse,
+    BankQuestionDetailResponse,
+    QuestionListResponse,
 )
 
 router = APIRouter()
@@ -19,12 +21,14 @@ async def list_questions(
     difficulty: Optional[str] = Query(None, description="Сложность (A, B, C)"),
     year: Optional[int] = Query(None, description="Год вопроса"),
     question_type: Optional[str] = Query(None, description="Тип вопроса"),
-    official_status: Optional[str] = Query(None, description="Статус (official, official_sample, etc.)"),
+    official_status: Optional[str] = Query(
+        None, description="Статус (official, official_sample, etc.)"
+    ),
     locale: str = Query("kk", description="Язык (kk, ru, en)"),
     search: Optional[str] = Query(None, description="Поисковый запрос"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Полнофункциональный поиск и фильтрация банка вопросов ЕНТ по предмету, разделу, теме, сложности и языку.
@@ -57,7 +61,7 @@ async def sample_practice_questions(
     count: int = Query(10, ge=1, le=30),
     difficulty: Optional[str] = Query(None, description="Сложность (A, B, C)"),
     locale: str = Query("kk", description="Язык контента"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Высокопроизводительная выборка вопросов для тренировки по теме без дорогих ORDER BY random().
@@ -74,7 +78,7 @@ async def sample_practice_questions(
 @router.get("/practice/unt-mock", response_model=List[BankQuestionResponse])
 async def generate_unt_50_mock_exam(
     locale: str = Query("kk", description="Язык экзамена (kk, ru, en)"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Генератор полного сбалансированного пробного ЕНТ из 50 вопросов по официальной структуре НЦТ РК.
@@ -87,7 +91,7 @@ async def generate_unt_50_mock_exam(
 async def get_question_detail(
     id: int,
     locale: str = Query("kk", description="Язык контента (kk, ru, en)"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Возвращает детальную карточку вопроса с вариантами ответов, пошаговым разбором и провенансом.

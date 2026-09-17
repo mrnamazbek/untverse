@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.sources import Source, IngestionRun, SourceAuthorityLevel
 from app.models.news import NewsArticle
-from app.services.ingestion_service import IngestionEngine, IngestionSecurityError
+from app.services.ingestion_service import IngestionEngine
 
 
 @pytest.mark.asyncio

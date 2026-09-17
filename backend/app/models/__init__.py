@@ -1,33 +1,85 @@
 from app.db.base import Base, TimestampMixin
 from app.models.user import (
-    User, UserProfile, UserRole, Role, UserRoleEnum, RoleEnum,
-    AuthAccount, RefreshSession, RefreshToken
+    User,
+    UserProfile,
+    UserRole,
+    Role,
+    UserRoleEnum,
+    RoleEnum,
+    AuthAccount,
+    RefreshSession,
+    RefreshToken,
 )
 from app.models.course import (
-    Course, Topic, Lesson, LessonProgress, StudySession,
-    CourseTranslation, TopicTranslation, LessonTranslation,
+    Course,
+    Topic,
+    Lesson,
+    LessonProgress,
+    StudySession,
+    CourseTranslation,
+    TopicTranslation,
+    LessonTranslation,
 )
-from app.models.quiz import Quiz, Question, QuestionOption, QuizAttempt, QuizAnswer, QuizType, QuestionType
+from app.models.quiz import (
+    Quiz,
+    Question,
+    QuestionOption,
+    QuizAttempt,
+    QuizAnswer,
+    QuizType,
+    QuestionType,
+)
 from app.models.coding import CodingTask, TestCase, CodingSubmission
-from app.models.gamification import XpTransaction, Achievement, UserAchievement, DailyMission, UserMission, Streak
+from app.models.gamification import (
+    XpTransaction,
+    Achievement,
+    UserAchievement,
+    DailyMission,
+    UserMission,
+    Streak,
+)
 from app.models.analytics import TopicMastery, MistakeLog, SpacedRepetitionCard
 
 # Data Platform Extensions
 from app.models.sources import (
-    Source, SourceDocument, IngestionRun, IngestionItem, SourceAuthorityLevel, IngestionRunStatus
+    Source,
+    SourceDocument,
+    IngestionRun,
+    IngestionItem,
+    SourceAuthorityLevel,
+    IngestionRunStatus,
 )
 from app.models.localization import LocalizationGlossary
 from app.models.specification import (
-    ExamType, Subject, ExamSpecification, SpecificationSection, SpecificationTopic,
-    CurrentUntRule, SpecificationStatus
+    ExamType,
+    Subject,
+    ExamSpecification,
+    SpecificationSection,
+    SpecificationTopic,
+    CurrentUntRule,
+    SpecificationStatus,
 )
 from app.models.news import (
-    NewsArticle, NewsTranslation, NewsVersion, NewsSource, NewsCategory, NewsStatus
+    NewsArticle,
+    NewsTranslation,
+    NewsVersion,
+    NewsSource,
+    NewsCategory,
+    NewsStatus,
 )
 from app.models.question_bank import (
-    BankQuestion, QuestionVersion, QuestionTranslation, QuestionBankOption,
-    QuestionBankOptionTranslation, QuestionProvenance, BankSolution,
-    BankSolutionTranslation, Tag, QuestionTag, QuestionDifficulty, OfficialStatus
+    BankQuestion,
+    QuestionVersion,
+    QuestionTranslation,
+    QuestionBankOption,
+    QuestionBankOptionTranslation,
+    QuestionProvenance,
+    BankSolution,
+    BankSolutionTranslation,
+    Tag,
+    QuestionTag,
+    QuestionDifficulty,
+    OfficialStatus,
 )
 
 __all__ = [

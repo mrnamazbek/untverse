@@ -49,7 +49,7 @@ async def test_localization_glossary_and_qa(client: AsyncClient):
 
     # 2. Test Kazakh QA validator service
     qa_service = KazakhLanguageQAService()
-    
+
     # Valid natural Kazakh text
     good_text = "Ұлттық бірыңғай тестілеуге дайындық барысында деректер базасы және алгоритмдеу бөлімдерін қайталау маңызды."
     good_res = qa_service.validate_kazakh_text(good_text)

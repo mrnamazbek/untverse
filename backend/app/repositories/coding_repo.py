@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.models.coding import CodingTask, TestCase, CodingSubmission
+from app.models.coding import CodingTask, CodingSubmission
 from app.repositories.base import BaseRepository
 
 
@@ -11,7 +11,9 @@ class CodingRepository(BaseRepository[CodingTask]):
     def __init__(self, session: AsyncSession):
         super().__init__(CodingTask, session)
 
-    async def get_by_id_with_tests(self, task_id: int, include_hidden: bool = True) -> Optional[CodingTask]:
+    async def get_by_id_with_tests(
+        self, task_id: int, include_hidden: bool = True
+    ) -> Optional[CodingTask]:
         result = await self.session.execute(
             select(CodingTask)
             .options(selectinload(CodingTask.test_cases))

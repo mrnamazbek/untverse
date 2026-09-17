@@ -1,4 +1,3 @@
-import hashlib
 from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,20 +13,14 @@ from app.core.security import (
 )
 from app.core.exceptions import (
     AuthException,
-    BadRequestException,
-    UnauthorizedException,
-    ConflictException,
-    NotFoundException,
 )
-from app.models.user import User, UserProfile
 from app.repositories.user_repo import UserRepository
 from app.schemas.auth import (
     AuthErrorCode,
     UnifiedTokenResponse,
     GoogleLoginResponse,
-    FullUserResponse,
 )
-from app.schemas.user import UserCreate, UserLogin, TokenResponse
+from app.schemas.user import UserCreate, UserLogin
 
 
 class AuthService:
@@ -66,9 +59,13 @@ class AuthService:
         token_hash_val = hash_token(refresh_token_str)
 
         decoded_refresh = decode_token(refresh_token_str)
-        exp_timestamp = decoded_refresh["exp"] if decoded_refresh and "exp" in decoded_refresh else (
-            datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-        ).timestamp()
+        exp_timestamp = (
+            decoded_refresh["exp"]
+            if decoded_refresh and "exp" in decoded_refresh
+            else (
+                datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+            ).timestamp()
+        )
         expires_at = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
 
         # Save to rotating RefreshSession table (SHA-256 hash)
@@ -142,9 +139,13 @@ class AuthService:
         token_hash_val = hash_token(refresh_token_str)
 
         decoded_refresh = decode_token(refresh_token_str)
-        exp_timestamp = decoded_refresh["exp"] if decoded_refresh and "exp" in decoded_refresh else (
-            datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-        ).timestamp()
+        exp_timestamp = (
+            decoded_refresh["exp"]
+            if decoded_refresh and "exp" in decoded_refresh
+            else (
+                datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+            ).timestamp()
+        )
         expires_at = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
 
         await self.user_repo.save_refresh_session(
@@ -286,9 +287,13 @@ class AuthService:
         token_hash_val = hash_token(refresh_token_str)
 
         decoded_refresh = decode_token(refresh_token_str)
-        exp_timestamp = decoded_refresh["exp"] if decoded_refresh and "exp" in decoded_refresh else (
-            datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-        ).timestamp()
+        exp_timestamp = (
+            decoded_refresh["exp"]
+            if decoded_refresh and "exp" in decoded_refresh
+            else (
+                datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+            ).timestamp()
+        )
         expires_at = datetime.fromtimestamp(exp_timestamp, tz=timezone.utc)
 
         # Save to RefreshSession (SHA-256 hash)
@@ -362,7 +367,11 @@ class AuthService:
 
             # Check expiration
             now = datetime.now(timezone.utc)
-            sess_exp = session.expires_at if session.expires_at.tzinfo else session.expires_at.replace(tzinfo=timezone.utc)
+            sess_exp = (
+                session.expires_at
+                if session.expires_at.tzinfo
+                else session.expires_at.replace(tzinfo=timezone.utc)
+            )
             if sess_exp < now:
                 raise AuthException(
                     code=AuthErrorCode.AUTH_SESSION_EXPIRED,
@@ -398,9 +407,13 @@ class AuthService:
         new_token_hash_val = hash_token(new_refresh_token_str)
 
         decoded_new = decode_token(new_refresh_token_str)
-        new_exp_ts = decoded_new["exp"] if decoded_new and "exp" in decoded_new else (
-            datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-        ).timestamp()
+        new_exp_ts = (
+            decoded_new["exp"]
+            if decoded_new and "exp" in decoded_new
+            else (
+                datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+            ).timestamp()
+        )
         new_expires_at = datetime.fromtimestamp(new_exp_ts, tz=timezone.utc)
 
         # Invalidate old session and link to new session hash

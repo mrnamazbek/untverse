@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.api.v1.deps import get_current_user, get_optional_current_user
@@ -8,7 +8,11 @@ from app.repositories.coding_repo import CodingRepository
 from app.services.code_execution_service import CodeExecutionService
 from app.services.gamification_service import GamificationService
 from app.schemas.coding import (
-    CodingTaskListItem, CodingTaskResponse, CodeRunRequest, CodeRunResponse, TestCaseResponse
+    CodingTaskListItem,
+    CodingTaskResponse,
+    CodeRunRequest,
+    CodeRunResponse,
+    TestCaseResponse,
 )
 from app.core.exceptions import NotFoundException
 from app.core.rate_limit import rate_limit
@@ -22,7 +26,7 @@ async def list_coding_tasks(
     difficulty: Optional[str] = None,
     topic_id: Optional[int] = None,
     current_user: Optional[User] = Depends(get_optional_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     repo = CodingRepository(db)
     tasks = await repo.list_all_active(difficulty)
@@ -38,8 +42,9 @@ async def list_coding_tasks(
             slug=t.slug,
             difficulty=t.difficulty,
             xp_reward=t.xp_reward,
-            is_solved_by_user=(t.id in solved_ids)
-        ) for t in tasks
+            is_solved_by_user=(t.id in solved_ids),
+        )
+        for t in tasks
     ]
 
 
@@ -48,7 +53,7 @@ async def list_coding_tasks(
 async def get_coding_task(
     task_id: int,
     current_user: Optional[User] = Depends(get_optional_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     repo = CodingRepository(db)
     task = await repo.get_by_id_with_tests(task_id)
@@ -76,7 +81,7 @@ async def get_coding_task(
         xp_reward=task.xp_reward,
         is_published=task.is_published,
         test_cases=[TestCaseResponse.model_validate(tc) for tc in visible_tests],
-        is_solved_by_user=is_solved
+        is_solved_by_user=is_solved,
     )
 
 
@@ -99,19 +104,20 @@ async def run_coding_task(
             "id": tc.id,
             "input_data": tc.input_data,
             "expected_output": tc.expected_output,
-            "is_hidden": tc.is_hidden
-        } for tc in task.test_cases
+            "is_hidden": tc.is_hidden,
+        }
+        for tc in task.test_cases
     ]
 
     exec_result = await CodeExecutionService.execute_task(
         source_code=request.source_code,
         test_cases=raw_test_cases,
-        time_limit_seconds=task.time_limit_seconds
+        time_limit_seconds=task.time_limit_seconds,
     )
 
     # Check previous solve state
     already_solved_ids = set(await repo.get_user_solved_task_ids(current_user.id))
-    is_first_time_solve = (exec_result.status == "accepted" and task.id not in already_solved_ids)
+    is_first_time_solve = exec_result.status == "accepted" and task.id not in already_solved_ids
 
     # Save submission
     await repo.save_submission(
@@ -122,16 +128,14 @@ async def run_coding_task(
         passed_tests=exec_result.passed_tests,
         total_tests=exec_result.total_tests,
         execution_time_ms=exec_result.execution_time_ms,
-        error_output=exec_result.error_output
+        error_output=exec_result.error_output,
     )
 
     # Gamification reward if passed
     if is_first_time_solve:
         gamification = GamificationService(db)
         new_total_xp, new_level, leveled_up = await gamification.handle_coding_task_completed(
-            user_id=current_user.id,
-            task_id=task.id,
-            xp_reward=task.xp_reward
+            user_id=current_user.id, task_id=task.id, xp_reward=task.xp_reward
         )
         exec_result.xp_earned = task.xp_reward
         exec_result.new_total_xp = new_total_xp

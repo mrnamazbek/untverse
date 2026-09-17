@@ -1,30 +1,30 @@
 from typing import Optional, List, Tuple
-from datetime import datetime, date, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, func, and_
-from sqlalchemy.orm import selectinload
+from sqlalchemy import select
 from app.models.gamification import (
-    XpTransaction, Achievement, UserAchievement, DailyMission, UserMission, Streak
+    XpTransaction,
+    Achievement,
+    UserAchievement,
+    DailyMission,
+    UserMission,
+    Streak,
 )
-from app.models.user import UserProfile, User
-from app.repositories.base import BaseRepository
+from app.models.user import UserProfile
 
 
 class GamificationRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def add_xp(self, user_id: int, amount: int, reason: str, reference_id: Optional[str] = None) -> Tuple[int, int, bool]:
+    async def add_xp(
+        self, user_id: int, amount: int, reason: str, reference_id: Optional[str] = None
+    ) -> Tuple[int, int, bool]:
         """
         Records XP transaction and updates UserProfile.
         Returns: (new_total_xp, new_level, leveled_up)
         """
-        tx = XpTransaction(
-            user_id=user_id,
-            amount=amount,
-            reason=reason,
-            reference_id=reference_id
-        )
+        tx = XpTransaction(user_id=user_id, amount=amount, reason=reason, reference_id=reference_id)
         self.session.add(tx)
         await self.session.flush()
 
@@ -38,7 +38,7 @@ class GamificationRepository:
 
         old_level = profile.current_level
         profile.total_xp += amount
-        
+
         # Level formula: level = 1 + int((total_xp / 150) ** 0.5)
         # Level 1: 0-149 XP, Level 2: 150-599 XP, Level 3: 600-1349 XP, etc.
         new_level = max(1, 1 + int((profile.total_xp / 150) ** 0.5))
@@ -61,9 +61,7 @@ class GamificationRepository:
         return (profile.total_xp, profile.current_level, leveled_up)
 
     async def get_or_create_streak(self, user_id: int) -> Streak:
-        result = await self.session.execute(
-            select(Streak).where(Streak.user_id == user_id)
-        )
+        result = await self.session.execute(select(Streak).where(Streak.user_id == user_id))
         streak = result.scalars().first()
         if not streak:
             streak = Streak(
@@ -71,7 +69,7 @@ class GamificationRepository:
                 current_streak=0,
                 longest_streak=0,
                 last_activity_date=None,
-                freeze_count=0
+                freeze_count=0,
             )
             self.session.add(streak)
             await self.session.flush()
@@ -116,34 +114,42 @@ class GamificationRepository:
         return (streak.current_streak, is_extended)
 
     async def get_user_achievements(self, user_id: int) -> List[dict]:
-        all_achievements_res = await self.session.execute(select(Achievement).order_by(Achievement.id))
+        all_achievements_res = await self.session.execute(
+            select(Achievement).order_by(Achievement.id)
+        )
         all_achievements = all_achievements_res.scalars().all()
 
         user_achievements_res = await self.session.execute(
             select(UserAchievement).where(UserAchievement.user_id == user_id)
         )
-        unlocked_map = {ua.achievement_id: ua.unlocked_at for ua in user_achievements_res.scalars().all()}
+        unlocked_map = {
+            ua.achievement_id: ua.unlocked_at for ua in user_achievements_res.scalars().all()
+        }
 
         output = []
         for ach in all_achievements:
             is_unlocked = ach.id in unlocked_map
-            output.append({
-                "id": ach.id,
-                "code": ach.code,
-                "title": ach.title,
-                "description": ach.description,
-                "icon": ach.icon,
-                "badge_color": ach.badge_color,
-                "category": ach.category,
-                "xp_reward": ach.xp_reward,
-                "condition_type": ach.condition_type,
-                "condition_value": ach.condition_value,
-                "is_unlocked": is_unlocked,
-                "unlocked_at": unlocked_map.get(ach.id)
-            })
+            output.append(
+                {
+                    "id": ach.id,
+                    "code": ach.code,
+                    "title": ach.title,
+                    "description": ach.description,
+                    "icon": ach.icon,
+                    "badge_color": ach.badge_color,
+                    "category": ach.category,
+                    "xp_reward": ach.xp_reward,
+                    "condition_type": ach.condition_type,
+                    "condition_value": ach.condition_value,
+                    "is_unlocked": is_unlocked,
+                    "unlocked_at": unlocked_map.get(ach.id),
+                }
+            )
         return output
 
-    async def unlock_achievement(self, user_id: int, achievement_code: str) -> Optional[Achievement]:
+    async def unlock_achievement(
+        self, user_id: int, achievement_code: str
+    ) -> Optional[Achievement]:
         ach_res = await self.session.execute(
             select(Achievement).where(Achievement.code == achievement_code)
         )
@@ -154,23 +160,22 @@ class GamificationRepository:
         # Check if already unlocked
         existing = await self.session.execute(
             select(UserAchievement).where(
-                UserAchievement.user_id == user_id,
-                UserAchievement.achievement_id == ach.id
+                UserAchievement.user_id == user_id, UserAchievement.achievement_id == ach.id
             )
         )
         if existing.scalars().first():
             return None
 
         ua = UserAchievement(
-            user_id=user_id,
-            achievement_id=ach.id,
-            unlocked_at=datetime.now(timezone.utc)
+            user_id=user_id, achievement_id=ach.id, unlocked_at=datetime.now(timezone.utc)
         )
         self.session.add(ua)
         await self.session.flush()
 
         # Award XP for achievement
-        await self.add_xp(user_id, ach.xp_reward, reason="achievement_unlocked", reference_id=ach.code)
+        await self.add_xp(
+            user_id, ach.xp_reward, reason="achievement_unlocked", reference_id=ach.code
+        )
         return ach
 
     async def get_or_create_daily_missions(self, user_id: int) -> List[dict]:
@@ -186,7 +191,7 @@ class GamificationRepository:
                 select(UserMission).where(
                     UserMission.user_id == user_id,
                     UserMission.mission_id == m.id,
-                    UserMission.mission_date == today
+                    UserMission.mission_date == today,
                 )
             )
             um = um_res.scalars().first()
@@ -198,23 +203,25 @@ class GamificationRepository:
                     current_progress=0,
                     target_progress=m.target_count,
                     is_completed=False,
-                    claimed_at=None
+                    claimed_at=None,
                 )
                 self.session.add(um)
                 await self.session.flush()
 
-            output.append({
-                "id": m.id,
-                "title": m.title,
-                "description": m.description,
-                "mission_type": m.mission_type,
-                "target_count": m.target_count,
-                "xp_reward": m.xp_reward,
-                "icon": m.icon,
-                "current_progress": um.current_progress,
-                "is_completed": um.is_completed,
-                "is_claimed": um.claimed_at is not None
-            })
+            output.append(
+                {
+                    "id": m.id,
+                    "title": m.title,
+                    "description": m.description,
+                    "mission_type": m.mission_type,
+                    "target_count": m.target_count,
+                    "xp_reward": m.xp_reward,
+                    "icon": m.icon,
+                    "current_progress": um.current_progress,
+                    "is_completed": um.is_completed,
+                    "is_claimed": um.claimed_at is not None,
+                }
+            )
         return output
 
     async def update_mission_progress(self, user_id: int, mission_type: str, increment: int = 1):
@@ -226,7 +233,7 @@ class GamificationRepository:
                     select(UserMission).where(
                         UserMission.user_id == user_id,
                         UserMission.mission_id == m["id"],
-                        UserMission.mission_date == today
+                        UserMission.mission_date == today,
                     )
                 )
                 um = res.scalars().first()
@@ -245,7 +252,7 @@ class GamificationRepository:
             .where(
                 UserMission.user_id == user_id,
                 UserMission.mission_id == mission_id,
-                UserMission.mission_date == today
+                UserMission.mission_date == today,
             )
         )
         row = res.first()
@@ -257,7 +264,9 @@ class GamificationRepository:
 
         um.claimed_at = datetime.now(timezone.utc)
         await self.session.flush()
-        await self.add_xp(user_id, m.xp_reward, reason="daily_mission_claimed", reference_id=f"mission_{m.id}")
+        await self.add_xp(
+            user_id, m.xp_reward, reason="daily_mission_claimed", reference_id=f"mission_{m.id}"
+        )
         return m.xp_reward
 
     async def get_leaderboard(self, limit: int = 50) -> List[dict]:
@@ -269,14 +278,16 @@ class GamificationRepository:
         profiles = result.scalars().all()
         leaderboard = []
         for rank, p in enumerate(profiles, start=1):
-            leaderboard.append({
-                "rank": rank,
-                "user_id": p.user_id,
-                "display_name": p.display_name,
-                "avatar_url": p.avatar_url,
-                "level": p.current_level,
-                "rank_title": p.rank_title,
-                "total_xp": p.total_xp,
-                "streak_count": p.streak_count
-            })
+            leaderboard.append(
+                {
+                    "rank": rank,
+                    "user_id": p.user_id,
+                    "display_name": p.display_name,
+                    "avatar_url": p.avatar_url,
+                    "level": p.current_level,
+                    "rank_title": p.rank_title,
+                    "total_xp": p.total_xp,
+                    "streak_count": p.streak_count,
+                }
+            )
         return leaderboard

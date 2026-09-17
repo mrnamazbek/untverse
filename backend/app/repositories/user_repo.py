@@ -4,8 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import selectinload
 from app.models.user import (
-    User, UserProfile, Role, UserRole, UserRoleEnum,
-    AuthAccount, RefreshSession, RefreshToken
+    User,
+    UserProfile,
+    Role,
+    UserRole,
+    AuthAccount,
+    RefreshSession,
+    RefreshToken,
 )
 from app.models.gamification import Streak
 from app.repositories.base import BaseRepository
@@ -21,7 +26,7 @@ class UserRepository(BaseRepository[User]):
             .options(
                 selectinload(User.profile),
                 selectinload(User.auth_accounts),
-                selectinload(User.user_roles).selectinload(UserRole.role)
+                selectinload(User.user_roles).selectinload(UserRole.role),
             )
             .where(User.email == email.lower())
         )
@@ -33,7 +38,7 @@ class UserRepository(BaseRepository[User]):
             .options(
                 selectinload(User.profile),
                 selectinload(User.auth_accounts),
-                selectinload(User.user_roles).selectinload(UserRole.role)
+                selectinload(User.user_roles).selectinload(UserRole.role),
             )
             .where(User.id == user_id)
         )
@@ -82,9 +87,9 @@ class UserRepository(BaseRepository[User]):
             self.session.add(auth_account)
 
         # Link normalized Role if available
-        role_record = (await self.session.execute(
-            select(Role).where(Role.name == role)
-        )).scalars().first()
+        role_record = (
+            (await self.session.execute(select(Role).where(Role.name == role))).scalars().first()
+        )
         if role_record:
             user_role = UserRole(user_id=user.id, role_id=role_record.id)
             self.session.add(user_role)
@@ -98,17 +103,21 @@ class UserRepository(BaseRepository[User]):
 
     # --- AuthAccount Methods ---
 
-    async def get_by_provider(self, provider: str, provider_account_id: str) -> Optional[AuthAccount]:
+    async def get_by_provider(
+        self, provider: str, provider_account_id: str
+    ) -> Optional[AuthAccount]:
         result = await self.session.execute(
             select(AuthAccount)
             .options(
                 selectinload(AuthAccount.user).selectinload(User.profile),
                 selectinload(AuthAccount.user).selectinload(User.auth_accounts),
-                selectinload(AuthAccount.user).selectinload(User.user_roles).selectinload(UserRole.role)
+                selectinload(AuthAccount.user)
+                .selectinload(User.user_roles)
+                .selectinload(UserRole.role),
             )
             .where(
                 AuthAccount.provider == provider,
-                AuthAccount.provider_account_id == provider_account_id
+                AuthAccount.provider_account_id == provider_account_id,
             )
         )
         return result.scalars().first()
@@ -124,7 +133,7 @@ class UserRepository(BaseRepository[User]):
         user_id: int,
         provider: str,
         provider_account_id: str,
-        provider_email: Optional[str] = None
+        provider_email: Optional[str] = None,
     ) -> AuthAccount:
         auth_acc = AuthAccount(
             user_id=user_id,
@@ -141,12 +150,12 @@ class UserRepository(BaseRepository[User]):
         user_id: int,
         provider: str,
         provider_account_id: str,
-        provider_email: Optional[str] = None
+        provider_email: Optional[str] = None,
     ) -> AuthAccount:
         result = await self.session.execute(
             select(AuthAccount).where(
                 AuthAccount.provider == provider,
-                AuthAccount.provider_account_id == provider_account_id
+                AuthAccount.provider_account_id == provider_account_id,
             )
         )
         existing = result.scalars().first()
@@ -162,14 +171,13 @@ class UserRepository(BaseRepository[User]):
             user_id=user_id,
             provider=provider,
             provider_account_id=provider_account_id,
-            provider_email=provider_email
+            provider_email=provider_email,
         )
 
     async def unlink_account(self, user_id: int, provider: str) -> bool:
         result = await self.session.execute(
             delete(AuthAccount).where(
-                AuthAccount.user_id == user_id,
-                AuthAccount.provider == provider
+                AuthAccount.user_id == user_id, AuthAccount.provider == provider
             )
         )
         await self.session.flush()
@@ -183,7 +191,7 @@ class UserRepository(BaseRepository[User]):
         token_hash: str,
         expires_at: datetime,
         user_agent: Optional[str] = None,
-        ip_address: Optional[str] = None
+        ip_address: Optional[str] = None,
     ) -> RefreshSession:
         session = RefreshSession(
             user_id=user_id,
@@ -191,7 +199,7 @@ class UserRepository(BaseRepository[User]):
             expires_at=expires_at,
             user_agent=user_agent,
             ip_address=ip_address,
-            revoked=False
+            revoked=False,
         )
         self.session.add(session)
         await self.session.flush()
@@ -203,16 +211,16 @@ class UserRepository(BaseRepository[User]):
             .options(
                 selectinload(RefreshSession.user).selectinload(User.profile),
                 selectinload(RefreshSession.user).selectinload(User.auth_accounts),
-                selectinload(RefreshSession.user).selectinload(User.user_roles).selectinload(UserRole.role)
+                selectinload(RefreshSession.user)
+                .selectinload(User.user_roles)
+                .selectinload(UserRole.role),
             )
             .where(RefreshSession.token_hash == token_hash)
         )
         return result.scalars().first()
 
     async def revoke_session_by_hash(
-        self,
-        token_hash: str,
-        replaced_by_hash: Optional[str] = None
+        self, token_hash: str, replaced_by_hash: Optional[str] = None
     ) -> bool:
         now = datetime.now(timezone.utc)
         values = {"revoked": True, "revoked_at": now}
@@ -220,9 +228,7 @@ class UserRepository(BaseRepository[User]):
             values["replaced_by_hash"] = replaced_by_hash
 
         result = await self.session.execute(
-            update(RefreshSession)
-            .where(RefreshSession.token_hash == token_hash)
-            .values(**values)
+            update(RefreshSession).where(RefreshSession.token_hash == token_hash).values(**values)
         )
         await self.session.flush()
         return result.rowcount > 0
@@ -231,10 +237,7 @@ class UserRepository(BaseRepository[User]):
         now = datetime.now(timezone.utc)
         result = await self.session.execute(
             update(RefreshSession)
-            .where(
-                RefreshSession.user_id == user_id,
-                RefreshSession.revoked == False
-            )
+            .where(RefreshSession.user_id == user_id, RefreshSession.revoked == False)
             .values(revoked=True, revoked_at=now)
         )
         await self.session.flush()
@@ -242,7 +245,9 @@ class UserRepository(BaseRepository[User]):
 
     # --- User Helpers ---
 
-    async def update_last_login(self, user_id: int, last_login_at: Optional[datetime] = None) -> None:
+    async def update_last_login(
+        self, user_id: int, last_login_at: Optional[datetime] = None
+    ) -> None:
         login_time = last_login_at or datetime.now(timezone.utc)
         await self.session.execute(
             update(User).where(User.id == user_id).values(last_login_at=login_time)
@@ -257,12 +262,11 @@ class UserRepository(BaseRepository[User]):
 
     # --- Legacy RefreshToken Support (Backward Compatibility) ---
 
-    async def save_refresh_token(self, user_id: int, token: str, expires_at: datetime) -> RefreshToken:
+    async def save_refresh_token(
+        self, user_id: int, token: str, expires_at: datetime
+    ) -> RefreshToken:
         refresh_token = RefreshToken(
-            user_id=user_id,
-            token=token,
-            expires_at=expires_at,
-            revoked=False
+            user_id=user_id, token=token, expires_at=expires_at, revoked=False
         )
         self.session.add(refresh_token)
         await self.session.flush()
@@ -274,7 +278,7 @@ class UserRepository(BaseRepository[User]):
             select(RefreshToken).where(
                 RefreshToken.token == token,
                 RefreshToken.revoked == False,
-                RefreshToken.expires_at > now
+                RefreshToken.expires_at > now,
             )
         )
         return result.scalars().first()

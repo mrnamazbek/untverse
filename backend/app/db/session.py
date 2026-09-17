@@ -31,11 +31,12 @@ async_session_maker = AsyncSessionLocal
 
 async def init_db():
     from app.db.base import Base
-    import app.models  # load all models
+
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     from app.db.init_db import init_db_data
+
     async with AsyncSessionLocal() as session:
         await init_db_data(session)
 

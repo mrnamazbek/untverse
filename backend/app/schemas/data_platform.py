@@ -1,6 +1,6 @@
 from typing import Optional, List, Dict, Any
-from datetime import datetime, date
-from pydantic import BaseModel, ConfigDict, Field
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict
 
 
 # 1. Current UNT Rules Schemas

@@ -1,7 +1,6 @@
 import ast
 import asyncio
 import sys
-import subprocess
 import time
 from typing import List, Optional
 from app.schemas.coding import TestCaseResult, CodeRunResponse
@@ -11,20 +10,57 @@ class SecurityCheckVisitor(ast.NodeVisitor):
     """
     AST Visitor to reject potentially dangerous modules, builtins, and syntax.
     """
+
     FORBIDDEN_MODULES = {
-        "os", "sys", "subprocess", "shutil", "socket", "http", "urllib",
-        "requests", "ctypes", "pathlib", "importlib", "pickle", "shelve",
-        "multiprocessing", "threading", "pty", "commands", "posix", "gc"
+        "os",
+        "sys",
+        "subprocess",
+        "shutil",
+        "socket",
+        "http",
+        "urllib",
+        "requests",
+        "ctypes",
+        "pathlib",
+        "importlib",
+        "pickle",
+        "shelve",
+        "multiprocessing",
+        "threading",
+        "pty",
+        "commands",
+        "posix",
+        "gc",
     }
 
     FORBIDDEN_CALLS = {
-        "eval", "exec", "open", "__import__", "compile", "globals", "locals", "getattr", "setattr", "delattr"
+        "eval",
+        "exec",
+        "open",
+        "__import__",
+        "compile",
+        "globals",
+        "locals",
+        "getattr",
+        "setattr",
+        "delattr",
     }
 
     FORBIDDEN_ATTRS = {
-        "__subclasses__", "__bases__", "__base__", "__class__", "__mro__",
-        "__code__", "__globals__", "__builtins__", "__import__", "__dict__",
-        "__loader__", "__spec__", "__reduce__", "__reduce_ex__"
+        "__subclasses__",
+        "__bases__",
+        "__base__",
+        "__class__",
+        "__mro__",
+        "__code__",
+        "__globals__",
+        "__builtins__",
+        "__import__",
+        "__dict__",
+        "__loader__",
+        "__spec__",
+        "__reduce__",
+        "__reduce_ex__",
     }
 
     def __init__(self):
@@ -32,16 +68,20 @@ class SecurityCheckVisitor(ast.NodeVisitor):
 
     def visit_Import(self, node):
         for alias in node.names:
-            root_module = alias.name.split('.')[0]
+            root_module = alias.name.split(".")[0]
             if root_module in self.FORBIDDEN_MODULES:
-                self.errors.append(f"Импорт модуля '{alias.name}' запрещен из соображений безопасности.")
+                self.errors.append(
+                    f"Импорт модуля '{alias.name}' запрещен из соображений безопасности."
+                )
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node):
         if node.module:
-            root_module = node.module.split('.')[0]
+            root_module = node.module.split(".")[0]
             if root_module in self.FORBIDDEN_MODULES:
-                self.errors.append(f"Импорт из модуля '{node.module}' запрещен из соображений безопасности.")
+                self.errors.append(
+                    f"Импорт из модуля '{node.module}' запрещен из соображений безопасности."
+                )
         self.generic_visit(node)
 
     def visit_Call(self, node):
@@ -52,7 +92,9 @@ class SecurityCheckVisitor(ast.NodeVisitor):
 
     def visit_Attribute(self, node):
         if node.attr in self.FORBIDDEN_ATTRS:
-            self.errors.append(f"Доступ к системному атрибуту '{node.attr}' запрещен из соображений безопасности.")
+            self.errors.append(
+                f"Доступ к системному атрибуту '{node.attr}' запрещен из соображений безопасности."
+            )
         self.generic_visit(node)
 
 
@@ -78,22 +120,23 @@ class CodeExecutionService:
 
     @staticmethod
     async def run_single_test(
-        source_code: str,
-        input_data: str,
-        expected_output: str,
-        timeout: float = 2.0
+        source_code: str, input_data: str, expected_output: str, timeout: float = 2.0
     ) -> TestCaseResult:
         """
         Executes code with input in an isolated child process with timeout.
         """
         start_time = time.perf_counter()
-        
+
         # Wrapped script ensuring safe standard I/O execution
         wrapper_code = source_code
 
         try:
             process = await asyncio.create_subprocess_exec(
-                sys.executable, "-I", "-s", "-c", wrapper_code,
+                sys.executable,
+                "-I",
+                "-s",
+                "-c",
+                wrapper_code,
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
@@ -101,8 +144,7 @@ class CodeExecutionService:
 
             try:
                 stdout_bytes, stderr_bytes = await asyncio.wait_for(
-                    process.communicate(input=input_data.encode("utf-8")),
-                    timeout=timeout
+                    process.communicate(input=input_data.encode("utf-8")), timeout=timeout
                 )
                 elapsed_ms = round((time.perf_counter() - start_time) * 1000, 2)
 
@@ -117,10 +159,10 @@ class CodeExecutionService:
                         passed=False,
                         is_hidden=False,
                         execution_time_ms=elapsed_ms,
-                        error=stderr_text or f"Process exited with code {process.returncode}"
+                        error=stderr_text or f"Process exited with code {process.returncode}",
                     )
 
-                passed = (stdout_text == expected_output.strip())
+                passed = stdout_text == expected_output.strip()
                 return TestCaseResult(
                     input_data=input_data,
                     expected_output=expected_output.strip(),
@@ -128,7 +170,7 @@ class CodeExecutionService:
                     passed=passed,
                     is_hidden=False,
                     execution_time_ms=elapsed_ms,
-                    error=None if passed else "Вывод не совпадает с ожидаемым результатом"
+                    error=None if passed else "Вывод не совпадает с ожидаемым результатом",
                 )
 
             except asyncio.TimeoutError:
@@ -144,7 +186,7 @@ class CodeExecutionService:
                     passed=False,
                     is_hidden=False,
                     execution_time_ms=elapsed_ms,
-                    error=f"Time Limit Exceeded (превышен лимит времени {timeout} сек)"
+                    error=f"Time Limit Exceeded (превышен лимит времени {timeout} сек)",
                 )
 
         except Exception as e:
@@ -156,15 +198,12 @@ class CodeExecutionService:
                 passed=False,
                 is_hidden=False,
                 execution_time_ms=elapsed_ms,
-                error=f"Execution error: {str(e)}"
+                error=f"Execution error: {str(e)}",
             )
 
     @classmethod
     async def execute_task(
-        cls,
-        source_code: str,
-        test_cases: List[dict],
-        time_limit_seconds: float = 2.0
+        cls, source_code: str, test_cases: List[dict], time_limit_seconds: float = 2.0
     ) -> CodeRunResponse:
         """
         Runs code against all test cases.
@@ -182,7 +221,7 @@ class CodeExecutionService:
                 xp_earned=0,
                 new_total_xp=0,
                 new_level=0,
-                leveled_up=False
+                leveled_up=False,
             )
 
         # Step 2: Execute each test case
@@ -197,7 +236,7 @@ class CodeExecutionService:
                 source_code=source_code,
                 input_data=tc.get("input_data", ""),
                 expected_output=tc.get("expected_output", ""),
-                timeout=time_limit_seconds
+                timeout=time_limit_seconds,
             )
             res.test_case_id = tc.get("id")
             res.is_hidden = tc.get("is_hidden", False)
@@ -234,5 +273,5 @@ class CodeExecutionService:
             xp_earned=0,
             new_total_xp=0,
             new_level=0,
-            leveled_up=False
+            leveled_up=False,
         )

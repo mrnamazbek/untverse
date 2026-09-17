@@ -5,10 +5,10 @@ from httpx import AsyncClient
 @pytest.mark.asyncio
 async def test_quiz_lifecycle_and_scoring(client: AsyncClient):
     # 1. Login as demo student
-    login_resp = await client.post("/api/v1/auth/login", json={
-        "email": "student@unt-informatics.kz",
-        "password": "student12345"
-    })
+    login_resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "student@unt-informatics.kz", "password": "student12345"},
+    )
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -30,16 +30,14 @@ async def test_quiz_lifecycle_and_scoring(client: AsyncClient):
     answers_to_submit = []
     for q in quiz_data["questions"]:
         opt_id = q["options"][0]["id"] if q["options"] else None
-        answers_to_submit.append({
-            "question_id": q["id"],
-            "selected_option_ids": [opt_id] if opt_id else []
-        })
+        answers_to_submit.append(
+            {"question_id": q["id"], "selected_option_ids": [opt_id] if opt_id else []}
+        )
 
-    submit_payload = {
-        "time_spent_seconds": 120,
-        "answers": answers_to_submit
-    }
-    submit_resp = await client.post(f"/api/v1/quizzes/{quiz_id}/attempts", json=submit_payload, headers=headers)
+    submit_payload = {"time_spent_seconds": 120, "answers": answers_to_submit}
+    submit_resp = await client.post(
+        f"/api/v1/quizzes/{quiz_id}/attempts", json=submit_payload, headers=headers
+    )
     assert submit_resp.status_code == 200
     result = submit_resp.json()
     assert "score" in result

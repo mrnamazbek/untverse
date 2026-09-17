@@ -1,12 +1,9 @@
 from typing import Optional, List
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.models.course import Course, Topic, Lesson, LessonProgress
-from app.models.quiz import Quiz
-from app.models.coding import CodingTask
-from app.models.analytics import TopicMastery
 from app.repositories.base import BaseRepository
 
 
@@ -20,7 +17,9 @@ class CourseRepository(BaseRepository[Course]):
             .options(
                 selectinload(Course.translations),
                 selectinload(Course.topics).selectinload(Topic.translations),
-                selectinload(Course.topics).selectinload(Topic.lessons).selectinload(Lesson.translations),
+                selectinload(Course.topics)
+                .selectinload(Topic.lessons)
+                .selectinload(Lesson.translations),
                 selectinload(Course.topics).selectinload(Topic.quizzes),
                 selectinload(Course.topics).selectinload(Topic.coding_tasks),
             )
@@ -34,7 +33,9 @@ class CourseRepository(BaseRepository[Course]):
             .options(
                 selectinload(Course.translations),
                 selectinload(Course.topics).selectinload(Topic.translations),
-                selectinload(Course.topics).selectinload(Topic.lessons).selectinload(Lesson.translations),
+                selectinload(Course.topics)
+                .selectinload(Topic.lessons)
+                .selectinload(Lesson.translations),
                 selectinload(Course.topics).selectinload(Topic.quizzes),
                 selectinload(Course.topics).selectinload(Topic.coding_tasks),
             )
@@ -79,8 +80,7 @@ class CourseRepository(BaseRepository[Course]):
     async def mark_lesson_completed(self, user_id: int, lesson_id: int) -> LessonProgress:
         result = await self.session.execute(
             select(LessonProgress).where(
-                LessonProgress.user_id == user_id,
-                LessonProgress.lesson_id == lesson_id
+                LessonProgress.user_id == user_id, LessonProgress.lesson_id == lesson_id
             )
         )
         progress = result.scalars().first()
@@ -89,7 +89,7 @@ class CourseRepository(BaseRepository[Course]):
                 user_id=user_id,
                 lesson_id=lesson_id,
                 is_completed=True,
-                completed_at=datetime.now(timezone.utc)
+                completed_at=datetime.now(timezone.utc),
             )
             self.session.add(progress)
             await self.session.flush()
@@ -98,8 +98,7 @@ class CourseRepository(BaseRepository[Course]):
     async def get_user_completed_lesson_ids(self, user_id: int) -> List[int]:
         result = await self.session.execute(
             select(LessonProgress.lesson_id).where(
-                LessonProgress.user_id == user_id,
-                LessonProgress.is_completed == True
+                LessonProgress.user_id == user_id, LessonProgress.is_completed == True
             )
         )
         return list(result.scalars().all())

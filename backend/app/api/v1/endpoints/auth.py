@@ -20,7 +20,7 @@ from app.schemas.auth import (
     FullUserResponse,
     AuthErrorCode,
 )
-from app.schemas.user import UserCreate, UserLogin, UserResponse
+from app.schemas.user import UserCreate, UserLogin
 from app.api.v1.deps import get_current_user
 from app.models.user import User
 from app.core.exceptions import AuthException
@@ -106,12 +106,21 @@ def clear_oauth_transaction_cookie(response: Response) -> None:
 
 # --- Google OAuth 2.0 PKCE Endpoints ---
 
-@router.get("/oauth/google/init", response_model=OAuthInitResponse, summary="Инициализация Google OAuth 2.0 PKCE")
-@router.get("/google/login", response_model=OAuthInitResponse, summary="Алиас инициализации Google OAuth")
+
+@router.get(
+    "/oauth/google/init",
+    response_model=OAuthInitResponse,
+    summary="Инициализация Google OAuth 2.0 PKCE",
+)
+@router.get(
+    "/google/login", response_model=OAuthInitResponse, summary="Алиас инициализации Google OAuth"
+)
 async def google_oauth_init(
     response: Response,
     locale: SupportedLocale = Query(default=SupportedLocale.RU, description="Язык интерфейса"),
-    redirect_to: Optional[str] = Query(default="/dashboard", description="Относительный URL для перенаправления"),
+    redirect_to: Optional[str] = Query(
+        default="/dashboard", description="Относительный URL для перенаправления"
+    ),
 ):
     """
     Генерирует криптографически стойкую пару PKCE (S256) и подписанный JWT state (HS256, 10 мин),
@@ -125,8 +134,16 @@ async def google_oauth_init(
     return OAuthInitResponse(authorization_url=auth_url, state=state)
 
 
-@router.post("/oauth/google/callback", response_model=GoogleLoginResponse, summary="REST Callback Google OAuth 2.0")
-@router.post("/google/callback", response_model=GoogleLoginResponse, summary="REST Callback Google OAuth (алиас)")
+@router.post(
+    "/oauth/google/callback",
+    response_model=GoogleLoginResponse,
+    summary="REST Callback Google OAuth 2.0",
+)
+@router.post(
+    "/google/callback",
+    response_model=GoogleLoginResponse,
+    summary="REST Callback Google OAuth (алиас)",
+)
 async def google_oauth_callback(
     callback_in: OAuthCallbackRequest,
     request: Request,
@@ -143,8 +160,14 @@ async def google_oauth_callback(
     """
     state_data = GoogleOAuthService.verify_and_decode_state(callback_in.state)
     if not oauth_transaction:
-        raise AuthException(code=AuthErrorCode.AUTH_OAUTH_STATE_INVALID, status_code=400, detail="Сессия OAuth не найдена")
-    code_verifier = GoogleOAuthService.verify_oauth_transaction(oauth_transaction, callback_in.state)
+        raise AuthException(
+            code=AuthErrorCode.AUTH_OAUTH_STATE_INVALID,
+            status_code=400,
+            detail="Сессия OAuth не найдена",
+        )
+    code_verifier = GoogleOAuthService.verify_oauth_transaction(
+        oauth_transaction, callback_in.state
+    )
     redirect_to = state_data.get("redirect_to", "/dashboard")
 
     tokens = await GoogleOAuthService.exchange_code_for_tokens(
@@ -208,7 +231,11 @@ async def google_oauth_browser_callback(
     try:
         state_data = GoogleOAuthService.verify_and_decode_state(state)
         if not oauth_transaction:
-            raise AuthException(code=AuthErrorCode.AUTH_OAUTH_STATE_INVALID, status_code=400, detail="Сессия OAuth не найдена")
+            raise AuthException(
+                code=AuthErrorCode.AUTH_OAUTH_STATE_INVALID,
+                status_code=400,
+                detail="Сессия OAuth не найдена",
+            )
         locale = state_data.get("locale", "ru")
         redirect_to = state_data.get("redirect_to", "/dashboard")
 
@@ -238,7 +265,9 @@ async def google_oauth_browser_callback(
         await db.commit()
 
         target_url = f"{settings.FRONTEND_URL}/{locale}/auth/callback?redirect_to={urllib.parse.quote(redirect_to, safe='')}"
-        redirect_resp = RedirectResponse(url=target_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+        redirect_resp = RedirectResponse(
+            url=target_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT
+        )
         set_auth_cookies(redirect_resp, login_resp.access_token, login_resp.refresh_token)
         clear_oauth_transaction_cookie(redirect_resp)
         return redirect_resp
@@ -246,14 +275,20 @@ async def google_oauth_browser_callback(
     except AuthException as e:
         err_url = f"{settings.FRONTEND_URL}/{locale}/auth/error?code={e.code}&message={urllib.parse.quote(e.message, safe='')}"
         return RedirectResponse(url=err_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
-    except Exception as e:
+    except Exception:
         err_url = f"{settings.FRONTEND_URL}/{locale}/auth/error?code=AUTH_OAUTH_CODE_EXCHANGE_FAILED&message={urllib.parse.quote('Google authorization could not be completed', safe='')}"
         return RedirectResponse(url=err_url, status_code=status.HTTP_307_TEMPORARY_REDIRECT)
 
 
 # --- Standard Authentication Endpoints ---
 
-@router.post("/register", response_model=UnifiedTokenResponse, status_code=status.HTTP_201_CREATED, summary="Регистрация по email и паролю")
+
+@router.post(
+    "/register",
+    response_model=UnifiedTokenResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Регистрация по email и паролю",
+)
 async def register(
     user_in: UserCreate,
     request: Request,
@@ -291,7 +326,9 @@ async def login(
     return token_resp
 
 
-@router.post("/refresh", response_model=UnifiedTokenResponse, summary="Ротация сессии и обновление токенов")
+@router.post(
+    "/refresh", response_model=UnifiedTokenResponse, summary="Ротация сессии и обновление токенов"
+)
 async def refresh_tokens(
     request: Request,
     response: Response,
@@ -317,7 +354,9 @@ async def refresh_tokens(
     ip_address = request.client.host if request.client else None
 
     service = AuthService(db)
-    token_resp = await service.refresh_tokens(token_str, user_agent=user_agent, ip_address=ip_address)
+    token_resp = await service.refresh_tokens(
+        token_str, user_agent=user_agent, ip_address=ip_address
+    )
     await db.commit()
 
     set_auth_cookies(response, token_resp.access_token, token_resp.refresh_token)
@@ -331,7 +370,9 @@ async def logout(
     refresh_token_cookie: Optional[str] = Cookie(default=None, alias="refresh_token"),
     db: AsyncSession = Depends(get_db),
 ):
-    token_str = logout_in.refresh_token if logout_in and logout_in.refresh_token else refresh_token_cookie
+    token_str = (
+        logout_in.refresh_token if logout_in and logout_in.refresh_token else refresh_token_cookie
+    )
     if token_str:
         service = AuthService(db)
         await service.logout(token_str)
@@ -370,7 +411,11 @@ async def set_password(
     return {"message": "Пароль успешно установлен"}
 
 
-@router.get("/me", response_model=FullUserResponse, summary="Получить профиль текущего авторизованного пользователя")
+@router.get(
+    "/me",
+    response_model=FullUserResponse,
+    summary="Получить профиль текущего авторизованного пользователя",
+)
 async def get_me(
     current_user: User = Depends(get_current_user),
 ):

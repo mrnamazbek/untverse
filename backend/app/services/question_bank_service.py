@@ -1,13 +1,13 @@
-import hashlib
 from typing import Optional, List, Dict, Any, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_, and_
+from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
-from app.models.specification import Subject, SpecificationTopic, SpecificationSection
+from app.models.specification import Subject
 from app.models.question_bank import (
-    BankQuestion, QuestionVersion, QuestionTranslation, QuestionBankOption,
-    QuestionBankOptionTranslation, QuestionProvenance, BankSolution,
-    BankSolutionTranslation, Tag, QuestionTag, QuestionDifficulty, OfficialStatus
+    BankQuestion,
+    QuestionTranslation,
+    QuestionBankOption,
+    BankSolution,
 )
 
 
@@ -56,10 +56,12 @@ class QuestionBankService:
         # Search query filter on translations
         if search_query and search_query.strip():
             term = f"%{search_query.strip()}%"
-            stmt = stmt.join(QuestionTranslation, BankQuestion.id == QuestionTranslation.question_id).where(
+            stmt = stmt.join(
+                QuestionTranslation, BankQuestion.id == QuestionTranslation.question_id
+            ).where(
                 or_(
                     QuestionTranslation.text.ilike(term),
-                    QuestionTranslation.explanation.ilike(term)
+                    QuestionTranslation.explanation.ilike(term),
                 )
             )
 
@@ -90,7 +92,9 @@ class QuestionBankService:
             # Match translation for requested locale or fallback to original language
             translation = next((t for t in q.translations if t.locale == locale), None)
             if not translation:
-                translation = next((t for t in q.translations if t.locale == q.original_language), None)
+                translation = next(
+                    (t for t in q.translations if t.locale == q.original_language), None
+                )
             if not translation and q.translations:
                 translation = q.translations[0]
 
@@ -99,17 +103,21 @@ class QuestionBankService:
             for opt in q.options:
                 opt_trans = next((ot for ot in opt.translations if ot.locale == locale), None)
                 if not opt_trans:
-                    opt_trans = next((ot for ot in opt.translations if ot.locale == q.original_language), None)
+                    opt_trans = next(
+                        (ot for ot in opt.translations if ot.locale == q.original_language), None
+                    )
                 if not opt_trans and opt.translations:
                     opt_trans = opt.translations[0]
 
-                options_data.append({
-                    "id": opt.id,
-                    "option_key": opt.option_key,
-                    "text": opt_trans.text if opt_trans else "",
-                    "is_correct": opt.is_correct,
-                    "order_index": opt.order_index,
-                })
+                options_data.append(
+                    {
+                        "id": opt.id,
+                        "option_key": opt.option_key,
+                        "text": opt_trans.text if opt_trans else "",
+                        "is_correct": opt.is_correct,
+                        "order_index": opt.order_index,
+                    }
+                )
 
             # Provenance
             provenance_list = [
@@ -124,28 +132,34 @@ class QuestionBankService:
                 for prov in q.provenance_records
             ]
 
-            output.append({
-                "id": q.id,
-                "uuid": q.uuid_str,
-                "text": translation.text if translation else "",
-                "code_snippet": translation.code_snippet if translation else None,
-                "explanation": translation.explanation if translation else None,
-                "locale": translation.locale if translation else locale,
-                "question_type": q.question_type,
-                "difficulty": q.difficulty,
-                "difficulty_score": q.difficulty_score,
-                "official_status": q.official_status,
-                "year": q.year,
-                "maximum_score": q.maximum_score,
-                "estimated_time_seconds": q.estimated_time_seconds,
-                "topic_title": q.specification_topic.title_kk if (q.specification_topic and locale == "kk") else (q.specification_topic.title_ru if q.specification_topic else None),
-                "options": options_data,
-                "provenance": provenance_list,
-            })
+            output.append(
+                {
+                    "id": q.id,
+                    "uuid": q.uuid_str,
+                    "text": translation.text if translation else "",
+                    "code_snippet": translation.code_snippet if translation else None,
+                    "explanation": translation.explanation if translation else None,
+                    "locale": translation.locale if translation else locale,
+                    "question_type": q.question_type,
+                    "difficulty": q.difficulty,
+                    "difficulty_score": q.difficulty_score,
+                    "official_status": q.official_status,
+                    "year": q.year,
+                    "maximum_score": q.maximum_score,
+                    "estimated_time_seconds": q.estimated_time_seconds,
+                    "topic_title": q.specification_topic.title_kk
+                    if (q.specification_topic and locale == "kk")
+                    else (q.specification_topic.title_ru if q.specification_topic else None),
+                    "options": options_data,
+                    "provenance": provenance_list,
+                }
+            )
 
         return output, total
 
-    async def get_question_by_id(self, question_id: int, locale: str = "kk") -> Optional[Dict[str, Any]]:
+    async def get_question_by_id(
+        self, question_id: int, locale: str = "kk"
+    ) -> Optional[Dict[str, Any]]:
         """
         Fetches a single question with complete details, options, step-by-step solution, and provenance.
         """
@@ -179,13 +193,15 @@ class QuestionBankService:
             if not opt_trans and opt.translations:
                 opt_trans = opt.translations[0]
 
-            options_data.append({
-                "id": opt.id,
-                "option_key": opt.option_key,
-                "text": opt_trans.text if opt_trans else "",
-                "is_correct": opt.is_correct,
-                "order_index": opt.order_index,
-            })
+            options_data.append(
+                {
+                    "id": opt.id,
+                    "option_key": opt.option_key,
+                    "text": opt_trans.text if opt_trans else "",
+                    "is_correct": opt.is_correct,
+                    "order_index": opt.order_index,
+                }
+            )
 
         # Solutions
         solutions_data = []
@@ -194,12 +210,16 @@ class QuestionBankService:
             if not sol_trans and sol.translations:
                 sol_trans = sol.translations[0]
 
-            solutions_data.append({
-                "approach_type": sol.approach_type,
-                "complexity": sol.complexity,
-                "step_by_step_explanation": sol_trans.step_by_step_explanation if sol_trans else "",
-                "exam_tip": sol_trans.exam_tip if sol_trans else None,
-            })
+            solutions_data.append(
+                {
+                    "approach_type": sol.approach_type,
+                    "complexity": sol.complexity,
+                    "step_by_step_explanation": sol_trans.step_by_step_explanation
+                    if sol_trans
+                    else "",
+                    "exam_tip": sol_trans.exam_tip if sol_trans else None,
+                }
+            )
 
         # Provenance
         provenance_list = [

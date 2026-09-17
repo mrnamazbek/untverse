@@ -1,6 +1,5 @@
 from typing import Optional, List, Dict, Any
-from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 
 class QuestionOptionBase(BaseModel):
@@ -29,7 +28,9 @@ class QuestionBase(BaseModel):
     text: str
     code_snippet: Optional[str] = None
     explanation: Optional[str] = None
-    question_type: str = "single_choice"  # single_choice, multiple_choice, true_false, fill_gap, sql, matching
+    question_type: str = (
+        "single_choice"  # single_choice, multiple_choice, true_false, fill_gap, sql, matching
+    )
     difficulty: str = "medium"
     points: int = 1
     order_index: int = 0

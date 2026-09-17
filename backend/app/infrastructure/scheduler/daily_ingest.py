@@ -6,6 +6,7 @@ The production scheduler invokes the authenticated API endpoint. This command is
 kept for an operator who runs it *inside the deployed service* with its real
 DATABASE_URL; it never creates or targets an ephemeral SQLite database.
 """
+
 import sys
 import os
 import asyncio
@@ -24,6 +25,5 @@ async def run_scheduled_ingestion():
 
 
 if __name__ == "__main__":
-    from typing import Dict, Any
     results = asyncio.run(run_scheduled_ingestion())
     print(f"INGESTION_SUMMARY: {results}")

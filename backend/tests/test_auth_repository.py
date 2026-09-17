@@ -3,7 +3,6 @@ from datetime import datetime, timezone, timedelta
 import hashlib
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.user_repo import UserRepository
-from app.models.user import UserRoleEnum, Role, UserRole
 
 
 @pytest.mark.asyncio

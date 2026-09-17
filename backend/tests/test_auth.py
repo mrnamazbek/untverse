@@ -9,7 +9,7 @@ async def test_register_and_login_flow(client: AsyncClient):
         "email": "new_student@unt.kz",
         "password": "Password123!",
         "display_name": "Данияр Касымов",
-        "role": "student"
+        "role": "student",
     }
     reg_response = await client.post("/api/v1/auth/register", json=register_payload)
     assert reg_response.status_code == 201, reg_response.text
@@ -20,10 +20,7 @@ async def test_register_and_login_flow(client: AsyncClient):
     assert data["display_name"] == "Данияр Касымов"
 
     # 2. Login with valid credentials
-    login_payload = {
-        "email": "new_student@unt.kz",
-        "password": "Password123!"
-    }
+    login_payload = {"email": "new_student@unt.kz", "password": "Password123!"}
     login_response = await client.post("/api/v1/auth/login", json=login_payload)
     assert login_response.status_code == 200
     login_data = login_response.json()
@@ -39,5 +36,7 @@ async def test_register_and_login_flow(client: AsyncClient):
     assert me_data["role"] == "student"
 
     # 4. Login with invalid password
-    bad_login = await client.post("/api/v1/auth/login", json={"email": "new_student@unt.kz", "password": "WrongPassword"})
+    bad_login = await client.post(
+        "/api/v1/auth/login", json={"email": "new_student@unt.kz", "password": "WrongPassword"}
+    )
     assert bad_login.status_code == 401

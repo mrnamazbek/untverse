@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.api.v1.deps import get_current_user, get_optional_current_user
@@ -14,7 +14,7 @@ router = APIRouter()
 async def get_courses(
     locale: str = Query("kk", pattern="^(kk|ru|en)$"),
     current_user: Optional[User] = Depends(get_optional_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     service = LearningService(db)
     user_id = current_user.id if current_user else None
@@ -26,7 +26,7 @@ async def get_topic(
     slug: str,
     locale: str = Query("kk", pattern="^(kk|ru|en)$"),
     current_user: Optional[User] = Depends(get_optional_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     service = LearningService(db)
     user_id = current_user.id if current_user else None
@@ -38,7 +38,7 @@ async def get_lesson(
     lesson_id: int,
     locale: str = Query("kk", pattern="^(kk|ru|en)$"),
     current_user: Optional[User] = Depends(get_optional_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     service = LearningService(db)
     user_id = current_user.id if current_user else None
@@ -49,7 +49,7 @@ async def get_lesson(
 async def complete_lesson(
     lesson_id: int,
     current_user: User = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     service = LearningService(db)
     resp = await service.complete_lesson(user_id=current_user.id, lesson_id=lesson_id)

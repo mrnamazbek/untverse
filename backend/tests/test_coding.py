@@ -4,10 +4,10 @@ from httpx import AsyncClient
 
 @pytest.mark.asyncio
 async def test_coding_tasks_and_execution(client: AsyncClient):
-    login_resp = await client.post("/api/v1/auth/login", json={
-        "email": "student@unt-informatics.kz",
-        "password": "student12345"
-    })
+    login_resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "student@unt-informatics.kz", "password": "student12345"},
+    )
     token = login_resp.json()["access_token"]
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -25,8 +25,12 @@ async def test_coding_tasks_and_execution(client: AsyncClient):
     assert task_data["solution_code"] is None  # Check solution is not exposed to student
 
     # 3. Test submitting correct code (Sum of even numbers)
-    valid_code = "a = int(input())\nb = int(input())\nprint(sum(x for x in range(a, b + 1) if x % 2 == 0))\n"
-    run_resp = await client.post(f"/api/v1/coding/{task_id}/run", json={"source_code": valid_code}, headers=headers)
+    valid_code = (
+        "a = int(input())\nb = int(input())\nprint(sum(x for x in range(a, b + 1) if x % 2 == 0))\n"
+    )
+    run_resp = await client.post(
+        f"/api/v1/coding/{task_id}/run", json={"source_code": valid_code}, headers=headers
+    )
     assert run_resp.status_code == 200
     res = run_resp.json()
     assert res["status"] == "accepted"
@@ -35,7 +39,9 @@ async def test_coding_tasks_and_execution(client: AsyncClient):
 
     # 4. Test security check: submitting malicious/forbidden code
     malicious_code = "import os\nos.system('echo hacked')\n"
-    sec_run_resp = await client.post(f"/api/v1/coding/{task_id}/run", json={"source_code": malicious_code}, headers=headers)
+    sec_run_resp = await client.post(
+        f"/api/v1/coding/{task_id}/run", json={"source_code": malicious_code}, headers=headers
+    )
     assert sec_run_resp.status_code == 200
     sec_res = sec_run_resp.json()
     assert sec_res["status"] == "forbidden_syntax"
@@ -43,7 +49,9 @@ async def test_coding_tasks_and_execution(client: AsyncClient):
 
     # 5. Test security check: introspection / sandbox escape via __subclasses__ or __globals__
     escape_code = "print(().__class__.__base__.__subclasses__())\n"
-    esc_run_resp = await client.post(f"/api/v1/coding/{task_id}/run", json={"source_code": escape_code}, headers=headers)
+    esc_run_resp = await client.post(
+        f"/api/v1/coding/{task_id}/run", json={"source_code": escape_code}, headers=headers
+    )
     assert esc_run_resp.status_code == 200
     esc_res = esc_run_resp.json()
     assert esc_res["status"] == "forbidden_syntax"

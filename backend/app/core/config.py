@@ -42,7 +42,9 @@ class Settings(BaseSettings):
         "https://unt-informatics.kz",
         "https://www.unt-informatics.kz",
     ]
-    BACKEND_CORS_ORIGIN_REGEX: Optional[str] = r"^https://([a-zA-Z0-9_-]+\.)?(vercel\.app|railway\.app)$"
+    BACKEND_CORS_ORIGIN_REGEX: Optional[str] = (
+        r"^https://([a-zA-Z0-9_-]+\.)?(vercel\.app|railway\.app)$"
+    )
 
     @field_validator("DATABASE_URL", mode="before")
     def assemble_db_connection(cls, v: Union[str, None]) -> str:
@@ -58,13 +60,20 @@ class Settings(BaseSettings):
     def require_safe_production_settings(self) -> "Settings":
         if self.ENVIRONMENT != "production":
             return self
-        if self.JWT_SECRET == "super_secret_jwt_dev_key_change_in_production_987654321" or len(self.JWT_SECRET) < 32:
-            raise ValueError("JWT_SECRET must be a unique, cryptographically random production secret")
+        if (
+            self.JWT_SECRET == "super_secret_jwt_dev_key_change_in_production_987654321"
+            or len(self.JWT_SECRET) < 32
+        ):
+            raise ValueError(
+                "JWT_SECRET must be a unique, cryptographically random production secret"
+            )
         if not self.AUTH_COOKIE_SECURE:
             raise ValueError("AUTH_COOKIE_SECURE must be true in production")
         if not self.DATABASE_URL.startswith("postgresql+asyncpg://"):
             raise ValueError("Production requires a PostgreSQL DATABASE_URL")
-        if not self.FRONTEND_URL.startswith("https://") or not self.GOOGLE_REDIRECT_URI.startswith("https://"):
+        if not self.FRONTEND_URL.startswith("https://") or not self.GOOGLE_REDIRECT_URI.startswith(
+            "https://"
+        ):
             raise ValueError("FRONTEND_URL and GOOGLE_REDIRECT_URI must use HTTPS in production")
         return self
 

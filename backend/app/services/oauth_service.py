@@ -14,7 +14,7 @@ from google.oauth2 import id_token as google_id_token
 
 from app.core.config import settings
 from app.core.exceptions import AuthException
-from app.schemas.auth import AuthErrorCode, SupportedLocale
+from app.schemas.auth import AuthErrorCode
 
 
 class GoogleOAuthService:
@@ -158,14 +158,18 @@ class GoogleOAuthService:
     def verify_oauth_transaction(cls, transaction: str, state: str) -> str:
         """Return a verifier only when the callback matches its initiating browser."""
         try:
-            payload = jwt.decode(transaction, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
+            payload = jwt.decode(
+                transaction, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
+            )
         except JWTError:
             raise AuthException(
                 code=AuthErrorCode.AUTH_OAUTH_STATE_INVALID,
                 status_code=400,
                 detail="Сессия авторизации недействительна или истекла",
             )
-        if payload.get("typ") != "oauth_transaction" or not secrets.compare_digest(payload.get("st", ""), state):
+        if payload.get("typ") != "oauth_transaction" or not secrets.compare_digest(
+            payload.get("st", ""), state
+        ):
             raise AuthException(
                 code=AuthErrorCode.AUTH_OAUTH_STATE_INVALID,
                 status_code=400,
@@ -264,7 +268,11 @@ class GoogleOAuthService:
                 )
 
         if response.status_code != 200:
-            error_details = response.json() if response.headers.get("content-type", "").startswith("application/json") else {}
+            error_details = (
+                response.json()
+                if response.headers.get("content-type", "").startswith("application/json")
+                else {}
+            )
             raise AuthException(
                 code=AuthErrorCode.AUTH_OAUTH_CODE_EXCHANGE_FAILED,
                 status_code=400,
@@ -306,7 +314,9 @@ class GoogleOAuthService:
                 detail="Google ID token не прошел проверку подписи, issuer, audience или срока действия",
             )
 
-        if expected_nonce and not secrets.compare_digest(str(payload.get("nonce", "")), expected_nonce):
+        if expected_nonce and not secrets.compare_digest(
+            str(payload.get("nonce", "")), expected_nonce
+        ):
             raise AuthException(
                 code=AuthErrorCode.AUTH_OAUTH_STATE_INVALID,
                 status_code=400,

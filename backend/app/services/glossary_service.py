@@ -41,7 +41,7 @@ class KazakhLanguageQAService:
             return {"is_valid": False, "score": 0.0, "warnings": ["Мәтін бос"]}
 
         warnings = []
-        
+
         # 1. Check for untranslated Cyrillic Russian tokens in Kazakh text
         russian_only_chars = set("ыэъё")
         has_russian_specific = any(char in text.lower() for char in "ъ")
@@ -56,10 +56,12 @@ class KazakhLanguageQAService:
         # 3. Check for typical Kazakh specific letters presence in long text
         kazakh_specific_chars = set("әіңғүұқөһ")
         has_kazakh_specific = any(char in text.lower() for char in kazakh_specific_chars)
-        
+
         # In a paragraph of more than 100 chars, absence of any Kazakh letters might indicate untranslated Russian
         if len(text) > 120 and not has_kazakh_specific:
-            warnings.append("Мәтінде қазақ әріптері (ә, і, ң, ғ, ү, ұ, қ, ө, һ) табылмады, орыс тіліндегі мәтін болуы мүмкін")
+            warnings.append(
+                "Мәтінде қазақ әріптері (ә, і, ң, ғ, ү, ұ, қ, ө, һ) табылмады, орыс тіліндегі мәтін болуы мүмкін"
+            )
 
         is_valid = len([w for w in warnings if "болуы мүмкін" in w or "таңбасы" in w]) == 0
         quality_score = max(0.0, 1.0 - (len(warnings) * 0.2))

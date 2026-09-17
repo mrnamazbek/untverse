@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import get_db
 from app.services.glossary_service import KazakhLanguageQAService
@@ -9,9 +9,7 @@ router = APIRouter()
 
 
 @router.get("/glossary", response_model=List[GlossaryTermResponse])
-async def get_glossary_terms(
-    db: AsyncSession = Depends(get_db)
-):
+async def get_glossary_terms(db: AsyncSession = Depends(get_db)):
     """
     Возвращает утвержденный глоссарий официальной терминологии Казахстана на 3 языках (kk, ru, en).
     """
@@ -20,10 +18,7 @@ async def get_glossary_terms(
 
 
 @router.post("/kazakh-qa", response_model=KazakhQAResponse)
-async def check_kazakh_text_quality(
-    payload: KazakhQARequest,
-    db: AsyncSession = Depends(get_db)
-):
+async def check_kazakh_text_quality(payload: KazakhQARequest, db: AsyncSession = Depends(get_db)):
     """
     Проверяет текст на казахском языке на механические кальки, орфографические соответствия и естественность.
     """

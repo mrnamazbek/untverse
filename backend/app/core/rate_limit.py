@@ -1,6 +1,6 @@
 import time
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List
 from fastapi import Request, HTTPException, status
 from app.core.config import settings
 
@@ -20,7 +20,8 @@ class InMemoryRateLimiter:
         if now - self._last_cleanup < 300.0:  # every 5 minutes
             return
         stale_keys = [
-            k for k, timestamps in self._records.items()
+            k
+            for k, timestamps in self._records.items()
             if not timestamps or now - timestamps[-1] > max_age
         ]
         for k in stale_keys:
@@ -34,6 +35,7 @@ class InMemoryRateLimiter:
         window_seconds: int,
     ) -> None:
         import os
+
         if settings.ENVIRONMENT in ("test", "testing") or "PYTEST_CURRENT_TEST" in os.environ:
             # Do not throttle automated unit/integration tests
             return
@@ -66,9 +68,14 @@ def rate_limit(max_requests: int = 10, window_seconds: int = 60):
     """
     FastAPI dependency for rate limiting endpoints by client IP.
     """
+
     async def dependency(request: Request):
         forwarded_for = request.headers.get("X-Forwarded-For")
-        client_ip = forwarded_for.split(",")[0].strip() if forwarded_for else (request.client.host if request.client else "unknown")
+        client_ip = (
+            forwarded_for.split(",")[0].strip()
+            if forwarded_for
+            else (request.client.host if request.client else "unknown")
+        )
         rate_key = f"{client_ip}:{request.url.path}"
         limiter.check_rate_limit(rate_key, max_requests=max_requests, window_seconds=window_seconds)
 

@@ -1,7 +1,6 @@
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.question_bank_service import QuestionBankService
 from app.services.question_selection_service import QuestionSelectionService
 
 

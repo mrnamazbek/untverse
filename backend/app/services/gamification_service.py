@@ -1,12 +1,14 @@
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Dict, Any, Tuple
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.gamification_repo import GamificationRepository
 from app.repositories.user_repo import UserRepository
-from app.core.events import (
-    dispatcher, DomainEvent, QuizCompletedEvent, LessonCompletedEvent,
-    CodingTaskCompletedEvent, DailyLoginEvent
+from app.core.events import QuizCompletedEvent
+from app.schemas.gamification import (
+    GamificationProfileResponse,
+    StreakResponse,
+    AchievementResponse,
+    DailyMissionResponse,
 )
-from app.schemas.gamification import GamificationProfileResponse, StreakResponse, AchievementResponse, DailyMissionResponse
 
 
 class GamificationService:
@@ -28,12 +30,13 @@ class GamificationService:
         # Calculate XP requirements for current and next level
         # Level N requires: total_xp >= 150 * (N - 1)^2
         current_lvl_base_xp = 150 * ((p.current_level - 1) ** 2)
-        next_lvl_base_xp = 150 * (p.current_level ** 2)
+        next_lvl_base_xp = 150 * (p.current_level**2)
         xp_in_level = max(0, p.total_xp - current_lvl_base_xp)
         xp_needed_for_level = max(1, next_lvl_base_xp - current_lvl_base_xp)
         level_pct = min(100.0, round((xp_in_level / xp_needed_for_level) * 100, 1))
 
         from datetime import datetime, timezone
+
         today = datetime.now(timezone.utc).date()
         is_active_today = streak.last_activity_date == today
 
@@ -51,10 +54,10 @@ class GamificationService:
                 longest_streak=streak.longest_streak,
                 last_activity_date=streak.last_activity_date,
                 freeze_count=streak.freeze_count,
-                is_active_today=is_active_today
+                is_active_today=is_active_today,
             ),
             recent_achievements=[AchievementResponse(**a) for a in achievements_raw],
-            daily_missions=[DailyMissionResponse(**m) for m in missions_raw]
+            daily_missions=[DailyMissionResponse(**m) for m in missions_raw],
         )
 
     async def check_and_unlock_achievements(self, user_id: int):
@@ -96,15 +99,19 @@ class GamificationService:
             user_id=event.user_id,
             amount=total_awarded,
             reason="quiz_completed",
-            reference_id=f"quiz_{event.quiz_id}"
+            reference_id=f"quiz_{event.quiz_id}",
         )
 
         # 2. Update streak
-        current_streak, is_extended = await self.gamification_repo.update_activity_streak(event.user_id)
+        current_streak, is_extended = await self.gamification_repo.update_activity_streak(
+            event.user_id
+        )
 
         # 3. Update missions
         await self.gamification_repo.update_mission_progress(event.user_id, "complete_quiz", 1)
-        await self.gamification_repo.update_mission_progress(event.user_id, "answer_questions", event.total_count)
+        await self.gamification_repo.update_mission_progress(
+            event.user_id, "answer_questions", event.total_count
+        )
 
         # 4. Check achievements
         if event.percentage == 100.0:
@@ -118,15 +125,17 @@ class GamificationService:
             "new_level": new_level,
             "leveled_up": leveled_up,
             "streak_extended": is_extended,
-            "current_streak": current_streak
+            "current_streak": current_streak,
         }
 
-    async def handle_lesson_completed(self, user_id: int, lesson_id: int, xp_reward: int = 25) -> Tuple[int, int, bool]:
+    async def handle_lesson_completed(
+        self, user_id: int, lesson_id: int, xp_reward: int = 25
+    ) -> Tuple[int, int, bool]:
         new_total_xp, new_level, leveled_up = await self.gamification_repo.add_xp(
             user_id=user_id,
             amount=xp_reward,
             reason="lesson_completed",
-            reference_id=f"lesson_{lesson_id}"
+            reference_id=f"lesson_{lesson_id}",
         )
         await self.gamification_repo.update_activity_streak(user_id)
         await self.gamification_repo.update_mission_progress(user_id, "read_lesson", 1)
@@ -134,12 +143,14 @@ class GamificationService:
         await self.check_and_unlock_achievements(user_id)
         return (new_total_xp, new_level, leveled_up)
 
-    async def handle_coding_task_completed(self, user_id: int, task_id: int, xp_reward: int = 75) -> Tuple[int, int, bool]:
+    async def handle_coding_task_completed(
+        self, user_id: int, task_id: int, xp_reward: int = 75
+    ) -> Tuple[int, int, bool]:
         new_total_xp, new_level, leveled_up = await self.gamification_repo.add_xp(
             user_id=user_id,
             amount=xp_reward,
             reason="coding_task_completed",
-            reference_id=f"task_{task_id}"
+            reference_id=f"task_{task_id}",
         )
         await self.gamification_repo.update_activity_streak(user_id)
         await self.gamification_repo.update_mission_progress(user_id, "solve_coding", 1)

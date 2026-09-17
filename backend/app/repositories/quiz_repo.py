@@ -1,9 +1,9 @@
 from typing import Optional, List
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_, case
+from sqlalchemy import select, func, case
 from sqlalchemy.orm import selectinload
-from app.models.quiz import Quiz, Question, QuestionOption, QuizAttempt, QuizAnswer
+from app.models.quiz import Quiz, Question, QuizAttempt, QuizAnswer
 from app.repositories.base import BaseRepository
 
 
@@ -14,9 +14,7 @@ class QuizRepository(BaseRepository[Quiz]):
     async def get_by_id_with_questions(self, quiz_id: int) -> Optional[Quiz]:
         result = await self.session.execute(
             select(Quiz)
-            .options(
-                selectinload(Quiz.questions).selectinload(Question.options)
-            )
+            .options(selectinload(Quiz.questions).selectinload(Question.options))
             .where(Quiz.id == quiz_id)
         )
         return result.scalars().first()
@@ -54,7 +52,7 @@ class QuizRepository(BaseRepository[Quiz]):
             percentage=percentage,
             passed=passed,
             time_spent_seconds=time_spent_seconds,
-            completed_at=datetime.now(timezone.utc)
+            completed_at=datetime.now(timezone.utc),
         )
         self.session.add(attempt)
         await self.session.flush()
@@ -77,7 +75,7 @@ class QuizRepository(BaseRepository[Quiz]):
             select(
                 QuizAttempt.quiz_id,
                 func.max(QuizAttempt.score).label("best_score"),
-                func.max(case((QuizAttempt.passed == True, 1), else_=0)).label("is_passed_int")
+                func.max(case((QuizAttempt.passed == True, 1), else_=0)).label("is_passed_int"),
             )
             .where(QuizAttempt.user_id == user_id)
             .group_by(QuizAttempt.quiz_id)
@@ -86,13 +84,14 @@ class QuizRepository(BaseRepository[Quiz]):
         for row in result.all():
             scores[row.quiz_id] = {
                 "best_score": row.best_score,
-                "is_passed": bool(row.is_passed_int)
+                "is_passed": bool(row.is_passed_int),
             }
         return scores
 
     async def get_recent_mistake_questions(self, user_id: int, limit: int = 10) -> List[Question]:
         # Fetch questions where user made mistakes and hasn't resolved them
         from app.models.analytics import MistakeLog
+
         result = await self.session.execute(
             select(Question)
             .join(MistakeLog, MistakeLog.question_id == Question.id)

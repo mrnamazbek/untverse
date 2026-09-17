@@ -2,20 +2,29 @@ import hashlib
 from datetime import datetime, date, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models.sources import Source, SourceAuthorityLevel, SourceDocument
+from app.models.sources import Source, SourceAuthorityLevel
 from app.models.localization import LocalizationGlossary
 from app.models.specification import (
-    ExamType, Subject, ExamSpecification, SpecificationSection, SpecificationTopic,
-    CurrentUntRule, SpecificationStatus
+    ExamType,
+    Subject,
+    ExamSpecification,
+    SpecificationSection,
+    SpecificationTopic,
+    CurrentUntRule,
+    SpecificationStatus,
 )
 from app.models.question_bank import (
-    BankQuestion, QuestionVersion, QuestionTranslation, QuestionBankOption,
-    QuestionBankOptionTranslation, QuestionProvenance, BankSolution,
-    BankSolutionTranslation, Tag, QuestionTag, QuestionDifficulty, OfficialStatus
+    BankQuestion,
+    QuestionTranslation,
+    QuestionBankOption,
+    QuestionBankOptionTranslation,
+    QuestionProvenance,
+    BankSolution,
+    BankSolutionTranslation,
+    QuestionDifficulty,
+    OfficialStatus,
 )
-from app.models.news import (
-    NewsArticle, NewsTranslation, NewsVersion, NewsSource, NewsCategory, NewsStatus
-)
+from app.models.news import NewsArticle, NewsTranslation, NewsSource, NewsCategory, NewsStatus
 
 
 async def seed_data_platform(session: AsyncSession):
@@ -108,38 +117,164 @@ async def seed_data_platform(session: AsyncSession):
 
     # 2. Seed Localization Glossary (50+ Educational and IT Terms)
     glossary_items = [
-        ("unt_full", "Ұлттық бірыңғай тестілеу", "Единое национальное тестирование", "Unified National Testing", "educational_unt"),
+        (
+            "unt_full",
+            "Ұлттық бірыңғай тестілеу",
+            "Единое национальное тестирование",
+            "Unified National Testing",
+            "educational_unt",
+        ),
         ("applicant", "Талапкер", "Абитуриент", "Applicant / Candidate", "educational_unt"),
-        ("profile_subject", "Бейіндік пән", "Профильный предмет", "Profile subject", "educational_unt"),
-        ("passing_score", "Шекті балл", "Проходной / пороговый балл", "Passing score", "educational_unt"),
-        ("education_grant", "Білім беру гранты", "Образовательный грант", "Educational grant", "educational_unt"),
-        ("testing_center", "Ұлттық тестілеу орталығы", "Национальный центр тестирования", "National Testing Center", "educational_unt"),
-        ("math_literacy", "Математикалық сауаттылық", "Математическая грамотность", "Mathematical literacy", "educational_unt"),
-        ("reading_literacy", "Оқу сауаттылығы", "Грамотность чтения", "Reading literacy", "educational_unt"),
-        ("kazakhstan_history", "Қазақстан тарихы", "История Казахстана", "History of Kazakhstan", "educational_unt"),
+        (
+            "profile_subject",
+            "Бейіндік пән",
+            "Профильный предмет",
+            "Profile subject",
+            "educational_unt",
+        ),
+        (
+            "passing_score",
+            "Шекті балл",
+            "Проходной / пороговый балл",
+            "Passing score",
+            "educational_unt",
+        ),
+        (
+            "education_grant",
+            "Білім беру гранты",
+            "Образовательный грант",
+            "Educational grant",
+            "educational_unt",
+        ),
+        (
+            "testing_center",
+            "Ұлттық тестілеу орталығы",
+            "Национальный центр тестирования",
+            "National Testing Center",
+            "educational_unt",
+        ),
+        (
+            "math_literacy",
+            "Математикалық сауаттылық",
+            "Математическая грамотность",
+            "Mathematical literacy",
+            "educational_unt",
+        ),
+        (
+            "reading_literacy",
+            "Оқу сауаттылығы",
+            "Грамотность чтения",
+            "Reading literacy",
+            "educational_unt",
+        ),
+        (
+            "kazakhstan_history",
+            "Қазақстан тарихы",
+            "История Казахстана",
+            "History of Kazakhstan",
+            "educational_unt",
+        ),
         ("database", "Деректер базасы (дерекқор)", "База данных", "Database", "cs_terminology"),
-        ("relational_model", "Реляциялық модель", "Реляционная модель", "Relational model", "cs_terminology"),
+        (
+            "relational_model",
+            "Реляциялық модель",
+            "Реляционная модель",
+            "Relational model",
+            "cs_terminology",
+        ),
         ("primary_key", "Бастапқы кілт", "Первичный ключ", "Primary key", "cs_terminology"),
         ("foreign_key", "Сыртқы кілт", "Внешний ключ", "Foreign key", "cs_terminology"),
         ("query", "Сұраныс", "Запрос", "Query", "cs_terminology"),
         ("algorithm", "Алгоритм", "Алгоритм", "Algorithm", "cs_terminology"),
         ("recursion", "Қайталану (рекурсия)", "Рекурсия", "Recursion", "cs_terminology"),
-        ("data_structure", "Деректер құрылымы", "Структура данных", "Data structure", "cs_terminology"),
+        (
+            "data_structure",
+            "Деректер құрылымы",
+            "Структура данных",
+            "Data structure",
+            "cs_terminology",
+        ),
         ("number_system", "Санау жүйесі", "Система счисления", "Number system", "cs_terminology"),
-        ("binary_system", "Екілік санау жүйесі", "Двоичная система счисления", "Binary system", "cs_terminology"),
-        ("hexadecimal_system", "Он алтылық санау жүйесі", "Шестнадцатеричная система счисления", "Hexadecimal system", "cs_terminology"),
-        ("info_security", "Ақпараттық қауіпсіздік", "Информационная безопасность", "Information security", "cs_terminology"),
+        (
+            "binary_system",
+            "Екілік санау жүйесі",
+            "Двоичная система счисления",
+            "Binary system",
+            "cs_terminology",
+        ),
+        (
+            "hexadecimal_system",
+            "Он алтылық санау жүйесі",
+            "Шестнадцатеричная система счисления",
+            "Hexadecimal system",
+            "cs_terminology",
+        ),
+        (
+            "info_security",
+            "Ақпараттық қауіпсіздік",
+            "Информационная безопасность",
+            "Information security",
+            "cs_terminology",
+        ),
         ("encryption", "Шифрлау", "Шифрование", "Encryption", "cs_terminology"),
-        ("digital_signature", "Электрондық цифрлық қолтаңба (ЭЦҚ)", "Электронная цифровая подпись (ЭЦП)", "Digital signature", "cs_terminology"),
-        ("computer_network", "Компьютерлік желі", "Компьютерная сеть", "Computer network", "cs_terminology"),
-        ("network_topology", "Желілік топология", "Топология сети", "Network topology", "cs_terminology"),
+        (
+            "digital_signature",
+            "Электрондық цифрлық қолтаңба (ЭЦҚ)",
+            "Электронная цифровая подпись (ЭЦП)",
+            "Digital signature",
+            "cs_terminology",
+        ),
+        (
+            "computer_network",
+            "Компьютерлік желі",
+            "Компьютерная сеть",
+            "Computer network",
+            "cs_terminology",
+        ),
+        (
+            "network_topology",
+            "Желілік топология",
+            "Топология сети",
+            "Network topology",
+            "cs_terminology",
+        ),
         ("ip_address", "IP-мекенжай", "IP-адрес", "IP address", "cs_terminology"),
         ("subnet_mask", "Ішкі желі маскасы", "Маска подсети", "Subnet mask", "cs_terminology"),
-        ("artificial_intelligence", "Жасанды интеллект", "Искусственный интеллект", "Artificial intelligence", "cs_terminology"),
-        ("cloud_computing", "Бұлттық есептеулер", "Облачные вычисления", "Cloud computing", "cs_terminology"),
-        ("loop_statement", "Циклдік нұсқау (қайталану операторы)", "Циклический оператор", "Loop statement", "cs_terminology"),
-        ("conditional_statement", "Шартты оператор", "Условный оператор", "Conditional statement", "cs_terminology"),
-        ("list_comprehension", "Тізім генераторы", "Генератор списков", "List comprehension", "cs_terminology"),
+        (
+            "artificial_intelligence",
+            "Жасанды интеллект",
+            "Искусственный интеллект",
+            "Artificial intelligence",
+            "cs_terminology",
+        ),
+        (
+            "cloud_computing",
+            "Бұлттық есептеулер",
+            "Облачные вычисления",
+            "Cloud computing",
+            "cs_terminology",
+        ),
+        (
+            "loop_statement",
+            "Циклдік нұсқау (қайталану операторы)",
+            "Циклический оператор",
+            "Loop statement",
+            "cs_terminology",
+        ),
+        (
+            "conditional_statement",
+            "Шартты оператор",
+            "Условный оператор",
+            "Conditional statement",
+            "cs_terminology",
+        ),
+        (
+            "list_comprehension",
+            "Тізім генераторы",
+            "Генератор списков",
+            "List comprehension",
+            "cs_terminology",
+        ),
     ]
 
     for key, kk_t, ru_t, en_t, ctx in glossary_items:
@@ -201,13 +336,38 @@ async def seed_data_platform(session: AsyncSession):
         informatics_max_score=50,
         subjects_structure={
             "mandatory": [
-                {"name_kk": "Қазақстан тарихы", "name_ru": "История Казахстана", "questions": 20, "max_score": 20},
-                {"name_kk": "Оқу сауаттылығы", "name_ru": "Грамотность чтения", "questions": 10, "max_score": 10},
-                {"name_kk": "Математикалық сауаттылық", "name_ru": "Математическая грамотность", "questions": 10, "max_score": 10},
+                {
+                    "name_kk": "Қазақстан тарихы",
+                    "name_ru": "История Казахстана",
+                    "questions": 20,
+                    "max_score": 20,
+                },
+                {
+                    "name_kk": "Оқу сауаттылығы",
+                    "name_ru": "Грамотность чтения",
+                    "questions": 10,
+                    "max_score": 10,
+                },
+                {
+                    "name_kk": "Математикалық сауаттылық",
+                    "name_ru": "Математическая грамотность",
+                    "questions": 10,
+                    "max_score": 10,
+                },
             ],
             "profile": [
-                {"name_kk": "1-бейіндік пән (Математика)", "name_ru": "1-й профильный (Математика)", "questions": 40, "max_score": 50},
-                {"name_kk": "2-бейіндік пән (Информатика)", "name_ru": "2-й профильный (Информатика)", "questions": 40, "max_score": 50},
+                {
+                    "name_kk": "1-бейіндік пән (Математика)",
+                    "name_ru": "1-й профильный (Математика)",
+                    "questions": 40,
+                    "max_score": 50,
+                },
+                {
+                    "name_kk": "2-бейіндік пән (Информатика)",
+                    "name_ru": "2-й профильный (Информатика)",
+                    "questions": 40,
+                    "max_score": 50,
+                },
             ],
         },
         profile_combinations={
@@ -224,10 +384,30 @@ async def seed_data_platform(session: AsyncSession):
             }
         },
         testing_periods=[
-            {"period": "Қаңтар / Январь", "type": "paid", "purpose": "Шартты түрде ақылы оқуға түсу", "dates": "10.01 — 10.02"},
-            {"period": "Наурыз / Март", "type": "paid", "purpose": "Ақылы оқуға түсу мүмкіндігі", "dates": "01.03 — 31.03"},
-            {"period": "Мамыр — Шілде / Май — Июль", "type": "grant", "purpose": "Мемлекеттік грант байқауына қатысу (2 мүмкіндік)", "dates": "16.05 — 05.07"},
-            {"period": "Тамыз / Август", "type": "paid", "purpose": "Қосымша ақылы оқуға түсу", "dates": "10.08 — 20.08"},
+            {
+                "period": "Қаңтар / Январь",
+                "type": "paid",
+                "purpose": "Шартты түрде ақылы оқуға түсу",
+                "dates": "10.01 — 10.02",
+            },
+            {
+                "period": "Наурыз / Март",
+                "type": "paid",
+                "purpose": "Ақылы оқуға түсу мүмкіндігі",
+                "dates": "01.03 — 31.03",
+            },
+            {
+                "period": "Мамыр — Шілде / Май — Июль",
+                "type": "grant",
+                "purpose": "Мемлекеттік грант байқауына қатысу (2 мүмкіндік)",
+                "dates": "16.05 — 05.07",
+            },
+            {
+                "period": "Тамыз / Август",
+                "type": "paid",
+                "purpose": "Қосымша ақылы оқуға түсу",
+                "dates": "10.08 — 20.08",
+            },
         ],
         important_deadlines={
             "grant_application_start": "2026-07-13",
@@ -282,10 +462,25 @@ async def seed_data_platform(session: AsyncSession):
             "weight": 16,
             "q_count": 8,
             "topics": [
-                ("1.1", "Санау жүйелері және аудару ережелері", "Системы счисления и правила перевода", "Number Systems and Conversions"),
-                ("1.2", "Ақпаратты кодтау және ақпарат көлемін өлшеу", "Кодирование и измерение объема информации", "Information Encoding and Measurement"),
-                ("1.3", "Логикалық амалдар және логикалық схемалар", "Логические операции и логические схемы", "Logical Operations and Logic Gates"),
-            ]
+                (
+                    "1.1",
+                    "Санау жүйелері және аудару ережелері",
+                    "Системы счисления и правила перевода",
+                    "Number Systems and Conversions",
+                ),
+                (
+                    "1.2",
+                    "Ақпаратты кодтау және ақпарат көлемін өлшеу",
+                    "Кодирование и измерение объема информации",
+                    "Information Encoding and Measurement",
+                ),
+                (
+                    "1.3",
+                    "Логикалық амалдар және логикалық схемалар",
+                    "Логические операции и логические схемы",
+                    "Logical Operations and Logic Gates",
+                ),
+            ],
         },
         {
             "code": "CS-2",
@@ -295,10 +490,25 @@ async def seed_data_platform(session: AsyncSession):
             "weight": 16,
             "q_count": 8,
             "topics": [
-                ("2.1", "ЭЕМ архитектурасы және аппараттық қамтамасыз ету", "Архитектура ЭВМ и аппаратное обеспечение", "Computer Architecture and Hardware"),
-                ("2.2", "Компьютерлік желілер, топологиялар және жабдықтар", "Компьютерные сети, топологии и оборудование", "Computer Networks, Topologies and Equipment"),
-                ("2.3", "OSI моделі, желілік хаттамалар және IP-адрестеу", "Модель OSI, сетевые протоколы и IP-адресация", "OSI Model, Protocols and IP Addressing"),
-            ]
+                (
+                    "2.1",
+                    "ЭЕМ архитектурасы және аппараттық қамтамасыз ету",
+                    "Архитектура ЭВМ и аппаратное обеспечение",
+                    "Computer Architecture and Hardware",
+                ),
+                (
+                    "2.2",
+                    "Компьютерлік желілер, топологиялар және жабдықтар",
+                    "Компьютерные сети, топологии и оборудование",
+                    "Computer Networks, Topologies and Equipment",
+                ),
+                (
+                    "2.3",
+                    "OSI моделі, желілік хаттамалар және IP-адрестеу",
+                    "Модель OSI, сетевые протоколы и IP-адресация",
+                    "OSI Model, Protocols and IP Addressing",
+                ),
+            ],
         },
         {
             "code": "CS-3",
@@ -308,10 +518,25 @@ async def seed_data_platform(session: AsyncSession):
             "weight": 14,
             "q_count": 7,
             "topics": [
-                ("3.1", "Киберқауіптер және зиянды бағдарламалардың түрлері", "Киберугрозы и типы вредоносного ПО", "Cyber Threats and Malware Types"),
-                ("3.2", "Криптография, шифрлау әдістері және ЭЦҚ", "Криптография, методы шифрования и ЭЦП", "Cryptography and Digital Signatures"),
-                ("3.3", "Деректердің құпиялылығы және сақтық көшірме жасау", "Конфиденциальность данных и резервное копирование", "Data Privacy and Backups"),
-            ]
+                (
+                    "3.1",
+                    "Киберқауіптер және зиянды бағдарламалардың түрлері",
+                    "Киберугрозы и типы вредоносного ПО",
+                    "Cyber Threats and Malware Types",
+                ),
+                (
+                    "3.2",
+                    "Криптография, шифрлау әдістері және ЭЦҚ",
+                    "Криптография, методы шифрования и ЭЦП",
+                    "Cryptography and Digital Signatures",
+                ),
+                (
+                    "3.3",
+                    "Деректердің құпиялылығы және сақтық көшірме жасау",
+                    "Конфиденциальность данных и резервное копирование",
+                    "Data Privacy and Backups",
+                ),
+            ],
         },
         {
             "code": "CS-4",
@@ -321,12 +546,37 @@ async def seed_data_platform(session: AsyncSession):
             "weight": 28,
             "q_count": 14,
             "topics": [
-                ("4.1", "Python базалық құрылымдары және шартты операторлар", "Базовые структуры и условные операторы Python", "Python Basic Syntax and Conditionals"),
-                ("4.2", "Циклдік құрылымдар (for, while) және генераторлар", "Циклические конструкции (for, while) и генераторы", "Loops and Comprehensions"),
-                ("4.3", "Жолдар, тізімдер және сөздіктермен жұмыс", "Работа со строками, списками и словарями", "Strings, Lists and Dictionaries"),
-                ("4.4", "Функциялар және рекурсивті алгоритмдер", "Функции и рекурсивные алгоритмы", "Functions and Recursive Algorithms"),
-                ("4.5", "Сұрыптау және іздеу алгоритмдері", "Алгоритмы сортировки и поиска", "Sorting and Searching Algorithms"),
-            ]
+                (
+                    "4.1",
+                    "Python базалық құрылымдары және шартты операторлар",
+                    "Базовые структуры и условные операторы Python",
+                    "Python Basic Syntax and Conditionals",
+                ),
+                (
+                    "4.2",
+                    "Циклдік құрылымдар (for, while) және генераторлар",
+                    "Циклические конструкции (for, while) и генераторы",
+                    "Loops and Comprehensions",
+                ),
+                (
+                    "4.3",
+                    "Жолдар, тізімдер және сөздіктермен жұмыс",
+                    "Работа со строками, списками и словарями",
+                    "Strings, Lists and Dictionaries",
+                ),
+                (
+                    "4.4",
+                    "Функциялар және рекурсивті алгоритмдер",
+                    "Функции и рекурсивные алгоритмы",
+                    "Functions and Recursive Algorithms",
+                ),
+                (
+                    "4.5",
+                    "Сұрыптау және іздеу алгоритмдері",
+                    "Алгоритмы сортировки и поиска",
+                    "Sorting and Searching Algorithms",
+                ),
+            ],
         },
         {
             "code": "CS-5",
@@ -336,10 +586,25 @@ async def seed_data_platform(session: AsyncSession):
             "weight": 16,
             "q_count": 8,
             "topics": [
-                ("5.1", "Реляциялық деректер базасының моделі мен кілттері", "Модель реляционных баз данных и ключи", "Relational Database Model and Keys"),
-                ("5.2", "SQL деректерді таңдау және сүзгілеу (SELECT, WHERE, ORDER BY)", "Выборка и фильтрация SQL (SELECT, WHERE, ORDER BY)", "SQL Querying and Filtering"),
-                ("5.3", "Бірнеше кестені біріктіру және агрегаттық функциялар (JOIN, GROUP BY)", "Объединение таблиц и агрегаты (JOIN, GROUP BY)", "Table Joins and Aggregate Functions"),
-            ]
+                (
+                    "5.1",
+                    "Реляциялық деректер базасының моделі мен кілттері",
+                    "Модель реляционных баз данных и ключи",
+                    "Relational Database Model and Keys",
+                ),
+                (
+                    "5.2",
+                    "SQL деректерді таңдау және сүзгілеу (SELECT, WHERE, ORDER BY)",
+                    "Выборка и фильтрация SQL (SELECT, WHERE, ORDER BY)",
+                    "SQL Querying and Filtering",
+                ),
+                (
+                    "5.3",
+                    "Бірнеше кестені біріктіру және агрегаттық функциялар (JOIN, GROUP BY)",
+                    "Объединение таблиц и агрегаты (JOIN, GROUP BY)",
+                    "Table Joins and Aggregate Functions",
+                ),
+            ],
         },
         {
             "code": "CS-6",
@@ -349,9 +614,19 @@ async def seed_data_platform(session: AsyncSession):
             "weight": 10,
             "q_count": 5,
             "topics": [
-                ("6.1", "HTML/CSS құрылымы және Web-беттерді әзірлеу", "HTML/CSS структура и веб-разработка", "HTML/CSS and Web Development"),
-                ("6.2", "Жасанды интеллект, бұлттық технологиялар және IoT", "Искусственный интеллект, облака и IoT", "AI, Cloud Computing and IoT"),
-            ]
+                (
+                    "6.1",
+                    "HTML/CSS құрылымы және Web-беттерді әзірлеу",
+                    "HTML/CSS структура и веб-разработка",
+                    "HTML/CSS and Web Development",
+                ),
+                (
+                    "6.2",
+                    "Жасанды интеллект, бұлттық технологиялар және IoT",
+                    "Искусственный интеллект, облака и IoT",
+                    "AI, Cloud Computing and IoT",
+                ),
+            ],
         },
     ]
 
@@ -449,10 +724,34 @@ async def seed_data_platform(session: AsyncSession):
             "text_en": "Choose the correct SQL query to calculate the average age of students with score over 100 from 'Students' table:",
             "code_snippet": None,
             "options": [
-                {"key": "A", "kk": "SELECT AVG(age) FROM Students WHERE score > 100;", "ru": "SELECT AVG(age) FROM Students WHERE score > 100;", "en": "SELECT AVG(age) FROM Students WHERE score > 100;", "correct": True},
-                {"key": "B", "kk": "SELECT SUM(age) FROM Students HAVING score > 100;", "ru": "SELECT SUM(age) FROM Students HAVING score > 100;", "en": "SELECT SUM(age) FROM Students HAVING score > 100;", "correct": False},
-                {"key": "C", "kk": "SELECT COUNT(age) FROM Students WHERE score >= 100;", "ru": "SELECT COUNT(age) FROM Students WHERE score >= 100;", "en": "SELECT COUNT(age) FROM Students WHERE score >= 100;", "correct": False},
-                {"key": "D", "kk": "SELECT AVERAGE(age) FROM Students WHERE score > 100;", "ru": "SELECT AVERAGE(age) FROM Students WHERE score > 100;", "en": "SELECT AVERAGE(age) FROM Students WHERE score > 100;", "correct": False},
+                {
+                    "key": "A",
+                    "kk": "SELECT AVG(age) FROM Students WHERE score > 100;",
+                    "ru": "SELECT AVG(age) FROM Students WHERE score > 100;",
+                    "en": "SELECT AVG(age) FROM Students WHERE score > 100;",
+                    "correct": True,
+                },
+                {
+                    "key": "B",
+                    "kk": "SELECT SUM(age) FROM Students HAVING score > 100;",
+                    "ru": "SELECT SUM(age) FROM Students HAVING score > 100;",
+                    "en": "SELECT SUM(age) FROM Students HAVING score > 100;",
+                    "correct": False,
+                },
+                {
+                    "key": "C",
+                    "kk": "SELECT COUNT(age) FROM Students WHERE score >= 100;",
+                    "ru": "SELECT COUNT(age) FROM Students WHERE score >= 100;",
+                    "en": "SELECT COUNT(age) FROM Students WHERE score >= 100;",
+                    "correct": False,
+                },
+                {
+                    "key": "D",
+                    "kk": "SELECT AVERAGE(age) FROM Students WHERE score > 100;",
+                    "ru": "SELECT AVERAGE(age) FROM Students WHERE score > 100;",
+                    "en": "SELECT AVERAGE(age) FROM Students WHERE score > 100;",
+                    "correct": False,
+                },
             ],
             "solution_kk": "SQL стандартында орташа мәнді табу үшін 'AVG()' агрегаттық функциясы қолданылады (AVERAGE емес!). Жолдарды сүзгілеу үшін 'WHERE' операторы қызмет етеді.",
             "solution_ru": "В стандарте SQL для вычисления среднего используется функция AVG() (не AVERAGE), а для фильтрации строк — предложение WHERE.",
@@ -475,10 +774,34 @@ async def seed_data_platform(session: AsyncSession):
             "text_en": "Given host IP address 192.168.10.45 and subnet mask 255.255.255.0, what is the Network Address?",
             "code_snippet": None,
             "options": [
-                {"key": "A", "kk": "192.168.10.0", "ru": "192.168.10.0", "en": "192.168.10.0", "correct": True},
-                {"key": "B", "kk": "192.168.10.255", "ru": "192.168.10.255", "en": "192.168.10.255", "correct": False},
-                {"key": "C", "kk": "192.168.0.0", "ru": "192.168.0.0", "en": "192.168.0.0", "correct": False},
-                {"key": "D", "kk": "192.168.10.1", "ru": "192.168.10.1", "en": "192.168.10.1", "correct": False},
+                {
+                    "key": "A",
+                    "kk": "192.168.10.0",
+                    "ru": "192.168.10.0",
+                    "en": "192.168.10.0",
+                    "correct": True,
+                },
+                {
+                    "key": "B",
+                    "kk": "192.168.10.255",
+                    "ru": "192.168.10.255",
+                    "en": "192.168.10.255",
+                    "correct": False,
+                },
+                {
+                    "key": "C",
+                    "kk": "192.168.0.0",
+                    "ru": "192.168.0.0",
+                    "en": "192.168.0.0",
+                    "correct": False,
+                },
+                {
+                    "key": "D",
+                    "kk": "192.168.10.1",
+                    "ru": "192.168.10.1",
+                    "en": "192.168.10.1",
+                    "correct": False,
+                },
             ],
             "solution_kk": "Желі мекенжайын табу үшін IP-мекенжай мен маска арасында разрядтық конъюнкция (AND) қолданылады. 255.255.255.0 маскасында алғашқы 3 байт өзгеріссіз қалады (192.168.10), ал соңғы байт 45 AND 0 = 0 болады. Демек, желі мекенжайы — 192.168.10.0 (ал 192.168.10.255 — кеңтаратылымдық / broadcast мекенжайы).",
             "solution_ru": "Поразрядное логическое 'И' (AND) между 192.168.10.45 и 255.255.255.0 дает 192.168.10.0. Адрес 192.168.10.255 является широковещательным (broadcast).",
@@ -501,10 +824,34 @@ async def seed_data_platform(session: AsyncSession):
             "text_en": "Which key is used for encryption and verifying a digital signature in asymmetric cryptography?",
             "code_snippet": None,
             "options": [
-                {"key": "A", "kk": "Ашық кілт (Public Key)", "ru": "Открытый ключ (Public Key)", "en": "Public Key", "correct": True},
-                {"key": "B", "kk": "Жабық кілт (Private Key)", "ru": "Закрытый ключ (Private Key)", "en": "Private Key", "correct": False},
-                {"key": "C", "kk": "Симметриялық кілт", "ru": "Симметричный ключ", "en": "Symmetric key", "correct": False},
-                {"key": "D", "kk": "Сеанстық кілт", "ru": "Сессионный ключ", "en": "Session key", "correct": False},
+                {
+                    "key": "A",
+                    "kk": "Ашық кілт (Public Key)",
+                    "ru": "Открытый ключ (Public Key)",
+                    "en": "Public Key",
+                    "correct": True,
+                },
+                {
+                    "key": "B",
+                    "kk": "Жабық кілт (Private Key)",
+                    "ru": "Закрытый ключ (Private Key)",
+                    "en": "Private Key",
+                    "correct": False,
+                },
+                {
+                    "key": "C",
+                    "kk": "Симметриялық кілт",
+                    "ru": "Симметричный ключ",
+                    "en": "Symmetric key",
+                    "correct": False,
+                },
+                {
+                    "key": "D",
+                    "kk": "Сеанстық кілт",
+                    "ru": "Сессионный ключ",
+                    "en": "Session key",
+                    "correct": False,
+                },
             ],
             "solution_kk": "Асимметриялық криптографияда екі кілт бар:\n1. Ашық кілт (Public key) — баршаға қолжетімді, хабарламаны шифрлауға және ЭЦҚ түпнұсқалығын тексеруге арналған.\n2. Жабық кілт (Private key) — тек иесіне ғана белгілі, хабарламаның шифрын ашуға және ЭЦҚ қоюға (қалыптастыруға) қызмет етеді.",
             "solution_ru": "Открытый ключ (Public Key) доступен всем и используется для шифрования сообщений адресату и верификации его ЭЦП. Закрытый ключ (Private Key) хранит только владелец для расшифровки и формирования ЭЦП.",
@@ -514,7 +861,7 @@ async def seed_data_platform(session: AsyncSession):
             "exam_tip_en": "Sign with Private Key, verify with Public Key.",
             "source_title": "ҰТО Ақпараттық қауіпсіздік 2026",
             "source_url": "https://testcenter.kz/ent/security-2026",
-        }
+        },
     ]
 
     for q_data in sample_questions:
@@ -526,7 +873,9 @@ async def seed_data_platform(session: AsyncSession):
             specification_topic_id=top_id,
             question_type=q_data["type"],
             difficulty=q_data["difficulty"],
-            difficulty_score=0.30 if q_data["difficulty"] == "A" else (0.55 if q_data["difficulty"] == "B" else 0.85),
+            difficulty_score=0.30
+            if q_data["difficulty"] == "A"
+            else (0.55 if q_data["difficulty"] == "B" else 0.85),
             official_status=q_data["status"],
             original_language="kk",
             year=q_data["year"],
@@ -538,33 +887,39 @@ async def seed_data_platform(session: AsyncSession):
         await session.flush()
 
         # Translations (kk, ru, en)
-        session.add(QuestionTranslation(
-            question_id=bq.id,
-            locale="kk",
-            text=q_data["text_kk"],
-            code_snippet=q_data["code_snippet"],
-            explanation=q_data["solution_kk"],
-            translation_source="official",
-            translation_status="published",
-        ))
-        session.add(QuestionTranslation(
-            question_id=bq.id,
-            locale="ru",
-            text=q_data["text_ru"],
-            code_snippet=q_data["code_snippet"],
-            explanation=q_data["solution_ru"],
-            translation_source="official",
-            translation_status="published",
-        ))
-        session.add(QuestionTranslation(
-            question_id=bq.id,
-            locale="en",
-            text=q_data["text_en"],
-            code_snippet=q_data["code_snippet"],
-            explanation=q_data["solution_en"],
-            translation_source="human",
-            translation_status="published",
-        ))
+        session.add(
+            QuestionTranslation(
+                question_id=bq.id,
+                locale="kk",
+                text=q_data["text_kk"],
+                code_snippet=q_data["code_snippet"],
+                explanation=q_data["solution_kk"],
+                translation_source="official",
+                translation_status="published",
+            )
+        )
+        session.add(
+            QuestionTranslation(
+                question_id=bq.id,
+                locale="ru",
+                text=q_data["text_ru"],
+                code_snippet=q_data["code_snippet"],
+                explanation=q_data["solution_ru"],
+                translation_source="official",
+                translation_status="published",
+            )
+        )
+        session.add(
+            QuestionTranslation(
+                question_id=bq.id,
+                locale="en",
+                text=q_data["text_en"],
+                code_snippet=q_data["code_snippet"],
+                explanation=q_data["solution_en"],
+                translation_source="human",
+                translation_status="published",
+            )
+        )
 
         # Options
         for idx_opt, opt_item in enumerate(q_data["options"], 1):
@@ -577,23 +932,31 @@ async def seed_data_platform(session: AsyncSession):
             session.add(opt)
             await session.flush()
 
-            session.add(QuestionBankOptionTranslation(option_id=opt.id, locale="kk", text=opt_item["kk"]))
-            session.add(QuestionBankOptionTranslation(option_id=opt.id, locale="ru", text=opt_item["ru"]))
-            session.add(QuestionBankOptionTranslation(option_id=opt.id, locale="en", text=opt_item["en"]))
+            session.add(
+                QuestionBankOptionTranslation(option_id=opt.id, locale="kk", text=opt_item["kk"])
+            )
+            session.add(
+                QuestionBankOptionTranslation(option_id=opt.id, locale="ru", text=opt_item["ru"])
+            )
+            session.add(
+                QuestionBankOptionTranslation(option_id=opt.id, locale="en", text=opt_item["en"])
+            )
 
         # Provenance record
-        session.add(QuestionProvenance(
-            question_id=bq.id,
-            source_id=ntc_source.id,
-            source_url=q_data["source_url"],
-            source_title=q_data["source_title"],
-            copyright_status="public_educational_use",
-            license_type="NTC_Public_Sample",
-            reuse_allowed=True,
-            official_status=q_data["status"],
-            content_hash=q_hash,
-            published_at=datetime(2026, 1, 15, tzinfo=timezone.utc),
-        ))
+        session.add(
+            QuestionProvenance(
+                question_id=bq.id,
+                source_id=ntc_source.id,
+                source_url=q_data["source_url"],
+                source_title=q_data["source_title"],
+                copyright_status="public_educational_use",
+                license_type="NTC_Public_Sample",
+                reuse_allowed=True,
+                official_status=q_data["status"],
+                content_hash=q_hash,
+                published_at=datetime(2026, 1, 15, tzinfo=timezone.utc),
+            )
+        )
 
         # Solution record
         sol = BankSolution(
@@ -604,24 +967,30 @@ async def seed_data_platform(session: AsyncSession):
         session.add(sol)
         await session.flush()
 
-        session.add(BankSolutionTranslation(
-            solution_id=sol.id,
-            locale="kk",
-            step_by_step_explanation=q_data["solution_kk"],
-            exam_tip=q_data["exam_tip_kk"],
-        ))
-        session.add(BankSolutionTranslation(
-            solution_id=sol.id,
-            locale="ru",
-            step_by_step_explanation=q_data["solution_ru"],
-            exam_tip=q_data["exam_tip_ru"],
-        ))
-        session.add(BankSolutionTranslation(
-            solution_id=sol.id,
-            locale="en",
-            step_by_step_explanation=q_data["solution_en"],
-            exam_tip=q_data["exam_tip_en"],
-        ))
+        session.add(
+            BankSolutionTranslation(
+                solution_id=sol.id,
+                locale="kk",
+                step_by_step_explanation=q_data["solution_kk"],
+                exam_tip=q_data["exam_tip_kk"],
+            )
+        )
+        session.add(
+            BankSolutionTranslation(
+                solution_id=sol.id,
+                locale="ru",
+                step_by_step_explanation=q_data["solution_ru"],
+                exam_tip=q_data["exam_tip_ru"],
+            )
+        )
+        session.add(
+            BankSolutionTranslation(
+                solution_id=sol.id,
+                locale="en",
+                step_by_step_explanation=q_data["solution_en"],
+                exam_tip=q_data["exam_tip_en"],
+            )
+        )
 
     # 7. Seed Verified 2026 UNT News
     news_items = [
@@ -675,14 +1044,18 @@ async def seed_data_platform(session: AsyncSession):
             "title_en": "Ministry of Science and Higher Education increases IT scholarship grants for 2026",
             "summary_en": "Additional government grants allocated for Information Technology and Cybersecurity programs.",
             "content_en": "The Ministry of Science and Higher Education announced increased funding and grant quotas for the Math + Informatics combination.",
-        }
+        },
     ]
 
     for n_item in news_items:
-        n_hash = hashlib.sha256((n_item["title_kk"] + " " + n_item["content_kk"]).encode("utf-8")).hexdigest()
+        n_hash = hashlib.sha256(
+            (n_item["title_kk"] + " " + n_item["content_kk"]).encode("utf-8")
+        ).hexdigest()
         art = NewsArticle(
             canonical_url=n_item["canonical_url"],
-            source_id=ntc_source.id if "testcenter" in n_item["canonical_url"] else gov_sci_source.id,
+            source_id=ntc_source.id
+            if "testcenter" in n_item["canonical_url"]
+            else gov_sci_source.id,
             category=n_item["category"],
             original_language="kk",
             importance_score=n_item["importance"],
@@ -697,39 +1070,47 @@ async def seed_data_platform(session: AsyncSession):
         session.add(art)
         await session.flush()
 
-        session.add(NewsTranslation(
-            news_id=art.id,
-            locale="kk",
-            title=n_item["title_kk"],
-            summary=n_item["summary_kk"],
-            content=n_item["content_kk"],
-            translation_source="official",
-            translation_status="published",
-        ))
-        session.add(NewsTranslation(
-            news_id=art.id,
-            locale="ru",
-            title=n_item["title_ru"],
-            summary=n_item["summary_ru"],
-            content=n_item["content_ru"],
-            translation_source="official",
-            translation_status="published",
-        ))
-        session.add(NewsTranslation(
-            news_id=art.id,
-            locale="en",
-            title=n_item["title_en"],
-            summary=n_item["summary_en"],
-            content=n_item["content_en"],
-            translation_source="human",
-            translation_status="published",
-        ))
+        session.add(
+            NewsTranslation(
+                news_id=art.id,
+                locale="kk",
+                title=n_item["title_kk"],
+                summary=n_item["summary_kk"],
+                content=n_item["content_kk"],
+                translation_source="official",
+                translation_status="published",
+            )
+        )
+        session.add(
+            NewsTranslation(
+                news_id=art.id,
+                locale="ru",
+                title=n_item["title_ru"],
+                summary=n_item["summary_ru"],
+                content=n_item["content_ru"],
+                translation_source="official",
+                translation_status="published",
+            )
+        )
+        session.add(
+            NewsTranslation(
+                news_id=art.id,
+                locale="en",
+                title=n_item["title_en"],
+                summary=n_item["summary_en"],
+                content=n_item["content_en"],
+                translation_source="human",
+                translation_status="published",
+            )
+        )
 
-        session.add(NewsSource(
-            news_id=art.id,
-            source_id=art.source_id,
-            external_url=n_item["canonical_url"],
-            attribution_text=f"ҚР ҰТО / ҒЖБМ Ресми дереккөзі ({art.published_at.strftime('%d.%m.%Y')})"
-        ))
+        session.add(
+            NewsSource(
+                news_id=art.id,
+                source_id=art.source_id,
+                external_url=n_item["canonical_url"],
+                attribution_text=f"ҚР ҰТО / ҒЖБМ Ресми дереккөзі ({art.published_at.strftime('%d.%m.%Y')})",
+            )
+        )
 
     await session.commit()

@@ -1,19 +1,21 @@
 import hashlib
 import re
 import html
-from typing import List, Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple
 from datetime import datetime, timezone
 from urllib.parse import urlparse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.models.sources import (
-    Source, SourceDocument, IngestionRun, IngestionItem, SourceAuthorityLevel, IngestionRunStatus
-)
+from app.models.sources import Source, IngestionItem
 from app.models.news import (
-    NewsArticle, NewsTranslation, NewsVersion, NewsSource, NewsCategory, NewsStatus
+    NewsArticle,
+    NewsTranslation,
+    NewsVersion,
+    NewsSource,
+    NewsCategory,
+    NewsStatus,
 )
-from app.models.localization import LocalizationGlossary
 from app.services.glossary_service import KazakhLanguageQAService
 
 
@@ -100,7 +102,10 @@ class IngestionEngine:
             if parsed.scheme not in self.ALLOWED_SCHEMES:
                 return False
             hostname = parsed.hostname.lower() if parsed.hostname else ""
-            return any(hostname == domain or hostname.endswith("." + domain) for domain in self.ALLOWED_DOMAINS)
+            return any(
+                hostname == domain or hostname.endswith("." + domain)
+                for domain in self.ALLOWED_DOMAINS
+            )
         except Exception:
             return False
 
@@ -121,7 +126,12 @@ class IngestionEngine:
             category = NewsCategory.INFORMATICS
         elif "грант" in combined:
             category = NewsCategory.GRANTS
-        elif "тіркелу" in combined or "регистрация" in combined or "мерзім" in combined or "дедлайн" in combined:
+        elif (
+            "тіркелу" in combined
+            or "регистрация" in combined
+            or "мерзім" in combined
+            or "дедлайн" in combined
+        ):
             category = NewsCategory.REGISTRATION
         elif "нәтиже" in combined or "результат" in combined:
             category = NewsCategory.EXAM_RESULTS
@@ -203,11 +213,25 @@ class IngestionEngine:
 
                 # Update translations
                 # (Kazakh)
-                await self._upsert_translation(existing_article.id, "kk", clean_title_kk, clean_summary_kk, clean_content_kk)
+                await self._upsert_translation(
+                    existing_article.id, "kk", clean_title_kk, clean_summary_kk, clean_content_kk
+                )
                 if title_ru:
-                    await self._upsert_translation(existing_article.id, "ru", self.sanitize_external_text(title_ru), self.sanitize_external_text(summary_ru or ""), self.sanitize_external_text(content_ru or ""))
+                    await self._upsert_translation(
+                        existing_article.id,
+                        "ru",
+                        self.sanitize_external_text(title_ru),
+                        self.sanitize_external_text(summary_ru or ""),
+                        self.sanitize_external_text(content_ru or ""),
+                    )
                 if title_en:
-                    await self._upsert_translation(existing_article.id, "en", self.sanitize_external_text(title_en), self.sanitize_external_text(summary_en or ""), self.sanitize_external_text(content_en or ""))
+                    await self._upsert_translation(
+                        existing_article.id,
+                        "en",
+                        self.sanitize_external_text(title_en),
+                        self.sanitize_external_text(summary_en or ""),
+                        self.sanitize_external_text(content_en or ""),
+                    )
 
                 action = "updated"
             else:
@@ -226,7 +250,9 @@ class IngestionEngine:
                 importance_score=importance_score,
                 relevance_score=relevance,
                 is_breaking=is_breaking,
-                status=NewsStatus.PUBLISHED if (relevance >= 0.25 and source.authority_level.startswith("official")) else NewsStatus.PENDING_REVIEW,
+                status=NewsStatus.PUBLISHED
+                if (relevance >= 0.25 and source.authority_level.startswith("official"))
+                else NewsStatus.PENDING_REVIEW,
                 content_hash=content_hash,
                 published_at=published_at,
                 fetched_at=datetime.now(timezone.utc),
@@ -238,18 +264,32 @@ class IngestionEngine:
             article_id = article.id
 
             # Add translations
-            await self._upsert_translation(article_id, "kk", clean_title_kk, clean_summary_kk, clean_content_kk)
+            await self._upsert_translation(
+                article_id, "kk", clean_title_kk, clean_summary_kk, clean_content_kk
+            )
             if title_ru:
-                await self._upsert_translation(article_id, "ru", self.sanitize_external_text(title_ru), self.sanitize_external_text(summary_ru or ""), self.sanitize_external_text(content_ru or ""))
+                await self._upsert_translation(
+                    article_id,
+                    "ru",
+                    self.sanitize_external_text(title_ru),
+                    self.sanitize_external_text(summary_ru or ""),
+                    self.sanitize_external_text(content_ru or ""),
+                )
             if title_en:
-                await self._upsert_translation(article_id, "en", self.sanitize_external_text(title_en), self.sanitize_external_text(summary_en or ""), self.sanitize_external_text(content_en or ""))
+                await self._upsert_translation(
+                    article_id,
+                    "en",
+                    self.sanitize_external_text(title_en),
+                    self.sanitize_external_text(summary_en or ""),
+                    self.sanitize_external_text(content_en or ""),
+                )
 
             # Record provenance
             news_source = NewsSource(
                 news_id=article_id,
                 source_id=source.id,
                 external_url=canonical_url,
-                attribution_text=f"{source.name} ({source.authority_level})"
+                attribution_text=f"{source.name} ({source.authority_level})",
             )
             self.session.add(news_source)
 
@@ -273,11 +313,12 @@ class IngestionEngine:
             "category": category,
         }
 
-    async def _upsert_translation(self, news_id: int, locale: str, title: str, summary: str, content: str):
+    async def _upsert_translation(
+        self, news_id: int, locale: str, title: str, summary: str, content: str
+    ):
         existing_res = await self.session.execute(
             select(NewsTranslation).where(
-                NewsTranslation.news_id == news_id,
-                NewsTranslation.locale == locale
+                NewsTranslation.news_id == news_id, NewsTranslation.locale == locale
             )
         )
         trans = existing_res.scalars().first()

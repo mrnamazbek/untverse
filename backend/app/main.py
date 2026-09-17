@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 import time
 import uuid
-from fastapi import FastAPI, Request, Response, status
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from datetime import datetime, timezone
@@ -37,7 +37,9 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Production-grade SaaS платформа подготовки к ЕНТ по Информатике",
     version="1.0.0",
-    openapi_url=f"{settings.API_V1_STR}/openapi.json" if settings.ENVIRONMENT != "production" else None,
+    openapi_url=f"{settings.API_V1_STR}/openapi.json"
+    if settings.ENVIRONMENT != "production"
+    else None,
     docs_url="/docs" if settings.ENVIRONMENT != "production" else None,
     redoc_url="/redoc" if settings.ENVIRONMENT != "production" else None,
     lifespan=lifespan,
@@ -107,15 +109,10 @@ async def auth_exception_handler(request: Request, exc: AuthException):
     )
 
 
-
 @app.get("/health", tags=["Оркестрация и Здоровье"])
 async def health_check():
     """Liveness probe"""
-    return {
-        "status": "healthy",
-        "environment": settings.ENVIRONMENT,
-        "timestamp": time.time()
-    }
+    return {"status": "healthy", "environment": settings.ENVIRONMENT, "timestamp": time.time()}
 
 
 @app.get("/ready", tags=["Оркестрация и Здоровье"])
@@ -124,15 +121,11 @@ async def readiness_check():
     try:
         async with AsyncSessionLocal() as session:
             await session.execute(text("SELECT 1"))
-        return {
-            "status": "ready",
-            "database": "connected",
-            "environment": settings.ENVIRONMENT
-        }
+        return {"status": "ready", "database": "connected", "environment": settings.ENVIRONMENT}
     except Exception as e:
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"status": "unhealthy", "database": "disconnected", "error": str(e)}
+            content={"status": "unhealthy", "database": "disconnected", "error": str(e)},
         )
 
 

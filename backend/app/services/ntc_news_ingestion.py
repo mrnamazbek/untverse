@@ -5,6 +5,7 @@ database writer.  The NTC site is a WordPress site and does not expose a stable
 public API for this news type, so the parser only relies on its public
 ``news-card`` markup and fails closed when a card is incomplete.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -87,11 +88,28 @@ class _NtcNewsCardParser(HTMLParser):
 
         # HTMLParser does not synthesize end tags for void HTML elements. Counting
         # them would leave every real NTC card open because its image is an <img>.
-        is_void = tag in {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"}
+        is_void = tag in {
+            "area",
+            "base",
+            "br",
+            "col",
+            "embed",
+            "hr",
+            "img",
+            "input",
+            "link",
+            "meta",
+            "param",
+            "source",
+            "track",
+            "wbr",
+        }
         if not is_void:
             self._card_depth += 1
-        if tag == "a" and attributes.get("href") and (
-            "news-card__link" in classes or not self._card.href
+        if (
+            tag == "a"
+            and attributes.get("href")
+            and ("news-card__link" in classes or not self._card.href)
         ):
             self._card.href = attributes["href"] or ""
         if tag == "h3" and "news-card__title" in classes:
@@ -122,18 +140,41 @@ class _NtcNewsCardParser(HTMLParser):
 
 
 _MONTHS = {
-    "қаңтар": 1, "январь": 1, "января": 1,
-    "февраль": 2, "февраля": 2, "ақпан": 2,
-    "март": 3, "марта": 3, "наурыз": 3,
-    "апрель": 4, "апреля": 4, "сәуір": 4,
-    "май": 5, "мая": 5,
-    "июнь": 6, "июня": 6, "маусым": 6,
-    "июль": 7, "июля": 7, "шілде": 7,
-    "август": 8, "августа": 8, "тамыз": 8,
-    "сентябрь": 9, "сентября": 9, "қыркүйек": 9,
-    "октябрь": 10, "октября": 10, "қазан": 10,
-    "ноябрь": 11, "ноября": 11, "қараша": 11,
-    "декабрь": 12, "декабря": 12, "желтоқсан": 12,
+    "қаңтар": 1,
+    "январь": 1,
+    "января": 1,
+    "февраль": 2,
+    "февраля": 2,
+    "ақпан": 2,
+    "март": 3,
+    "марта": 3,
+    "наурыз": 3,
+    "апрель": 4,
+    "апреля": 4,
+    "сәуір": 4,
+    "май": 5,
+    "мая": 5,
+    "июнь": 6,
+    "июня": 6,
+    "маусым": 6,
+    "июль": 7,
+    "июля": 7,
+    "шілде": 7,
+    "август": 8,
+    "августа": 8,
+    "тамыз": 8,
+    "сентябрь": 9,
+    "сентября": 9,
+    "қыркүйек": 9,
+    "октябрь": 10,
+    "октября": 10,
+    "қазан": 10,
+    "ноябрь": 11,
+    "ноября": 11,
+    "қараша": 11,
+    "декабрь": 12,
+    "декабря": 12,
+    "желтоқсан": 12,
 }
 
 
@@ -183,7 +224,9 @@ class OfficialNtcNewsClient:
     async def fetch_listing(self) -> FetchedNtcListing:
         headers = {"User-Agent": "UNTverseNewsIngest/1.0 (+https://testcenter.kz/)"}
         timeout = httpx.Timeout(20.0, connect=10.0)
-        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, headers=headers) as client:
+        async with httpx.AsyncClient(
+            timeout=timeout, follow_redirects=True, headers=headers
+        ) as client:
             response = await client.get(NTC_NEWS_LISTING_URL)
             response.raise_for_status()
             if int(response.headers.get("content-length", 0) or 0) > MAX_RESPONSE_BYTES:
@@ -201,16 +244,18 @@ class OfficialNtcNewsClient:
 async def _store_listing_provenance(
     session: AsyncSession, source: Source, listing: FetchedNtcListing
 ) -> None:
-    session.add(SourceDocument(
-        source_id=source.id,
-        url=listing.url,
-        title="NTC public news listing",
-        content_hash=hashlib.sha256(listing.raw_html.encode("utf-8")).hexdigest(),
-        raw_content=listing.raw_html,
-        content_type="text/html",
-        http_status=200,
-        doc_metadata={"kind": "ntc_news_listing", "items_discovered": len(listing.items)},
-    ))
+    session.add(
+        SourceDocument(
+            source_id=source.id,
+            url=listing.url,
+            title="NTC public news listing",
+            content_hash=hashlib.sha256(listing.raw_html.encode("utf-8")).hexdigest(),
+            raw_content=listing.raw_html,
+            content_type="text/html",
+            http_status=200,
+            doc_metadata={"kind": "ntc_news_listing", "items_discovered": len(listing.items)},
+        )
+    )
 
 
 async def _try_acquire_postgres_lock(session: AsyncSession) -> bool:
@@ -241,14 +286,18 @@ async def run_daily_ntc_news_ingestion(
         if not await _try_acquire_postgres_lock(session):
             return {**stats, "status": "already_running"}
 
-        source = (await session.execute(
-            select(Source).where(Source.slug == "testcenter-kz", Source.is_active.is_(True))
-        )).scalar_one_or_none()
+        source = (
+            await session.execute(
+                select(Source).where(Source.slug == "testcenter-kz", Source.is_active.is_(True))
+            )
+        ).scalar_one_or_none()
         if source is None:
             return {**stats, "status": "no_active_source"}
 
         stats["sources_processed"] = 1
-        run = IngestionRun(source_id=source.id, job_name="daily_ntc_news_cron", status=IngestionRunStatus.RUNNING)
+        run = IngestionRun(
+            source_id=source.id, job_name="daily_ntc_news_cron", status=IngestionRunStatus.RUNNING
+        )
         session.add(run)
         await session.flush()
         source.last_checked_at = datetime.now(timezone.utc)

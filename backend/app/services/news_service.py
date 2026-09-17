@@ -1,10 +1,8 @@
 from typing import Optional, List, Dict, Any, Tuple
-from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, or_, and_
+from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
-from app.models.news import NewsArticle, NewsTranslation, NewsVersion, NewsSource, NewsStatus
-from app.models.sources import Source
+from app.models.news import NewsArticle, NewsTranslation, NewsStatus
 
 
 class NewsService:
@@ -35,10 +33,7 @@ class NewsService:
         if search_query and search_query.strip():
             term = f"%{search_query.strip()}%"
             stmt = stmt.join(NewsTranslation, NewsArticle.id == NewsTranslation.news_id).where(
-                or_(
-                    NewsTranslation.title.ilike(term),
-                    NewsTranslation.summary.ilike(term)
-                )
+                or_(NewsTranslation.title.ilike(term), NewsTranslation.summary.ilike(term))
             )
 
         subq = stmt.with_only_columns(NewsArticle.id).order_by(None).subquery()
@@ -63,25 +58,33 @@ class NewsService:
         for art in articles:
             trans = next((t for t in art.translations if t.locale == locale), None)
             if not trans and art.translations:
-                trans = next((t for t in art.translations if t.locale == art.original_language), None)
+                trans = next(
+                    (t for t in art.translations if t.locale == art.original_language), None
+                )
             if not trans and art.translations:
                 trans = art.translations[0]
 
-            output.append({
-                "id": art.id,
-                "category": art.category,
-                "importance_score": art.importance_score,
-                "relevance_score": art.relevance_score,
-                "is_breaking": art.is_breaking,
-                "published_at": art.published_at.isoformat() if art.published_at else None,
-                "last_verified_at": art.last_verified_at.isoformat() if art.last_verified_at else None,
-                "canonical_url": art.canonical_url,
-                "source_name": art.source.name if art.source else "ҰТО Ресми",
-                "source_authority": art.source.authority_level if art.source else "official_primary",
-                "title": trans.title if trans else "",
-                "summary": trans.summary if trans else "",
-                "locale": trans.locale if trans else locale,
-            })
+            output.append(
+                {
+                    "id": art.id,
+                    "category": art.category,
+                    "importance_score": art.importance_score,
+                    "relevance_score": art.relevance_score,
+                    "is_breaking": art.is_breaking,
+                    "published_at": art.published_at.isoformat() if art.published_at else None,
+                    "last_verified_at": art.last_verified_at.isoformat()
+                    if art.last_verified_at
+                    else None,
+                    "canonical_url": art.canonical_url,
+                    "source_name": art.source.name if art.source else "ҰТО Ресми",
+                    "source_authority": art.source.authority_level
+                    if art.source
+                    else "official_primary",
+                    "title": trans.title if trans else "",
+                    "summary": trans.summary if trans else "",
+                    "locale": trans.locale if trans else locale,
+                }
+            )
 
         return output, total
 
@@ -146,13 +149,15 @@ class NewsService:
             if not trans and art.translations:
                 trans = art.translations[0]
 
-            output.append({
-                "id": art.id,
-                "title": trans.title if trans else "",
-                "summary": trans.summary if trans else "",
-                "published_at": art.published_at.isoformat() if art.published_at else None,
-                "canonical_url": art.canonical_url,
-                "importance_score": art.importance_score,
-            })
+            output.append(
+                {
+                    "id": art.id,
+                    "title": trans.title if trans else "",
+                    "summary": trans.summary if trans else "",
+                    "published_at": art.published_at.isoformat() if art.published_at else None,
+                    "canonical_url": art.canonical_url,
+                    "importance_score": art.importance_score,
+                }
+            )
 
         return output

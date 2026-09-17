@@ -1,4 +1,5 @@
 """Non-public endpoints invoked by the deployment scheduler."""
+
 import hmac
 
 from fastapi import APIRouter, Header, HTTPException, status
@@ -29,9 +30,13 @@ async def _run_daily_news_ingest() -> dict:
 
     result = await run_daily_ntc_news_ingestion()
     if result["status"] == "already_running":
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Ingestion is already running")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Ingestion is already running"
+        )
     if result["status"] == "failed":
-        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail="Official NTC ingestion failed")
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY, detail="Official NTC ingestion failed"
+        )
     return result
 
 
@@ -39,7 +44,9 @@ async def _run_daily_news_ingest() -> dict:
 async def run_daily_news_ingest(x_unt_ingestion_key: str | None = Header(default=None)):
     """Run the NTC ingestion job; authentication is by deployment-only secret."""
     if not _has_valid_manual_credential(x_unt_ingestion_key):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid ingestion credential")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid ingestion credential"
+        )
     return await _run_daily_news_ingest()
 
 

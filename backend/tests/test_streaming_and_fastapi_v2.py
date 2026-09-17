@@ -8,7 +8,7 @@ async def test_sse_ingestion_stream(client: AsyncClient):
     resp = await client.get("/api/v1/stream/ingestion/test-run-123")
     assert resp.status_code == 200
     assert "text/event-stream" in resp.headers["content-type"]
-    
+
     content = resp.text
     assert "event: start" in content
     assert "event: progress" in content
@@ -22,7 +22,7 @@ async def test_sse_live_events_stream(client: AsyncClient):
     resp = await client.get("/api/v1/stream/live-events?user_id=1")
     assert resp.status_code == 200
     assert "text/event-stream" in resp.headers["content-type"]
-    
+
     content = resp.text
     assert "event: connected" in content
     assert "event: heartbeat" in content
@@ -35,11 +35,12 @@ async def test_jsonl_streaming_export(client: AsyncClient):
     assert resp.status_code == 200
     assert "application/x-ndjson" in resp.headers["content-type"]
     assert "attachment; filename=unt_questions_kk.jsonl" in resp.headers["content-disposition"]
-    
+
     lines = [line for line in resp.text.split("\n") if line.strip()]
     assert len(lines) > 0
     # Verify each line is valid JSON with Pydantic serialization
     import json
+
     first_q = json.loads(lines[0])
     assert "id" in first_q
     assert "text" in first_q

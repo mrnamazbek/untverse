@@ -1,12 +1,10 @@
 import asyncio
 import json
 from typing import AsyncGenerator
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 from app.db.session import get_db
-from app.models.question_bank import BankQuestion
 from app.schemas.data_platform import BankQuestionResponse
 from app.services.question_bank_service import QuestionBankService
 
@@ -18,6 +16,7 @@ async def stream_ingestion_progress(run_id: str):
     """
     Server-Sent Events (SSE) стриминг статуса обработки данных и парсинга вопросов ЕНТ.
     """
+
     async def event_generator() -> AsyncGenerator[str, None]:
         stages = [
             ("fetching", "Извлечение сырых тестов из источников...", 20),
@@ -25,9 +24,9 @@ async def stream_ingestion_progress(run_id: str):
             ("kazakh_qa", "Лингвистическая валидация терминологии на казахском...", 80),
             ("indexing", "Генерация провенанса и сохранение в базу...", 100),
         ]
-        
+
         yield f"event: start\ndata: {json.dumps({'run_id': run_id, 'status': 'started'})}\n\n"
-        
+
         for stage, message, progress in stages:
             await asyncio.sleep(0.3)
             payload = {
@@ -56,6 +55,7 @@ async def stream_live_events(user_id: int = Query(default=1, description="ID п�
     """
     Server-Sent Events (SSE) стриминг живых обновлений XP, лидерборда и уведомлений.
     """
+
     async def live_generator() -> AsyncGenerator[str, None]:
         yield f"event: connected\ndata: {json.dumps({'user_id': user_id, 'status': 'online'})}\n\n"
         # Heartbeat / simulated event tick
@@ -79,7 +79,9 @@ async def stream_live_events(user_id: int = Query(default=1, description="ID п�
     )
 
 
-@router.get("/export/questions.jsonl", summary="Потоковый экспорт базы вопросов в формате JSONL (NDJSON)")
+@router.get(
+    "/export/questions.jsonl", summary="Потоковый экспорт базы вопросов в формате JSONL (NDJSON)"
+)
 async def stream_export_questions_jsonl(
     locale: str = Query(default="kk", pattern="^(kk|ru|en)$"),
     db: AsyncSession = Depends(get_db),
@@ -88,6 +90,7 @@ async def stream_export_questions_jsonl(
     Высокопроизводительный потоковый экспорт вопросов в формате JSON Lines (NDJSON).
     Использует Pydantic v2 Rust serialization без накопления всех объектов в оперативной памяти.
     """
+
     async def jsonl_streamer() -> AsyncGenerator[str, None]:
         service = QuestionBankService(db)
         items, _ = await service.list_questions(locale=locale, limit=100)

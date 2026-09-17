@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional, Dict, Any, List
-from pydantic import BaseModel, EmailStr, Field, ConfigDict, HttpUrl
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
 class SupportedLocale(str, Enum):
@@ -39,22 +39,32 @@ class AuthErrorCode(str, Enum):
 
 # --- OAuth 2.0 PKCE Schemas ---
 
+
 class OAuthInitRequest(BaseModel):
-    locale: SupportedLocale = Field(default=SupportedLocale.RU, description="Язык интерфейса (kk, ru, en)")
-    redirect_to: Optional[str] = Field(default="/dashboard", description="Относительный URL для возврата пользователя после входа")
+    locale: SupportedLocale = Field(
+        default=SupportedLocale.RU, description="Язык интерфейса (kk, ru, en)"
+    )
+    redirect_to: Optional[str] = Field(
+        default="/dashboard", description="Относительный URL для возврата пользователя после входа"
+    )
 
 
 class OAuthInitResponse(BaseModel):
-    authorization_url: str = Field(..., description="Google OAuth 2.0 URL с параметрами PKCE и state")
+    authorization_url: str = Field(
+        ..., description="Google OAuth 2.0 URL с параметрами PKCE и state"
+    )
     state: str = Field(..., description="Криптографически подписанный JWT state (HS256)")
 
 
 class OAuthCallbackRequest(BaseModel):
     code: str = Field(..., description="Authorization code, полученный от Google")
-    state: str = Field(..., description="Подписанный JWT state для валидации и распаковки PKCE code_verifier")
+    state: str = Field(
+        ..., description="Подписанный JWT state для валидации и распаковки PKCE code_verifier"
+    )
 
 
 # --- User & Account Schemas ---
+
 
 class AuthAccountResponse(BaseModel):
     id: int
@@ -101,6 +111,7 @@ class FullUserResponse(BaseModel):
 
 # --- Token Schemas ---
 
+
 class UnifiedTokenResponse(BaseModel):
     access_token: str
     refresh_token: str
@@ -119,18 +130,25 @@ class UnifiedTokenResponse(BaseModel):
 
 
 class GoogleLoginResponse(UnifiedTokenResponse):
-    is_new_user: bool = Field(default=False, description="Признак первого входа / регистрации пользователя")
+    is_new_user: bool = Field(
+        default=False, description="Признак первого входа / регистрации пользователя"
+    )
 
 
 class LocalTokenRefreshRequest(BaseModel):
-    refresh_token: Optional[str] = Field(None, description="Опционально передается в теле, если не используется HttpOnly cookie")
+    refresh_token: Optional[str] = Field(
+        None, description="Опционально передается в теле, если не используется HttpOnly cookie"
+    )
 
 
 class SetPasswordRequest(BaseModel):
-    new_password: str = Field(..., min_length=8, max_length=100, description="Новый пароль учетной записи")
+    new_password: str = Field(
+        ..., min_length=8, max_length=100, description="Новый пароль учетной записи"
+    )
 
 
 # --- Error Schemas ---
+
 
 class LocalizedErrorMessage(BaseModel):
     kk: str

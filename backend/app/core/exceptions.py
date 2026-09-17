@@ -132,11 +132,14 @@ class AuthException(AppException):
         details: Optional[Dict[str, Any]] = None,
     ):
         code_str = code.value if isinstance(code, AuthErrorCode) else str(code)
-        loc_dict = AUTH_ERROR_MESSAGES.get(code_str, {
-            "ru": "Ошибка аутентификации",
-            "kk": "Аутентификация қатесі",
-            "en": "Authentication error",
-        })
+        loc_dict = AUTH_ERROR_MESSAGES.get(
+            code_str,
+            {
+                "ru": "Ошибка аутентификации",
+                "kk": "Аутентификация қатесі",
+                "en": "Authentication error",
+            },
+        )
         lang = locale if locale in ("kk", "ru", "en") else "ru"
         msg = detail or loc_dict.get(lang, loc_dict["ru"])
         self.code = code_str

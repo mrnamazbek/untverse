@@ -1,18 +1,24 @@
-from typing import List, Optional
+from typing import List
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.session import get_db
 from app.api.v1.deps import require_admin
 from app.models.course import Course, Topic, Lesson
-from app.models.quiz import Quiz, Question, QuestionOption
+from app.models.quiz import Quiz
 from app.models.coding import CodingTask, TestCase
-from app.models.user import User, UserProfile
-from app.schemas.course import CourseCreate, CourseResponse, TopicCreate, TopicResponse, LessonCreate, LessonResponse
-from app.schemas.quiz import QuizCreate, QuizResponse, QuestionCreate, QuestionResponse
+from app.models.user import User
+from app.schemas.course import (
+    CourseCreate,
+    CourseResponse,
+    TopicCreate,
+    TopicResponse,
+    LessonCreate,
+    LessonResponse,
+)
+from app.schemas.quiz import QuizCreate, QuizResponse
 from app.schemas.coding import CodingTaskCreate, CodingTaskResponse
 from app.schemas.user import UserResponse
-from app.core.exceptions import NotFoundException
 
 router = APIRouter(dependencies=[Depends(require_admin)])
 
@@ -20,6 +26,7 @@ router = APIRouter(dependencies=[Depends(require_admin)])
 @router.get("/users", response_model=List[UserResponse])
 async def admin_list_users(db: AsyncSession = Depends(get_db)):
     from sqlalchemy.orm import selectinload
+
     res = await db.execute(select(User).options(selectinload(User.profile)).order_by(User.id))
     return list(res.scalars().all())
 
@@ -39,7 +46,7 @@ async def admin_create_course(course_in: CourseCreate, db: AsyncSession = Depend
         is_published=course.is_published,
         order_index=course.order_index,
         topics=[],
-        created_at=course.created_at
+        created_at=course.created_at,
     )
 
 
@@ -61,7 +68,7 @@ async def admin_create_topic(topic_in: TopicCreate, db: AsyncSession = Depends(g
         est_minutes=topic.est_minutes,
         xp_reward=topic.xp_reward,
         lessons_count=0,
-        lessons=[]
+        lessons=[],
     )
 
 
@@ -82,7 +89,7 @@ async def admin_create_lesson(lesson_in: LessonCreate, db: AsyncSession = Depend
         xp_reward=lesson.xp_reward,
         is_published=lesson.is_published,
         is_completed_by_user=False,
-        created_at=lesson.created_at
+        created_at=lesson.created_at,
     )
 
 
@@ -102,15 +109,17 @@ async def admin_create_quiz(quiz_in: QuizCreate, db: AsyncSession = Depends(get_
         passing_score=quiz.passing_score,
         xp_reward=quiz.xp_reward,
         is_published=quiz.is_published,
-        questions=[]
+        questions=[],
     )
 
 
-@router.post("/coding-tasks", response_model=CodingTaskResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/coding-tasks", response_model=CodingTaskResponse, status_code=status.HTTP_201_CREATED
+)
 async def admin_create_coding_task(task_in: CodingTaskCreate, db: AsyncSession = Depends(get_db)):
     data = task_in.model_dump()
     test_cases_data = data.pop("test_cases", [])
-    
+
     task = CodingTask(**data)
     db.add(task)
     await db.flush()
@@ -134,5 +143,5 @@ async def admin_create_coding_task(task_in: CodingTaskCreate, db: AsyncSession =
         memory_limit_mb=task.memory_limit_mb,
         xp_reward=task.xp_reward,
         is_published=task.is_published,
-        test_cases=[]
+        test_cases=[],
     )

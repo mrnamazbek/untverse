@@ -1,10 +1,9 @@
 import random
 from typing import List, Dict, Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.models.question_bank import BankQuestion, QuestionTranslation, QuestionBankOption, QuestionProvenance
-from app.models.specification import SpecificationSection, SpecificationTopic
+from app.models.question_bank import BankQuestion, QuestionBankOption
 
 
 class QuestionSelectionService:
@@ -22,14 +21,14 @@ class QuestionSelectionService:
         specification_topic_id: int,
         count: int = 10,
         difficulty: Optional[str] = None,
-        locale: str = "kk"
+        locale: str = "kk",
     ) -> List[Dict[str, Any]]:
         """
         Samples N questions for a specific topic.
         """
         query = select(BankQuestion.id).where(
             BankQuestion.specification_topic_id == specification_topic_id,
-            BankQuestion.is_active == True
+            BankQuestion.is_active == True,
         )
         if difficulty:
             query = query.where(BankQuestion.difficulty == difficulty.upper())
@@ -54,24 +53,24 @@ class QuestionSelectionService:
         # Fetch all active question IDs categorized by type
         single_ids_res = await self.session.execute(
             select(BankQuestion.id).where(
-                BankQuestion.question_type == "single_choice",
-                BankQuestion.is_active == True
+                BankQuestion.question_type == "single_choice", BankQuestion.is_active == True
             )
         )
         single_ids = [row[0] for row in single_ids_res.all()]
 
         multi_ids_res = await self.session.execute(
             select(BankQuestion.id).where(
-                BankQuestion.question_type == "multiple_choice",
-                BankQuestion.is_active == True
+                BankQuestion.question_type == "multiple_choice", BankQuestion.is_active == True
             )
         )
         multi_ids = [row[0] for row in multi_ids_res.all()]
 
         context_ids_res = await self.session.execute(
             select(BankQuestion.id).where(
-                BankQuestion.question_type.in_(["context_based", "sql", "python", "matching", "numeric"]),
-                BankQuestion.is_active == True
+                BankQuestion.question_type.in_(
+                    ["context_based", "sql", "python", "matching", "numeric"]
+                ),
+                BankQuestion.is_active == True,
             )
         )
         context_ids = [row[0] for row in context_ids_res.all()]
@@ -90,7 +89,7 @@ class QuestionSelectionService:
             all_ids_res = await self.session.execute(
                 select(BankQuestion.id).where(
                     BankQuestion.is_active == True,
-                    ~BankQuestion.id.in_(selected_ids) if selected_ids else True
+                    ~BankQuestion.id.in_(selected_ids) if selected_ids else True,
                 )
             )
             remaining_ids = [row[0] for row in all_ids_res.all()]
@@ -99,7 +98,9 @@ class QuestionSelectionService:
 
         return await self._fetch_full_questions(selected_ids, locale)
 
-    async def _fetch_full_questions(self, question_ids: List[int], locale: str) -> List[Dict[str, Any]]:
+    async def _fetch_full_questions(
+        self, question_ids: List[int], locale: str
+    ) -> List[Dict[str, Any]]:
         if not question_ids:
             return []
 
@@ -128,33 +129,37 @@ class QuestionSelectionService:
                 if not opt_trans and opt.translations:
                     opt_trans = opt.translations[0]
 
-                options_data.append({
-                    "id": opt.id,
-                    "option_key": opt.option_key,
-                    "text": opt_trans.text if opt_trans else "",
-                    "is_correct": opt.is_correct,
-                    "order_index": opt.order_index,
-                })
-
-            output.append({
-                "id": q.id,
-                "uuid": q.uuid_str,
-                "text": translation.text if translation else "",
-                "code_snippet": translation.code_snippet if translation else None,
-                "explanation": translation.explanation if translation else None,
-                "question_type": q.question_type,
-                "difficulty": q.difficulty,
-                "year": q.year,
-                "maximum_score": q.maximum_score,
-                "options": options_data,
-                "provenance": [
+                options_data.append(
                     {
-                        "source_title": p.source_title,
-                        "source_url": p.source_url,
-                        "official_status": p.official_status,
+                        "id": opt.id,
+                        "option_key": opt.option_key,
+                        "text": opt_trans.text if opt_trans else "",
+                        "is_correct": opt.is_correct,
+                        "order_index": opt.order_index,
                     }
-                    for p in q.provenance_records
-                ]
-            })
+                )
+
+            output.append(
+                {
+                    "id": q.id,
+                    "uuid": q.uuid_str,
+                    "text": translation.text if translation else "",
+                    "code_snippet": translation.code_snippet if translation else None,
+                    "explanation": translation.explanation if translation else None,
+                    "question_type": q.question_type,
+                    "difficulty": q.difficulty,
+                    "year": q.year,
+                    "maximum_score": q.maximum_score,
+                    "options": options_data,
+                    "provenance": [
+                        {
+                            "source_title": p.source_title,
+                            "source_url": p.source_url,
+                            "official_status": p.official_status,
+                        }
+                        for p in q.provenance_records
+                    ],
+                }
+            )
 
         return output
