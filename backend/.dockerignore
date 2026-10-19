@@ -47,7 +47,7 @@ Dockerfile
 docker-compose*.yml
 .dockerignore
 
-# CI/CD
+# Repository metadata
 .github/
 
 # Misc

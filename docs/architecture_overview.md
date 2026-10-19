@@ -39,5 +39,5 @@
 - **Frontend Engineer**: Разработка интерфейсов на Next.js, дизайн-системы Notion (`DESIGN-notion.md`), компонентов тестов и IDE.
 - **Security Engineer**: Аудит авторизации, IDOR, XSS, защита песочницы кода.
 - **QA Engineer**: Автоматизированные тесты pytest, E2E сценарии, верификация расчетов.
-- **DevOps Engineer**: Dockerfile, docker-compose, GitHub Actions CI/CD, манифесты Railway и Vercel.
+- **DevOps Engineer**: Dockerfile, docker-compose, манифесты Railway и Vercel.
 - **Critic Agent**: Независимый аудит качества, выявление краевых случаев и устранение замечаний.
