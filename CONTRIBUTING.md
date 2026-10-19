@@ -66,5 +66,5 @@ We adhere to the [Conventional Commits](https://www.conventionalcommits.org/) sp
 ## 5. Submitting a Pull Request
 
 1. Fill out the [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md).
-2. Ensure CI checks pass on GitHub Actions.
+2. Ensure local checks (tests and build) pass before requesting review.
 3. Request review from maintainers.

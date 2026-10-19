@@ -45,29 +45,19 @@ second batch.
 
 ## Scheduler
 
-The checked-in GitHub workflow is now a scheduler only; it has no Python setup,
-does not run migrations, and has no database credentials. Add these repository
-Actions secrets:
-
-| GitHub Actions secret | Value |
-| --- | --- |
-| `INGESTION_ENDPOINT` | The complete endpoint URL above. |
-| `NEWS_INGESTION_SECRET` | Exactly the Railway `NEWS_INGESTION_SECRET` value. |
-
-It invokes the endpoint daily at 06:00 Asia/Almaty (01:00 UTC) and retries
-transient HTTP failures twice. A platform scheduler (for example a Railway cron
-service or an external scheduler) may call the same endpoint instead; do not
-give it direct database credentials.
+Use a platform scheduler (for example a Railway cron service or an external
+scheduler) to call the endpoint daily at 06:00 Asia/Almaty (01:00 UTC), with
+up to two retries for transient HTTP failures. Do not give the scheduler direct
+database credentials.
 
 ## Operator checks
 
 1. Deploy migrations and confirm `GET /ready` reports a connected database.
-2. Trigger the workflow manually, or make a one-time authenticated `POST`.
+2. Trigger the scheduler manually, or make a one-time authenticated `POST`.
 3. Confirm `ingestion_runs` has `job_name=daily_ntc_news_cron`, and inspect its
    counts/status.
 4. Confirm `source_documents` contains the listing snapshot and that published
    articles link to `testcenter.kz` via `news_sources`.
 
 Failures return a non-2xx response to the scheduler. The run itself records a
-bounded error summary, so alerts should be configured on failed GitHub workflow
-runs or equivalent scheduler failures.
+bounded error summary, so alerts should be configured on scheduler failures.

@@ -4,7 +4,6 @@
 
 **Gamified UNT Informatics preparation for the next generation of students.**
 
-[![CI Pipeline](https://github.com/mrnamazbek/untverse/actions/workflows/ci.yml/badge.svg)](https://github.com/mrnamazbek/untverse/actions/workflows/ci.yml)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=flat&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
@@ -121,7 +120,6 @@ Detailed architectural decisions are documented as Architecture Decision Records
 | **Sandbox** | Python AST Analyzer | Static analysis blocking forbidden modules (`os`, `sys`, `eval`, etc.) |
 | | Async Subprocess Runner | Isolated test execution with memory and execution timeouts |
 | **DevOps** | [Docker](https://www.docker.com) & Docker Compose | Multi-stage container builds and complete stack orchestration |
-| | [GitHub Actions](https://github.com/features/actions) | Continuous Integration pipeline (pytest, lint, build checks) |
 | | [Railway](https://railway.app) & [Vercel](https://vercel.com) | Cloud deployment targets for backend and frontend |
 
 ---
@@ -183,7 +181,7 @@ untverse/
 │   ├── adr/                  # Architecture Decision Records (ADR-001 to ADR-005)
 │   ├── images/               # Verified UI screenshots
 │   └── architecture_overview.md
-├── .github/                  # CI workflows (Green on push/PR) & daily scheduler
+├── .github/                  # Issue and pull request templates
 ├── docker-compose.yml        # Multi-container local orchestration
 └── README.md                 # Project documentation
 ```

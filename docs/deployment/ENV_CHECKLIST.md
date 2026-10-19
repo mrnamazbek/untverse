@@ -82,7 +82,7 @@
 - [ ] `ENVIRONMENT` = `production`
 - [ ] `ACCESS_TOKEN_EXPIRE_MINUTES` = `15` (а не dev-значение 1440)
 - [ ] `DATABASE_URL` указывает на Railway PostgreSQL (не SQLite!)
-- [ ] `NEWS_INGESTION_SECRET` задан в Railway и в GitHub Actions secrets
+- [ ] `NEWS_INGESTION_SECRET` задан в Railway и в используемом планировщике cron-задач
 - [ ] Все секреты добавлены через Railway Dashboard / Vercel Dashboard, а **НЕ** в `.env` файлы
 
 ---
